@@ -86,7 +86,7 @@ function gameLoop() {
   //do something every frame
   frame += 1;
   if (frame > 60) {
-    frame -=60;
+    frame -= 0;
   }
   imageData.x = 100 + Math.cos(Math.PI * 2 / 60 * frame) * 100;
   imageData.y = 100 + Math.sin(Math.PI * 2 / 60 * frame) * 100;

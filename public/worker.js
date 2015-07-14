@@ -3,8 +3,7 @@
 importScripts('standalone.js');
 
 var r = e2d.Renderer.create(800, 600);
-var img = new e2d.Img();
-img.src = 'ship-sprite.png';
+
 
 var grd = e2d.createRadialGradient(0, 0, 0, 200, 0, 200, [
   e2d.addColorStop(0, 'green'),
@@ -23,6 +22,5 @@ onmessage = function loop(e) {
     ])
   );
 };
-img.onload = function() {
-  postMessage({ type: 'ready' });
-};
+
+postMessage({ type: 'ready' });
