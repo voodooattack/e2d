@@ -66,5 +66,15 @@ Img.prototype.generateTexture = function generateTexture(buffer, options) {
   this.onload();
 };
 
+Img.prototype.dispose = function dispose() {
+  if (isWorker) {
+    return postMessage({ type: 'image-dispose', value: { id: this.id }});
+  } else {
+    Image.cache[this.id] = null;
+  }
+};
+
+Object.seal(Img);
+Object.seal(Img.prototype);
 
 module.exports = Img;

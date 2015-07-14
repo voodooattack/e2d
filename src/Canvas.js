@@ -13,7 +13,6 @@ function Canvas(width, height, id) {
     this.renderer = new Renderer(width, height, document.createElement('div'));
   } else {
     this.renderer = null;
-    postMessage({ type: 'canvas', value: { id: this.id, width: width, height: height, children: [] } });
   }
   this.width = width;
   this.height = height;
@@ -46,6 +45,14 @@ Canvas.prototype.toImage = function toImage(imageID) {
     img.src = this.renderer.canvas.toDataURL('image/png');
     Img.cache[imageID] = img;
     return;
+  }
+};
+
+Canvas.prototype.dispose = function dispose() {
+  if (isWorker) {
+    return postMessage({ type: 'canvas-dispose', value: { id: this.id }});
+  } else {
+    Canvas.cache[this.id] = null;
   }
 };
 

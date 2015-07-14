@@ -11,19 +11,12 @@ var flatten = require('lodash/array/flatten'),
     pi2 = Math.PI * 2;
 
 function Renderer(width, height, parent, worker) {
-  var workerObj;
-  if (worker) {
-    workerObj = this.worker = new Worker(worker);
-    workerObj.onmessage = this.workerCommand.bind(this);
-  } else {
-    this.worker = null;
-  }
-  
   this.tree = null;
   this.ready = false;
   this.frame = null;
   
-  if (!self.document) {
+  if (isWorker) {
+    this.worker = null;
     this.canvas =  null;
     this.ctx = null;
     this.parent = null;
@@ -31,27 +24,42 @@ function Renderer(width, height, parent, worker) {
     return;
   }
   
+  var workerObj;
+  
+  
+  if (worker) {
+    workerObj = this.worker = new Worker(worker);
+    workerObj.onmessage = this.workerCommand.bind(this);
+  } else {
+    this.worker = null;
+  }
+  
+  //set parent
   if (arguments.length < 3) {
-    parent = document.createElement('div');
+    parent = this.parent = document.createElement('div');
     parent.style.margin = '0 auto';
     parent.style.width = width + 'px';
     parent.style.height = height + 'px';
     document.body.appendChild(parent);
+  } else {
+    this.parent = parent;
   }
   
+  //set width and height automatically
   if (arguments.length < 2) {
     width = window.innerWidth;
     height = window.innerHeight;
   }
   
+  
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d');
+  
   canvas.width = width;
   canvas.height = height;
   parent.appendChild(canvas);
   this.canvas = canvas;
   this.ctx = ctx;
-  this.parent = parent;
   Object.seal(this);
 }
 
@@ -469,7 +477,7 @@ Renderer.prototype.render = function render(args) {
   
 };
 
-Renderer.create = function(width, height, parent, worker) {
+Renderer.create = function create(width, height, parent, worker) {
   if (arguments.length > 2) {
     return new Renderer(width, height, parent, worker);
   }
@@ -497,6 +505,13 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   if (data.type === 'image') {
     img = new Img(data.value.id);
     return img.generateTexture(data.value.buffer, data.value.opts);
+  }
+  
+  if (data.type === 'image-dispose') {
+    if (Img.cache.hasOwnProperty(data.value.id)) {
+      Img.cache[data.value.id] = null;
+    }
+    return;
   }
   
   if (data.type === 'render') {  
@@ -530,6 +545,13 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
       Canvas.cache[data.value.id].toImage(data.value.imageID);
       return;
     }
+  }
+  
+  if (data.type === 'canvas-dispose') {
+    if (Canvas.cache.hasOwnProperty(data.value.id)) {
+      Canvas.cache[data.value.id] = null;
+    }
+    return;
   }
 };
 

@@ -1,5 +1,5 @@
-e2d.js
---------------------------------
+# e2d.js
+
 A canvas rendering engine HEAVILY inspired by `react.js` to help enforce one way data flow patterns.
 
 # Introduction
@@ -37,9 +37,14 @@ gameLoop();
 
 Or if you are working inside a web worker...
 
-
+```javascript
+//in your app browser side
+var r = e2d.Renderer.create(800, 600, document.body, 'worker.js');
+//seriously, that's it
+```
 
 ```javascript
+//inside the web worker
 importScripts('e2d.min.js');
 
 var r = e2d.Renderer.create(800, 600);
@@ -174,6 +179,44 @@ Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
 Voila!
 
 # API
+
+__Renderer.js__
+
+This object is the main renderer of the application
+
+```javascript
+var r = new Renderer(width, height, parent[document.body], workerUrl);
+```
+
+You must provide the workerUrl if you are running a renderer using a web worker.
+
+To render a set of commands, use the following syntax:
+
+```javascript
+r.render(
+  //comma seperated list of commands
+  //or use an array
+);
+```
+
+To send a message to the worker:
+
+```javascript
+//this uses structured cloning or whatever is supported in the browser.
+r.sendWorker(type, value);
+
+//the worker receives an object { type: type, value: value }
+```
+
+To resize the renderer (supported from both worker and browser side).
+
+```javascript
+r.resize(width, height);
+```
+
+Note: running this command browser side doesn't update your web worker.
+
+
 
 The following commands are provided to you in this library.
 
@@ -692,5 +735,7 @@ var textCommand = textStyle(style, [
   text('the final example', x, y, true, true, maxWidth) //fill first, then stroke
 ]);
 ```
+
+
 
 This project is released under the MIT license.
