@@ -6,6 +6,11 @@ var r = e2d.Renderer.create(800, 600);
 var img = new e2d.Img();
 img.src = 'ship-sprite.png';
 
+var grd = e2d.createRadialGradient(0, 0, 0, 200, 0, 200, [
+  e2d.addColorStop(0, 'green'),
+  e2d.addColorStop(1, 'white')
+]).cache();
+
 onmessage = function loop(e) {
   if (e.data.type !== 'frame') {
     return;
@@ -13,30 +18,8 @@ onmessage = function loop(e) {
   
   r.render(
     e2d.clearRect(800, 600),
-    e2d.drawImage(img),
-    e2d.translate(100, 0, [
-      e2d.path([
-        e2d.moveTo(0, 0),
-        e2d.lineTo(100, 100),
-        e2d.lineTo(0, 100)
-      ]),
-      e2d.stroke()
-    ]),
-    e2d.translate(200, 0, [
-      e2d.fillStyle('red', [
-        e2d.path([
-          e2d.moveTo(0, 0),
-          e2d.lineTo(100, 100),
-          e2d.lineTo(0, 100)
-        ]),
-        e2d.fill()
-      ])
-    ]),
-    e2d.translate(300, 20, [
-      e2d.text('hello world!')
-    ]),
-    e2d.translate(400, 20, [
-      e2d.text('other world!', 0, 0, false, true) //stroke
+    e2d.fillStyle(grd, [
+      e2d.fillRect(200, 200)
     ])
   );
 };

@@ -736,6 +736,33 @@ var textCommand = textStyle(style, [
 ]);
 ```
 
+__createLinearGradient.js__ and __createRadialGradient.js__
+
+*WARNING*: Every gradient that is created will be auto-disposed after creation.  Use the chain api to store the gradient for re-use.
+
+```javascript
+var grd = createLinearGradient(x0, y0, x1, y1, [
+  addColorStop(0, 'color'),
+  addColorStop(1, 'color')
+]).cache(); // will cache the gradient for later reuse
+```
+
+This paradigm exists because the gradient needs to be stored for later use on the browser side regardless of where it is created.  However, using `createLinearGradient` and `createRadialGradient` for use in a single frame is supported without calling `gradient.cache()`.
+
+```javascript
+r.render(
+  fillStyle(
+    createLinearGradient(x0, y0, x1, y1, [ //this one will be auto-disposed
+      addColorStop(...),
+      addColorStop(...)
+    ]), [
+      //children
+    ]
+  )
+)
+```
+
+See [createLinearGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) and  [createRadialGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient) on mdn for more information on how to use these functions.
 
 
-This project is released under the MIT license.
+This project is released under the MIT license (c) Joshua Tenner 2015.

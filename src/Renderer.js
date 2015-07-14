@@ -5,7 +5,10 @@
 'use strict';
 var flatten = require('lodash/array/flatten'),
     Canvas = null,
+    Gradient = null,
     isWorker = require('./isWorker'),
+    createLinearGradient = require('./createLinearGradient'),
+    createRadialGradient = require('./createRadialGradient'),
     self = typeof window !== 'undefined' ? window : this,
     Img = require('./Img'),
     pi2 = Math.PI * 2;
@@ -80,6 +83,9 @@ Renderer.prototype.render = function render(args) {
   if (!Canvas) {
     Canvas = require('./Canvas');
   }
+  if (!Gradient) {
+    Gradient = require('./Gradient');
+  }
   
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
@@ -143,6 +149,16 @@ Renderer.prototype.render = function render(args) {
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
+      continue;
+    }
+    
+    if (type == 'fillGradient') {
+      cache = Gradient.cache[props.value.id];
+      fillStyleStack.push(ctx.fillStyle);
+      ctx.fillStyle = cache.grd;
+      if (cache.disposable) {
+        setTimeout(cache.dispose.bind(cache), 0);
+      }
       continue;
     }
     
@@ -473,6 +489,8 @@ Renderer.prototype.render = function render(args) {
       ctx.closePath();
       continue;
     }
+    
+    
   }
   
 };
@@ -494,6 +512,9 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   //import the canvas object when we need it because Canvas depends on Renderer
   if (!Canvas) {
     Canvas = require('./Canvas');
+  }
+  if (!Gradient) {
+    Gradient = require('./Gradient');
   }
   
   if (data.type === 'ready') {
@@ -548,8 +569,35 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   }
   
   if (data.type === 'canvas-dispose') {
-    if (Canvas.cache.hasOwnProperty(data.value.id)) {
-      Canvas.cache[data.value.id] = null;
+    if (Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+      Canvas.cache[data.value.id].dispose();
+    }
+    return;
+  }
+  
+  if (data.type === 'linear-gradient') {
+    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0, data.value.x1, data.value.y1, data.value.children, data.value.id);
+    return;
+  }
+  
+  if (data.type === 'radial-gradient') {
+    Gradient.cache[data.value.id] = createRadialGradient(
+      data.value.x0, data.value.y0, data.value.r0,
+      data.value.x1, data.value.y1, data.value.r1,
+      data.value.children, data.value.id
+    );
+    return;
+  }
+  
+  if (data.type === 'gradient-dispose') {
+    if (Gradient.cache.hasOwnProperty(data.value.id)) {
+      Gradient.cache[data.value.id].dispose();
+    }
+    return;
+  }
+  if (data.type === 'gradient-cache') {
+    if (Gradient.cache.hasOwnProperty(data.value.id)) {
+      Gradient.cache[data.value.id].cache();
     }
     return;
   }
