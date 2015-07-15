@@ -1,6 +1,6 @@
 # e2d.js
 
-A canvas rendering engine HEAVILY inspired by `react.js` to help enforce one way data flow patterns.
+A canvas rendering engine HEAVILY inspired by `react.js` to enable `WebWorker` rendering.
 
 # Introduction
 
@@ -472,6 +472,24 @@ var globalCompositeOperation = e2d.globalCompositeOperation;
 var operation = globalCompositeOperation('multiply', [
   //do some fill operations
 ]);
+```
+
+__globalAlpha.js
+
+To control the global alpha, use the `globalAlpha(alpha, children)` function.
+
+```javascript
+var globalAlpha = e2d.globalAlpha;
+
+globalAlpha(0.5, [
+  //children are now drawn at 0.5 alpha
+  
+  globalAlpha(0.5, [
+    //children are now drawn at 0.25 alpha because 0.5 * 0.5 is 0.25
+    //float math applies
+  ])
+])
+
 ```
 
 __lineStyle.js__

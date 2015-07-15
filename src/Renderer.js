@@ -77,6 +77,7 @@ Renderer.prototype.render = function render(args) {
       lineStyleStack = [],
       textStyleStack = [],
       shadowStyleStack = [],
+      globalAlphaStack = [],
       globalCompositeOperationStack = [],
       ctx = this.ctx,
       children = [];
@@ -490,7 +491,15 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
     
+    if (type === 'globalAlpha') {
+      globalAlphaStack.push(ctx.globalAlpha);
+      ctx.globalAlpha *= props.value;
+      continue;
+    }
     
+    if (type === 'endGlobalAlpha') {
+      ctx.globalAlpha = globalAlphaStack.pop();
+    }
   }
   
 };
