@@ -12,8 +12,12 @@ function fillStyle(value, children) {
   if (!instruction) {
     instruction = new Instruction('fillStyle', { value: value });
   }
-  
-  return [instruction].concat(children).concat([new Instruction('endFillStyle')]);
+  var result = [instruction];
+  for(var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
+  result.push(new Instruction('endFillStyle'));
+  return result;
 }
 
 module.exports = fillStyle;

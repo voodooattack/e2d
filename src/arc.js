@@ -7,7 +7,7 @@ function arc(x, y, r, startAngle, endAngle, anticlockwise) {
     return new Instruction(anticlockwise ? 'anticlockwise-arc' : 'arc', { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle });
   }
   if (arguments.length === 5) {
-    return new Instruction('arc', { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle })
+    return new Instruction('arc', { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle });
   }
   if (arguments.length >= 3) {
     return new Instruction('full-arc', { x: x, y: y, r: r});

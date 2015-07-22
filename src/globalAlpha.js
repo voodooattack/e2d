@@ -3,7 +3,12 @@
 var Instruction = require('./Instruction');
 
 function globalAlpha(alpha, children) {
-    return [new Instruction('globalAlpha', { value: alpha })].concat(children).concat([new Instruction('endGlobalAlpha')]);
+  var result = [new Instruction('globalAlpha', { value: alpha })];
+  for(var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
+  result.push(new Instruction('endGlobalAlpha'));
+  return result;
 }
 
 module.exports = globalAlpha;

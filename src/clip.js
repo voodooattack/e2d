@@ -5,7 +5,12 @@ var beginPath = require('./beginPath'),
     clipPath = require('./clipPath');
 
 function clip(children) {
-  return [beginPath()].concat(children).concat([clipPath()]);
+  var result = [beginPath()];
+  for(var i = 0; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
+  result.push(clipPath());
+  return result;
 }
 
 module.exports = clip;

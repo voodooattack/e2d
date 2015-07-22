@@ -5,7 +5,12 @@ var beginPath = require('./beginPath'),
     closePath = require('./closePath');
 
 function path(children) {
-  return [beginPath()].concat(children).concat([closePath()]);
+  var result = [beginPath()];
+  for(var i = 0; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
+  result.push(closePath());
+  return result;
 }
 
 module.exports = path;

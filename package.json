@@ -13,12 +13,20 @@
     "express": "^4.13.1"
   },
   "dependencies": {
+    "keycode": "^2.1.0",
     "lodash": "^3.10.0",
+    "point-in-polygon": "^1.0.0",
     "square-matrix-multiply": "^0.2.2"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/jtenner/e2d.git"
   },
-  "keywords": ["canvas", "2d", "WebWorker", "graphics", "browser"]
+  "keywords": [
+    "canvas",
+    "2d",
+    "WebWorker",
+    "graphics",
+    "browser"
+  ]
 }

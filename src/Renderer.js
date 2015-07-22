@@ -9,41 +9,82 @@ var flatten = require('lodash/array/flatten'),
     isWorker = require('./isWorker'),
     createLinearGradient = require('./createLinearGradient'),
     createRadialGradient = require('./createRadialGradient'),
-    self = typeof window !== 'undefined' ? window : this,
+    events = require('events'),
+    util = require('util'),
     Img = require('./Img'),
-    pi2 = Math.PI * 2;
+    keycode = require('keycode'),
+    smm = require('square-matrix-multiply'),
+    transformPoints = require('./transformPoints'),
+    pointInPolygon = require('point-in-polygon'),
+    pi2 = Math.PI * 2,
+    identity = [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ];
+
+util.inherits(Renderer, events.EventEmitter);
 
 function Renderer(width, height, parent, worker) {
+  //this needs to be done later because of cyclical dependencies
+  events.EventEmitter.call(this);
+  
+  if (!Canvas) {
+    Canvas = require('./Canvas');
+  }
+  if (!Gradient) {
+    Gradient = require('./Gradient');
+  }
+  if (!Img) {
+    Gradient = require('./Gradient');
+  }
+  this.fireFrameTimeout = 16;
+  this.frameTimes = [16, 16, 16, 16, 16, 16, 16, 16, 16, 16];
+  
+  this.startFrame = 0;
+  this.endFrame = 0;
+  
   this.tree = null;
-  this.ready = false;
-  this.frame = null;
+  this.isReady = false;
+  this.mouseState = "down";
+  this.mouseData = {
+    x: 0,
+    y: 0,
+    state: this.mouseState
+  };
+  this.mouseRegions = [];
+  this.activeRegions = [];
+  
+  //this is the basic structure of the data sent to the web worker
+  this.keyData = {};
   
   if (isWorker) {
     this.worker = null;
     this.canvas =  null;
     this.ctx = null;
     this.parent = null;
+    addEventListener('message', this.browserCommand.bind(this));
     Object.seal(this);
+    //nothing else to do
     return;
   }
   
-  var workerObj;
-  
-  
+
+  //create the web worker and hook the workerCommand function
   if (worker) {
-    workerObj = this.worker = new Worker(worker);
-    workerObj.onmessage = this.workerCommand.bind(this);
+    this.worker = new Worker(worker);
+    this.worker.onmessage = this.workerCommand.bind(this);
   } else {
     this.worker = null;
   }
   
   //set parent
   if (arguments.length < 3) {
-    parent = this.parent = document.createElement('div');
-    parent.style.margin = '0 auto';
-    parent.style.width = width + 'px';
-    parent.style.height = height + 'px';
-    document.body.appendChild(parent);
+    this.parent = document.createElement('div');
+    this.parent.style.margin = '0 auto';
+    this.parent.style.width = width + 'px';
+    this.parent.style.height = height + 'px';
+    document.body.appendChild(this.parent);
   } else {
     this.parent = parent;
   }
@@ -54,15 +95,17 @@ function Renderer(width, height, parent, worker) {
     height = window.innerHeight;
   }
   
+  this.canvas = document.createElement('canvas');
+  this.ctx = this.canvas.getContext('2d');
   
-  var canvas = document.createElement('canvas'),
-      ctx = canvas.getContext('2d');
+  this.canvas.width = width;
+  this.canvas.height = height;
+  this.parent.appendChild(this.canvas);
   
-  canvas.width = width;
-  canvas.height = height;
-  parent.appendChild(canvas);
-  this.canvas = canvas;
-  this.ctx = ctx;
+  //hook mouse and keyboard events right away
+  this.hookMouseEvents();
+  this.hookKeyboardEvents();
+  
   Object.seal(this);
 }
 
@@ -73,20 +116,18 @@ Renderer.prototype.render = function render(args) {
       props,
       type,
       cache,
+      matrix,
+      sinr,
+      cosr,
       fillStyleStack = [],
       lineStyleStack = [],
       textStyleStack = [],
       shadowStyleStack = [],
       globalAlphaStack = [],
+      transformStack = [identity],
       globalCompositeOperationStack = [],
       ctx = this.ctx,
       children = [];
-  if (!Canvas) {
-    Canvas = require('./Canvas');
-  }
-  if (!Gradient) {
-    Gradient = require('./Gradient');
-  }
   
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
@@ -97,47 +138,109 @@ Renderer.prototype.render = function render(args) {
     return this.sendBrowser('render', children);
   }
   
+  this.mouseRegions = [];
+  this.activeRegions = [];
   
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
     props = child.props;
-    
     type = child.type;
+    
     if (type === 'transform') {
+      matrix = smm(transformStack[transformStack.length - 1], [
+        [props.a, props.c, props.e],
+        [props.b, props.d, props.f],
+        [0,       0,       1      ]
+      ]);
+      cache = {
+        a: matrix[0][0],
+        b: matrix[1][0],
+        c: matrix[0][1],
+        d: matrix[1][1],
+        e: matrix[0][2],
+        f: matrix[1][2]
+      };
+      transformStack.push(matrix);
       ctx.save();
       ctx.transform(props.a, props.b, props.c, props.d, props.e, props.f);
       continue;
     }
     
     if (type === 'scale') {
+      matrix = smm(transformStack[transformStack.length - 1], [
+        [props.x, 0,       0],
+        [0,       props.y, 0],
+        [0,       0,       1]
+      ]);
+      cache = {
+        a: matrix[0][0],
+        b: matrix[1][0],
+        c: matrix[0][1],
+        d: matrix[1][1],
+        e: matrix[0][2],
+        f: matrix[1][2]
+      };
+      transformStack.push(matrix);
       ctx.save();
       ctx.scale(props.x, props.y);
       continue;
     }
     
     if (type === 'translate') {
+      matrix = smm(transformStack[transformStack.length - 1], [
+        [1, 0, props.x],
+        [0, 1, props.y],
+        [0, 0, 1            ]
+      ]);
+      cache = {
+        a: matrix[0][0],
+        b: matrix[1][0],
+        c: matrix[0][1],
+        d: matrix[1][1],
+        e: matrix[0][2],
+        f: matrix[1][2]
+      };
+      transformStack.push(matrix);
       ctx.save();
-      ctx.translate(child.props.x, child.props.y);
+      ctx.translate(props.x, props.y);
       continue;
     }
     
     if (type === 'rotate') {
+      cosr = Math.cos(props.r);
+      sinr = Math.cos(props.r);
+      
+      matrix = smm(transformStack[transformStack.length - 1], [
+        [cosr, -sinr, 0],
+        [sinr, cosr,  0],
+        [0,    0,     1]
+      ]);
+      cache = {
+        a: matrix[0][0],
+        b: matrix[1][0],
+        c: matrix[0][1],
+        d: matrix[1][1],
+        e: matrix[0][2],
+        f: matrix[1][2]
+      };
+      transformStack.push(matrix);
       ctx.save();
-      ctx.rotate(child.props.r);
+      ctx.rotate(props.r);
       continue;
     }
     
     if (type === 'restore') {
+      transformStack.pop();
       ctx.restore();
       continue;
     }
     
-    if (child.type === 'fillRect') {
+    if (type === 'fillRect') {
       ctx.fillRect(props.x, props.y, props.width, props.height);
       continue;
     }
     
-    if (child.type === 'strokeRect') {
+    if (type === 'strokeRect') {
       ctx.strokeRect(props.x, props.y, props.width, props.height);
       continue;
     }
@@ -154,11 +257,9 @@ Renderer.prototype.render = function render(args) {
     }
     
     if (type == 'fillGradient') {
-      cache = Gradient.cache[props.value.id];
       fillStyleStack.push(ctx.fillStyle);
-      ctx.fillStyle = cache.grd;
-      if (cache.disposable) {
-        setTimeout(cache.dispose.bind(cache), 0);
+      if (Gradient.cache.hasOwnProperty(props.value.id)) {
+        ctx.fillStyle = Gradient.cache[props.value.id].grd;
       }
       continue;
     }
@@ -499,6 +600,15 @@ Renderer.prototype.render = function render(args) {
     
     if (type === 'endGlobalAlpha') {
       ctx.globalAlpha = globalAlphaStack.pop();
+      continue;
+    }
+    
+    if (type === 'hitRegion') {
+      this.mouseRegions.push({
+        id: props.id,
+        points: transformPoints(props.points, transformStack[transformStack.length - 1])
+      });
+      continue;
     }
   }
   
@@ -527,34 +637,63 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   }
   
   if (data.type === 'ready') {
-    this.ready = true;
-    this.sendWorker('frame', {});
-    return this.hookRender();
+    return this.ready();
   }
   
   if (data.type === 'image') {
     img = new Img(data.value.id);
+    Img.cache[data.value.id] = img;
     return img.generateTexture(data.value.buffer, data.value.opts);
+  }
+  
+  if (data.type === 'image-cache') {
+    if (Img.cache.hasOwnProperty(data.value.id)) {
+      Img.cache[data.value.id].cache();
+    }
+    return;
   }
   
   if (data.type === 'image-dispose') {
     if (Img.cache.hasOwnProperty(data.value.id)) {
-      Img.cache[data.value.id] = null;
+      Img.cache[data.value.id].dispose();
     }
     return;
   }
   
   if (data.type === 'render') {  
 
-    if (this.tree) {
-      this.tree = this.tree.concat(data.value);
+    //timestamp
+    this.endFrame = Date.now();
+
+    //set the tree
+    this.tree = data.value;
+
+    //find the delay
+    img = this.endFrame - this.startFrame;
+
+    if (img >= 500) {
+      return;
+    }
+
+    //give ~2ms of buffer time
+    img = 16 - img;
+
+    //account for LOTS of lag beyond 15ms
+    if (img < 0) {
+      img = 0;
+    }
+    //if the lag gets worse decrease the frameTimeout
+    if (img < this.fireFrameTimeout) {
+      this.fireFrameTimeout = img;
+      this.frameTimes.splice(0, this.frameTimes.length);
     } else {
-      this.tree = data.value;
+      this.frameTimes.push(img);
+      if (this.frameTimes.length >= 10) {
+        this.fireFrameTimeout = Math.min.apply(Math, this.frameTimes);
+        this.frameTimes.shift();
+      }
     }
-    
-    if (!this.frame) {
-      this.frame = requestAnimationFrame(this.hookRender.bind(this));
-    }
+    return;
   }
   
   if (data.type === 'renderer-resize') {
@@ -577,15 +716,21 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     }
   }
   
-  if (data.type === 'canvas-dispose') {
+  if (data.type === 'canvas-cache') {
     if (Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
-      Canvas.cache[data.value.id].dispose();
+      Canvas.cache[data.value.id].cache();
     }
     return;
   }
   
+  if (data.type === 'canvas-dispose' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+      return Canvas.cache[data.value.id].dispose();
+  }
+  
   if (data.type === 'linear-gradient') {
-    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0, data.value.x1, data.value.y1, data.value.children, data.value.id);
+    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0, 
+                                                         data.value.x1, data.value.y1, 
+                                                         data.value.children, data.value.id);
     return;
   }
   
@@ -600,22 +745,33 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   
   if (data.type === 'gradient-dispose') {
     if (Gradient.cache.hasOwnProperty(data.value.id)) {
-      Gradient.cache[data.value.id].dispose();
+      return Gradient.cache[data.value.id].dispose();
     }
     return;
   }
+  
   if (data.type === 'gradient-cache') {
     if (Gradient.cache.hasOwnProperty(data.value.id)) {
-      Gradient.cache[data.value.id].cache();
+      return Gradient.cachable.push(data.value.id);
     }
     return;
   }
+  
+  if (data.type === 'style') {
+    return this.style(data.value);
+  }
+  
+  return this.emit(data.type, data.value);
 };
 
 Renderer.prototype.resize = function(width, height) {
+  
+  //resize event can be called from browser or worker, so we need to tell the browser to resize itself
   if (isWorker) {
     return this.sendBrowser('renderer-resize', { width: width, height: height });
   }
+  
+  //only resize if the sizes are different, because it clears the canvas
   if (this.canvas.width.toString() !== width.toString()) {
     this.canvas.width = width;
   }
@@ -625,32 +781,218 @@ Renderer.prototype.resize = function(width, height) {
 };
 
 Renderer.prototype.hookRender = function hookRender() {
-  //If the client has sent a 'ready' command
-  if (this.ready) {
-    
-    //check if the tree exists
-    if (this.tree !== null) {
-      //even if the worker sends a message back before the frame finishes rendering,
-      //javascript will queue it up after rendering is done. So send the message ASAP.
+  //This function is never called worker side, so we can't check isWorker to determine where this code is run.
+  var didRender = true;
+  
+  //If the client has sent a 'ready' command and a tree exists
+  if (this.isReady) {
       
-      this.sendWorker('frame', {});
-      this.render(this.tree);
-      this.tree = null;
-      this.frame = null;
-    } else {
-      return requestAnimationFrame(this.hookRender.bind(this));
-    }
+      //if the worker exists, we should check to see if the worker has sent back anything yet
+      if (this.worker) {
+        if (this.tree !== null) {
+          //because this function is indepentant and async of the 'fireFrame' command inside a worker,
+          //it is possible for the worker to not return a frame.
+          
+          //render the current frame from the worker
+          this.render(this.tree);
+          
+          //reset the tree/frame
+          this.tree = null;
+          //okay we can ask for the next frame now, but we should wait to fire it to reduce input lag.
+          setTimeout(this.fireFrame.bind(this), this.fireFrameTimeout);
+        } else {
+          //the worker isn't finished yet and we missed the window
+          didRender = false;
+        }
+      } else {
+        //we are browser side, so this should fire the frame synchronously
+        this.fireFrame();
+      }
+    
+      //clean up the cache, but only after the frame is rendered and when the browser has time to
+      if (didRender) {
+        setTimeout(this.cleanUpCache.bind(this), 0);
+      }
   }
+  
+  return requestAnimationFrame(this.hookRender.bind(this));
+};
+
+Renderer.prototype.cleanUpCache = function cleanUpCache() {
+  Img.cleanUp();
+  Canvas.cleanUp();
+  return Gradient.cleanUp();
 };
 
 Renderer.prototype.sendWorker = function sendWorker(type, value) {
+  //if there is no worker, the event needs to happen browser side
+  if (!this.worker) {
+    //fire the event anyway
+    return this.emit(type, value);
+  }
+  //otherwise, post the message
   return this.worker.postMessage({ type: type, value: value });
 };
 
 Renderer.prototype.sendBrowser = function sendBrowser(type, value) {
+  //there is definitely a browser on the other end
   return postMessage({ type: type, value: value });
 };
 
+
+Renderer.prototype.sendAll = function sendAll(type, value) {
+  if (!isWorker) {
+    this.sendWorker(type, value);
+  } else {
+    this.sendBrowser(type, value);
+  }
+  return this.emit(type, value);
+};
+/*
+ * Mouse move events simply increment the down and up values every time the event is fired.
+ * This allows games that are lagging record the click counts. It gets reset to 0 every time
+ * it is sent.
+ */
+
+Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
+  //whenever the mouse moves, report the position
+  document.addEventListener('mousemove', this.mouseMove.bind(this));
+  
+  //only report mousedown on canvas
+  this.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
+  
+  //mouse up can happen anywhere
+  return document.addEventListener('mouseup', this.mouseUp.bind(this));
+};
+
+Renderer.prototype.mouseMove = function mouseMove(evt) {
+  //get bounding rectangle
+  var rect = this.canvas.getBoundingClientRect(),
+      mousePoint = [0,0],
+      region;
+  
+  mousePoint[0] = evt.clientX - rect.left;
+  mousePoint[1] = evt.clientY - rect.top;
+  
+  for(var i = 0; i < this.mouseRegions.length; i++) {
+    region = this.mouseRegions[i];
+    if (pointInPolygon(mousePoint, region.points)) {
+      this.activeRegions.push(region.id);
+      this.mouseRegions.splice(this.mouseRegions.indexOf(region), 1);
+      i -= 1;
+    }
+  }
+  
+  this.mouseData = {
+    x: mousePoint[0],
+    y: mousePoint[1],
+    state: this.mouseState,
+    activeRegions: this.activeRegions 
+  };
+  
+  
+  //send the mouse event to the worker
+  this.sendWorker('mouse', this.mouseData);
+  
+  //default event stuff
+  evt.preventDefault();
+  return false;
+};
+
+Renderer.prototype.mouseDown = function mouseMove(evt) {
+  //set the mouseState down
+  this.mouseState = 'down';
+  
+  //defer to mouseMove
+  return this.mouseMove(evt);
+};
+
+Renderer.prototype.mouseUp = function mouseMove(evt) {
+  //set the mouse state
+  this.mouseState = 'up';
+  //defer to mouse move
+  return this.mouseMove(evt);
+};
+
+Renderer.prototype.hookKeyboardEvents = function hookMouseEvents() {
+  
+  //every code in keycode.code needs to be on keyData
+  for (var name in keycode.code) {
+    if (keycode.code.hasOwnProperty(name)) {
+      this.keyData[name] = "up";
+    }
+  }
+  
+  //keydown should only happen ON the canvas
+  this.canvas.addEventListener('keydown', this.keyDown.bind(this));
+  
+  //but keyup should be captured everywhere
+  return document.addEventListener('keyUp', this.keyUp.bind(this));
+};
+
+Renderer.prototype.keyChange = function keyChange(evt) {
+  this.sendWorker('key', this.keyData);
+  evt.preventDefault();
+  return false;
+};
+
+Renderer.prototype.keyDown = function keyDown(evt) {
+  this.keyData[keycode.code[evt.keyCode]] = "down";
+  return this.keyChange(evt);
+};
+
+Renderer.prototype.keyUp = function keyUp(evt) {
+  this.keyData[keycode.code[evt.keyCode]] = "up";
+  return this.keyChange(evt);
+};
+
+Renderer.prototype.browserCommand = function(e) {
+  return this.emit(e.data.type, e.data.value);
+};
+
+Renderer.prototype.fireFrame = function() {
+  this.startFrame = Date.now();
+  return this.sendWorker('frame', {});
+};
+
+Renderer.prototype.style = function style() {
+  var styles = [],
+      styleVal,
+      name,
+      value;
+  for (var i = 0; i < arguments.length; i++) {
+    styles.push(arguments[i]);
+  }
+  styles = flatten(styles);
+  if (isWorker) {
+    this.sendBrowser('style', styles);
+  } else {
+    for(i = 0; i < styles.length; i++) {
+      styleVal = styles[i];
+      for(name in styleVal) {
+        if (styleVal.hasOwnProperty(name)) {
+          value = styleVal[name];
+          if (value === null) {
+            this.canvas.style.removeProperty(name);
+            continue;
+          }
+          this.canvas.style.setProperty(name, value);
+        }
+      }
+    }
+  }
+};
+
+
+Renderer.prototype.ready = function ready() {
+  if (isWorker) {
+    this.sendBrowser('ready');
+  } else {
+    this.isReady = true;
+    this.fireFrame();
+    return requestAnimationFrame(this.hookRender.bind(this));
+  }
+};
 Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;

@@ -5,12 +5,10 @@ var Instruction = require('./Instruction'),
 
 function rotate(r, children) {
   r = +r;
-  children = children || [];
-  
-  var result = [new Instruction('rotate', { r: r })],
-      child;
-  
-  result = result.concat(flatten(children));
+  var result = [new Instruction('rotate', { r: r })];
+  for(var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
   result.push(new Instruction('restore'));
   return result;
 }

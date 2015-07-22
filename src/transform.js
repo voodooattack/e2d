@@ -17,7 +17,7 @@ function transform(stack, children) {
         [0, 0, 1]
       ],
       props,
-      transformResult = [],
+      transformResult,
       len = stack.length;
   for(i = 0; i < len; i++) {
     t = stack[i];
@@ -71,18 +71,31 @@ function transform(stack, children) {
     e: result[0][2],
     f: result[1][2]
   };
-  return transformResult.concat(new Instruction('transform', props)).concat(children).concat([new Instruction('restore')]);
+  
+  transformResult = [new Instruction('transform', props)];
+  for(i = 1; i < arguments.length; i++) {
+    transformResult.push(arguments[i]);
+  }
+  transformResult.push(new Instruction('restore'));
+  
+  return transformResult;
 }
 function copy(target, children) {
-  var t = target[0];
-  return [new Instruction('transform', {
-    a: t.props.a,
-    b: t.props.b,
-    c: t.props.c,
-    d: t.props.d,
-    e: t.props.e,
-    f: t.props.f
-  })].concat(children).concat([new Instruction('restore')]);
+  var t = target[0],
+    result = [new Instruction('transform', {
+      a: t.props.a,
+      b: t.props.b,
+      c: t.props.c,
+      d: t.props.d,
+      e: t.props.e,
+      f: t.props.f
+    })];
+  
+  for(var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
+  result.push(new Instruction('restore'));
+  return result;
 }
 
 transform.copy = copy;

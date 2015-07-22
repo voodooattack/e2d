@@ -1,0 +1,29 @@
+{
+  "name": "e2d",
+  "main": "dist/e2d.min.js",
+  "version": "1.2.0",
+  "homepage": "https://github.com/jtenner/e2d",
+  "authors": [
+    "jtenner <tenner.joshua@gmail.com>"
+  ],
+  "description": "A canvas rendering engine HEAVILY inspired by `react.js` to enable `WebWorker` rendering.",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "Canvas",
+    "html5",
+    "2d",
+    "graphics"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

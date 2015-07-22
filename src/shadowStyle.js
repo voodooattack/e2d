@@ -23,7 +23,14 @@ function shadowStyle(value, children) {
   if (typeof value.direction !== 'undefined') {
     result.shadowOffsetY = value.shadowOffsetY; 
   }
-  return [new Instruction('shadowStyle', value)].concat(children).concat([new Instruction('endShadowStyle')]);
+  
+  var tree = [new Instruction('shadowStyle', value)];
+  for (var i = 1; i < arguments.length; i++) {
+    tree.push(arguments[i]);
+  }
+  tree.push(new Instruction('endShadowStyle'));
+  
+  return tree;
 }
 
 module.exports = shadowStyle;

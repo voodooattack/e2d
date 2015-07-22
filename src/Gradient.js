@@ -1,33 +1,46 @@
-//jshint node: true
+//jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker');
 
 function Gradient(id, grd) {
   this.id = id;
   this.grd = grd;
-  this.disposable = true;
+  Gradient.cache[id] = this;
   Object.seal(this);
 }
 
 Gradient.cache = {};
-
-Gradient.prototype.cache = function() {
-  this.disposable = false;
-  
+Gradient.cachable = [];
+Gradient.prototype.cache = function cache() {
   if (isWorker) {
     postMessage({ type: 'gradient-cache', value: { id: this.id }});
+  } else {
+    Gradient.cachable.push(this.id);
   }
-  
   return this;
 };
 
-Gradient.prototype.dispose = function() {
+Gradient.prototype.dispose = function dispose() {
   if(isWorker) {
     return postMessage({ type: 'gradient-dispose', value: { id: this.id } });
   } else {
     Gradient.cache[this.id] = null;
-    return;
+    var index = Gradient.cachable.indexOf(this.id);
+    if (index !== -1) {
+      Gradient.cachable.splice(index, 1);
+    }
   }
+};
+
+Gradient.cleanUp = function cleanUp() {
+  var index = {},
+      key;
+  for(var i = 0; i < Gradient.cachable.length; i++) {
+    key = Gradient.cachable[i];
+    index[key] = Gradient.cache[key];
+  }
+  
+  Gradient.cache = index;
 };
 
 Object.seal(Gradient);

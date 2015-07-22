@@ -1,13 +1,12 @@
-//jshint node: true, browser: true
+//jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
-    Gradient = require('./Gradient');
-
-createLinearGradient.cache = {};
+    flatten = require('lodash/array/flatten'),
+    Gradient = require('./Gradient'),
+    newid = require('./id');
 
 function createLinearGradient(x0, y0, x1, y1, children, id) {
-  id = id || Date.now();
-  
+  id = id || newid();
   if (isWorker) {
     postMessage({ type: 'linear-gradient', value: { id: id, x0: x0, y0: y0, x1: x1, y1: y1, children: children } });
     return new Gradient(id, null);
@@ -20,7 +19,7 @@ function createLinearGradient(x0, y0, x1, y1, children, id) {
       colorStop = children[i];
       grd.addColorStop(colorStop.props.offset, colorStop.props.color);
     }
-    Gradient.cache[id] = result;
+    
     return result; 
   }
 }

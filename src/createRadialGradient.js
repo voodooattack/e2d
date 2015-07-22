@@ -1,11 +1,11 @@
-//jshint node: true, browser: true
+//jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
-    Gradient = require('./Gradient');
+    Gradient = require('./Gradient'),
+    newid = require('./id');
 
 function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
-  id = id || Date.now();
-  
+  id = id || newid();
   if (isWorker) {
     postMessage({ 
       type: 'radial-gradient', 
@@ -21,7 +21,6 @@ function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
       colorStop = children[i];
       grd.addColorStop(colorStop.props.offset, colorStop.props.color);
     }
-    Gradient.cache[id] = result;
     return result;
   }
 }

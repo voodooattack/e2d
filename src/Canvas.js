@@ -1,13 +1,13 @@
-//jshint node: true
-//jshint browser: true
+//jshint worker: true, browser: true, node: true
 'use strict';
 
 var isWorker = require('./isWorker'),
     Img = require('./Img'),
-    flatten = require('lodash/array/flatten');
+    flatten = require('lodash/array/flatten'),
+    newid = require('./id');
 
 function Canvas(width, height, id) {
-  this.id = id || Date.now();
+  this.id = id || newid();
   var Renderer = require('./Renderer');
   if (!isWorker) {
     this.renderer = new Renderer(width, height, document.createElement('div'));
@@ -33,7 +33,7 @@ Canvas.prototype.render = function render(children) {
 };
 
 Canvas.prototype.toImage = function toImage(imageID) {
-  imageID = imageID || Date.now();
+  imageID = imageID || newid();
   var img;
   if (isWorker) {
     postMessage({ type: 'canvas-image', value: { id: this.id, imageID: imageID } });
@@ -53,7 +53,34 @@ Canvas.prototype.dispose = function dispose() {
     return postMessage({ type: 'canvas-dispose', value: { id: this.id }});
   } else {
     Canvas.cache[this.id] = null;
+    var index = Canvas.cachable.indexOf(this.id);
+    if (index > -1) {
+      Canvas.cachable.splice(index, 1);
+    }
   }
+};
+
+Canvas.prototype.cache = function cache() {
+  if (isWorker) {
+    return postMessage({ type: 'canvas-cache', value: { id: this.id }});
+  } else {
+    var index = Canvas.cachable.indexOf(this.id);
+    if (index === -1) {
+      Canvas.cachable.push(this.id);
+    }
+  }
+  return this;
+};
+
+Canvas.cleanUp = function cleanUp() {
+  var index = {},
+      key;
+  for(var i = 0; i < Canvas.cachable.length; i++) {
+    key = Canvas.cachable[i];
+    index[key] = Canvas.cache[key];
+  }
+  
+  Canvas.cache = index;
 };
 
 Canvas.prototype.resize = function (width, height) {
@@ -61,6 +88,7 @@ Canvas.prototype.resize = function (width, height) {
 };
 
 Canvas.cache = {};
+Canvas.cachable = [];
 
 Canvas.create = function (width, height, id) {
   return new Canvas(width, height, id);

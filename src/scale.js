@@ -4,14 +4,18 @@ var Instruction = require('./Instruction'),
     flatten = require('lodash/array/flatten');
 
 function scale(x, y, children) {
-  x = +x;
-  y = +y;
+  var i = 2;
+  if (typeof y !== 'number') {
+    y = x;
+    i = 1;
+  }
   children = children || [];
   
   var result = [new Instruction('scale', { x: x, y: y })],
       child;
-  
-  result = result.concat(flatten(children));
+  for (; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
   result.push(new Instruction('restore'));
   return result;
 }

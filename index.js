@@ -24,6 +24,8 @@ module.exports = {
     globalAlpha: require('./src/globalAlpha'),
     globalCompositeOperation: require('./src/globalCompositeOperation'),
     Gradient: require('./src/Gradient'),
+    hitRect: require('./src/hitRect'),
+    hitRegion: require('./src/hitRegion'),
     Img: require('./src/Img'),
     Instruction: require('./src/Instruction'),
     isDataUrl: require('./src/isDataUrl'),
@@ -43,5 +45,6 @@ module.exports = {
     text: require('./src/text'),
     textStyle: require('./src/textStyle'),
     transform: require('./src/transform'),
+    transformPoints: require('./src/transformPoints'),
     translate: require('./src/translate')
 };

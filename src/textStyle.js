@@ -23,7 +23,12 @@ function textStyle(value, children) {
   if (typeof value.direction !== 'undefined') {
     result.direction = value.direction; 
   }
-  return [new Instruction('textStyle', value)].concat(children).concat([new Instruction('endTextStyle')]);
+  var tree = [new Instruction('textStyle', value)];
+  for(var i = 1; i < arguments.length; i++) {
+    tree.push(arguments[i]);
+  }
+  tree.push(new Instruction('endTextStyle'));
+  return tree;
 }
 
 module.exports = textStyle;

@@ -12,59 +12,45 @@ That's right. In a web worker.
 
 When using this library, you'll probably want to do something like this:
 
+This works in both browser AND worker.
+
 ```javascript
-var e2d = require('e2d'),
-  width = 800,
-  height = 600,
-  r = e2d.Renderer.create(width, height);
+var r = e2d.Renderer.create(800, 600);
 
-var translate = e2d.translate,
-  fillText = e2d.fillText;
+var mouse = { x: 0, y: 0, state: 'up' };
 
-function gameLoop() {
-  requestAnimationFrame(gameLoop);
-  
+r.on('mouse', function (data) {
+  mouse = data;
+});
+function frame() {
+  requestAnimationFrame(frame);
   r.render(
-    //tree structure goes here
-    translate(100, 100, [
-      fillText("Hello World!")
+    e2d.fillRect(800, 600), //black fillStyle is default
+    
+    //mouse debug stuff
+    e2d.globalAlpha(0.5, [
+      e2d.fillStyle(mouse.state === 'down' ? 'green' : 'red', [
+        e2d.fillArc(mouse.x, mouse.y, 10)
+      ])
     ])
   );
 }
+//browser side, this is called durring requestAnimationFrame
+r.on('frame', frame);
 
-gameLoop();
+//if you want the library to control when you render use this function
+r.ready();
 ```
 
-Or if you are working inside a web worker...
+`r.ready()` is required when using a WebWorker because you must participate in the requestAnimationFrame loop browser side.
 
-```javascript
-//in your app browser side
-var r = e2d.Renderer.create(800, 600, document.body, 'worker.js');
-//seriously, that's it
-```
+### Instruction trees
 
-```javascript
-//inside the web worker
-importScripts('e2d.min.js');
+Creating a tree of instructions allows the developer to make one way data structures that represent the state of their application data.
 
-var r = e2d.Renderer.create(800, 600);
+In games, this is very useful, because the render engine shouldn't be a part of the game logic.
 
-onmessage = function loop(e) {
-  if (e.data.type !== 'frame') {
-    return;
-  }
-  
-  r.render(
-    //tree structure goes here
-    translate(100, 100, [
-      fillText("Hello World!")
-    ])
-  );
-};
-
-```
-
-Using a drawing tree allows you to create (pseudo)immutable data structures that can be saved.  It allows you to reason better about your code. For instance:
+For instance, sprite sheets are really easy to make:
 
 ```javascript
 //create a drawImage array to store the frame commands
@@ -111,7 +97,7 @@ gameLoop();
 Also building classes is as easy as making a single function.
 
 ```javascript
-function container(x, y, width, height, children) {
+function customContainerItem(x, y, width, height, children) {
   return translate(x, y, [
     strokeRect(0, 0, width, height),
     translate(3, 3, //padding
@@ -121,36 +107,36 @@ function container(x, y, width, height, children) {
 }
 ```
 
-The thing about rendering inside a web worker, is that there isn't any rendering at all inside the web worker.  It simply sends the canvas commands over using structured cloning.
-
 # Getting started
 
-I highly recommend using `browserify` or `webpack` in `node.js` to modularize your code.
+I highly recommend using `browserify` or `webpack` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.min.js` file in the `dist` folder.
 
-```javascript
-//browserify
-var e2d = require('e2d');
-
-//require.js
-require(['e2d'], function(e2d) {
-  
-});
-
-//I will support this at some point to make your builds smaller
-var scale = require('e2d/src/scale');
-```
-
-Browserified bundles already exist in the `/dist` folder of this project if you just want to host it on a cdn or use it in your project manually.  Minified the library is about < `23kb` using uglifyjs.
+### Import using script method
 
 ```html
 <script src="e2d.min.js" type="text/javascript"></script>
 ```
 
-Setting up a development environment for testing, place your code in the `app.js` file of your project folder. Then you can use the following command:
+Inside a worker, use:
 
-`npm install --save-dev express browserify-middleware`
+```javascript
+importScripts('e2d.min.js');
+//your app code here
+```
 
-and finally in `server.js`
+That's it.
+
+### Browserify method
+
+This is how I recommend getting started.
+
+`npm init`
+
+and then...
+
+`npm install --save-dev browserify-middleware express e2d`
+
+Inside `server.js`:
 
 ```javascript
 var express = require('express'),
@@ -167,30 +153,83 @@ app.get('/e2d.js', browserify(['e2d'], { standalone: 'e2d' }));
 app.listen(8080);
 ```
 
-Files in the public folder will now be served for you.
-
 In your `public/index.html` file:
 ```html
 <script src="bundle.js" type="text/javascript"></script>
 ```
 
+There is no active support for automatically importing `e2d` inside a web worker using the `browserify` method. For now, make a standalone build for your worker and use that.
+
 Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
 
-Voila!
+### Webpack
+
+WebWorker work is possible but I'm not sure how to set up a project that uses webpack using a web worker.  Please submit a pull request to help provide an example!
 
 # API
 
-__Renderer.js__
+## Renderer.js
 
-This object is the main renderer of the application
+This object is the main renderer of the application.
 
 ```javascript
 var r = new Renderer(width, height, parent[document.body], workerUrl);
 ```
 
+### Events
+
+All events are supported browser and worker side.
+
+__frame__
+
+This fires once per frame after calling `r.ready()`.  Use this event to call `r.render(...)` to keep in sync with the animation loop.
+
+```javascript
+r.on('frame', function() {
+  //browser side, this is during requestAnimationFrame
+  
+  //worker side, this is timed and sent before the requestAnimationFrame fires
+});
+```
+
+__mouse__
+
+This fires once per mouse event. This includes `mousedown`, `mouseup`, and `mousemove`.  Touch events are not supported yet and are targeted for the next release.
+
+
+```javascript
+r.on('mouse', function(mouseEventData) {
+  //mouseEventData looks like this
+  /*{
+    x: relativeMouseX,
+    y: relativeMouseY,
+    state: 'down' // or 'up'
+  }*/
+});
+
+```
+
+__key__
+
+This fires once per key event. This includes `keydown` and `keyup`.
+
+r.on('key', function(keyEventData) {
+  //keyEventData looks like this
+  /*{
+    'a': 'down', // or 'up'
+    'b': 'down', // or 'up'
+    'c': 'down', // or 'up'
+    ...
+  }*/
+});
+
+### Prototype
+
 You must provide the workerUrl if you are running a renderer using a web worker.
 
 To render a set of commands, use the following syntax:
+
+__Renderer.prototype.render__
 
 ```javascript
 r.render(
@@ -199,14 +238,22 @@ r.render(
 );
 ```
 
-To send a message to the worker:
+To send an event to the worker or to the browser use the `r.sendBrowser`, `r.sendWorker`, or `r.sendAll` methods.
+
+__Renderer.prototype.send*__
 
 ```javascript
 //this uses structured cloning or whatever is supported in the browser.
 r.sendWorker(type, value);
 
-//the worker receives an object { type: type, value: value }
+//this will send a command/event to the browser
+r.sendBrowser(type, value);
+
+//this will send a command/event to both sides
+r.sendAll(type, value);
 ```
+
+__Renderer.prototype.resize__
 
 To resize the renderer (supported from both worker and browser side).
 
@@ -214,11 +261,34 @@ To resize the renderer (supported from both worker and browser side).
 r.resize(width, height);
 ```
 
-Note: running this command browser side doesn't update your web worker.
+__Renderer.prototype.ready__
 
+This function sets up the requestAnimationFrame loop and allows the developer to hook into the `frame` event on both the worker AND the browser side.
 
+```javascript
+r.ready();
+```
 
-The following commands are provided to you in this library.
+__Renderer.prototype.style__
+
+This function applies styles to the browser window.
+
+```javascript
+r.style({
+  margin: '0 auto',
+  cursor: 'pointer'
+});
+```
+
+Also supports:
+
+1. Unlimited arguments, it will apply every style manually to the canvas
+2. `null` values will remove style attributes
+3. Arrays of style objects
+
+# Render Commands
+
+The following render commands are provided to you in this library.
 
 __arc.js__
 
@@ -474,7 +544,7 @@ var operation = globalCompositeOperation('multiply', [
 ]);
 ```
 
-__globalAlpha.js
+__globalAlpha.js__
 
 To control the global alpha, use the `globalAlpha(alpha, children)` function.
 
@@ -491,6 +561,59 @@ globalAlpha(0.5, [
 ])
 
 ```
+
+__hitRegion.js__ and __hitRect.js__
+
+This function is used to identify mouse regions using a polygon.
+
+```javascript
+var hitRegion = e2d.hitRegion,
+  hitRect = e2d.hitRect;
+```
+
+Example polygon format:
+
+```javascript
+var polyPath = [
+  [0, 0], //x, y pairs
+  [0, 1],
+  [1, 1],
+  [1, 0]
+];
+```
+
+They can be scaled, translated, rotated, and transformed at render time.
+
+```javascript
+function lineMap(point, index) {
+  return index === 0 ? e2d.moveTo(point[0], point[1]) : e2d.lineTo(point[0], point[1]);
+}
+
+var polyDraw = translate(x, y,
+  scale(size,
+    polyPath.map(lineMap) //this makes the commands for you
+    stroke(),
+    hitRegion('poly-id', polyPath) //this path is translated and scaled for you!
+  )
+);
+
+r.render(
+  polyDraw
+);
+```
+
+To capture if the 'poly-id' region was hovered during the current frame, use the mouse event.
+
+```javascript
+var mouseData;
+r.on('mouse', function(data) {
+  mouseData = data;
+  //if 'poly-id' is in the array, it was hovered for the prior frame it was declared.
+  var isHovering = data.activeRegions.indexOf('poly-id') > -1;
+});
+```
+
+To make a square simply use `hitRect(id, x, y, width, height)` or `hitRect(id, width, height)`.
 
 __lineStyle.js__
 
@@ -553,9 +676,7 @@ var curveCommand = quadraticCurveTo(cpx, cpy, x, y);
 
 __Renderer.js__ and __Canvas.js__
 
-The `Renderer` class is used to display things attached to the DOM and `Canvas` is used for off screen rendering.
-
-The `Renderer` class takes 4 parameters.
+The `Renderer` class is used to display things attached to the DOM and `Canvas` is used for off screen rendering and takes 4 parameters.
 
 Browser side:
 ```javascript
@@ -571,20 +692,15 @@ WebWorker side:
 ```javascript
 var r = e2d.Renderer.create(width, height);
 
-function render() {
+r.on('frame', function() {
   r.render(
     //send command here
   );
-}
+});
 
-onmessage = function (e) {
-  if (e.data.type === 'frame') {
-    render();
-  }
-};
+//this is required by the engine to start the requestAnimationFrame loop and works both worker/browser side
+r.ready();
 
-//this is required by the engine to start the requestAnimationFrame loop
-postMessage({ type: 'ready' });
 //the browser side renderer will ignore calls to r.render unless this line of javascript is called.
 ```
 
@@ -599,13 +715,13 @@ Examples:
 var r = e2d.Renderer.create(800, 600);
 
 //create an offscreen canvas
-var cvs = new e2d.Canvas(100, 100);
+var cvs = new e2d.Canvas(100, 100).cache();
 
 cvs.render(
   e2d.fillRect(25, 25, 50, 50)
 );
 
-var img = cvs.toImage();
+var img = cvs.toImage().cache();
 
 r.render(
   e2d.drawImage(img)
@@ -658,11 +774,13 @@ var transform = e2d.transform,
 //same example from above
 function drawSprite(img, x, y, rotation, scaleX, scaleY, centerX, centerY) {
   return transform([ //this must be an array!
-    // Apply one layer of transforms
-    { translate: { x: x, y: y }, scale: { x: scaleX, y: scaleY }, rotate: rotation },
-    // center the sprite
-    { translate: { x: -centerX, y: -centerY } }
-  ], [drawImage(img)]);
+      // Apply one layer of transforms
+      { translate: { x: x, y: y }, scale: { x: scaleX, y: scaleY }, rotate: rotation },
+      // center the sprite
+      { translate: { x: -centerX, y: -centerY } }
+    ], 
+    drawImage(img)
+  );
 }
 ```
 
@@ -697,9 +815,9 @@ Example:
 ```javascript
 var shadowStyle = e2d.shadowStyle;
 
-var shadowCommand = shadowStyle(shadowStyleDefinition, [
+var shadowCommand = shadowStyle(shadowStyleDefinition, 
   //stuff with a shadow
-]);
+);
 ```
 
 __stokeArc.js__
@@ -742,7 +860,7 @@ var textStyle = e2d.textStyle,
     direction: 'ltr' // ltr: left to right, rtl: right to left, and inherit
   };
   
-var textCommand = textStyle(style, [
+var textCommand = textStyle(style, 
   text('hello world!'), //at 0, 0
   text('other text', x, y) //at x, y
   
@@ -751,7 +869,7 @@ var textCommand = textStyle(style, [
   
   //and maxWidth
   text('the final example', x, y, true, true, maxWidth) //fill first, then stroke
-]);
+);
 ```
 
 __createLinearGradient.js__ and __createRadialGradient.js__
@@ -759,7 +877,7 @@ __createLinearGradient.js__ and __createRadialGradient.js__
 *WARNING*: Every gradient that is created will be auto-disposed after creation.  Use the chain api to store the gradient for re-use.
 
 ```javascript
-var grd = createLinearGradient(x0, y0, x1, y1, [
+var grd = createLinearGradient(x0, y0, x1, y1, [ //this must be an array!
   addColorStop(0, 'color'),
   addColorStop(1, 'color')
 ]).cache(); // will cache the gradient for later reuse
@@ -773,11 +891,32 @@ r.render(
     createLinearGradient(x0, y0, x1, y1, [ //this one will be auto-disposed
       addColorStop(...),
       addColorStop(...)
-    ]), [
-      //children
-    ]
+    ]),
+    //children
   )
 )
+```
+
+__transformPoints.js__
+
+This utility function is used by the mouse event to capture if a mouse region is active by using the current transform stack to calculate exactly the region defined by the relative polygon specified.
+
+```javascript
+var matrix = [
+  [a, c, e],
+  [b, d, f],
+  [0, 0, 1]
+];
+
+var points = [
+  [x, y],
+  [x, y],
+  [x, y],
+  ....
+];
+
+var newPoints = transformPoints(points, matrix);
+//returns an array of [x, y] points with the coordinates transformed
 ```
 
 See [createLinearGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) and  [createRadialGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient) on mdn for more information on how to use these functions.

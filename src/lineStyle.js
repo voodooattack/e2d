@@ -3,6 +3,7 @@
 var Instruction = require('./Instruction');
 
 function lineStyle(value, children) {
+  
   value = value || {};
   var result = {
     strokeStyle: null,
@@ -35,8 +36,12 @@ function lineStyle(value, children) {
   if (typeof value.lineDashOffset !== 'undefined') {
     result.lineDashOffset = value.lineDashOffset;
   }
-  
-  return [new Instruction('lineStyle', result)].concat(children).concat([new Instruction('endLineStyle')]);
+  var tree = [new Instruction('lineStyle', result)];
+  for(var i = 1; i < arguments.length; i++) {
+    tree.push(arguments[i]);
+  }
+  tree.push(new Instruction('endLineStyle'));
+  return tree;
 }
 
 module.exports = lineStyle;
