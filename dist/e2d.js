@@ -1294,7 +1294,7 @@ module.exports = {
     transformPoints: require('./src/transformPoints'),
     translate: require('./src/translate')
 };
-},{"./src/Canvas":27,"./src/Gradient":28,"./src/Img":29,"./src/Instruction":30,"./src/Renderer":31,"./src/addColorStop":32,"./src/arc":33,"./src/arcTo":34,"./src/beginPath":35,"./src/bezierCurveTo":36,"./src/clearRect":37,"./src/clip":38,"./src/clipPath":39,"./src/closePath":40,"./src/createLinearGradient":41,"./src/createRadialGradient":42,"./src/drawCanvas":43,"./src/drawImage":44,"./src/ellipse":45,"./src/fill":46,"./src/fillArc":47,"./src/fillRect":48,"./src/fillStyle":49,"./src/globalAlpha":50,"./src/globalCompositeOperation":51,"./src/hitRect":52,"./src/hitRegion":53,"./src/isDataUrl":55,"./src/isWorker":56,"./src/lineStyle":57,"./src/lineTo":58,"./src/moveTo":59,"./src/path":60,"./src/quadraticCurveTo":61,"./src/rotate":62,"./src/scale":63,"./src/shadowStyle":64,"./src/stroke":65,"./src/strokeArc":66,"./src/strokeRect":67,"./src/text":68,"./src/textStyle":69,"./src/transform":70,"./src/transformPoints":71,"./src/translate":72}],8:[function(require,module,exports){
+},{"./src/Canvas":34,"./src/Gradient":35,"./src/Img":36,"./src/Instruction":37,"./src/Renderer":38,"./src/addColorStop":39,"./src/arc":40,"./src/arcTo":41,"./src/beginPath":42,"./src/bezierCurveTo":43,"./src/clearRect":44,"./src/clip":45,"./src/clipPath":46,"./src/closePath":47,"./src/createLinearGradient":48,"./src/createRadialGradient":49,"./src/drawCanvas":50,"./src/drawImage":51,"./src/ellipse":52,"./src/fill":53,"./src/fillArc":54,"./src/fillRect":55,"./src/fillStyle":56,"./src/globalAlpha":57,"./src/globalCompositeOperation":58,"./src/hitRect":59,"./src/hitRegion":60,"./src/isDataUrl":62,"./src/isWorker":63,"./src/lineStyle":64,"./src/lineTo":65,"./src/moveTo":66,"./src/path":67,"./src/quadraticCurveTo":68,"./src/rotate":69,"./src/scale":70,"./src/shadowStyle":71,"./src/stroke":72,"./src/strokeArc":73,"./src/strokeRect":74,"./src/text":75,"./src/textStyle":76,"./src/transform":77,"./src/transformPoints":78,"./src/translate":79}],8:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -1477,7 +1477,7 @@ function flatten(array, isDeep, guard) {
 
 module.exports = flatten;
 
-},{"../internal/baseFlatten":11,"../internal/isIterateeCall":17}],10:[function(require,module,exports){
+},{"../internal/baseFlatten":11,"../internal/isIterateeCall":20}],10:[function(require,module,exports){
 /**
  * Appends the elements of `values` to `array`.
  *
@@ -1542,7 +1542,45 @@ function baseFlatten(array, isDeep, isStrict, result) {
 
 module.exports = baseFlatten;
 
-},{"../lang/isArguments":20,"../lang/isArray":21,"./arrayPush":10,"./isArrayLike":15,"./isObjectLike":19}],12:[function(require,module,exports){
+},{"../lang/isArguments":24,"../lang/isArray":25,"./arrayPush":10,"./isArrayLike":18,"./isObjectLike":22}],12:[function(require,module,exports){
+var createBaseFor = require('./createBaseFor');
+
+/**
+ * The base implementation of `baseForIn` and `baseForOwn` which iterates
+ * over `object` properties returned by `keysFunc` invoking `iteratee` for
+ * each property. Iteratee functions may exit iteration early by explicitly
+ * returning `false`.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @param {Function} keysFunc The function to get the keys of `object`.
+ * @returns {Object} Returns `object`.
+ */
+var baseFor = createBaseFor();
+
+module.exports = baseFor;
+
+},{"./createBaseFor":15}],13:[function(require,module,exports){
+var baseFor = require('./baseFor'),
+    keysIn = require('../object/keysIn');
+
+/**
+ * The base implementation of `_.forIn` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Object} Returns `object`.
+ */
+function baseForIn(object, iteratee) {
+  return baseFor(object, iteratee, keysIn);
+}
+
+module.exports = baseForIn;
+
+},{"../object/keysIn":31,"./baseFor":12}],14:[function(require,module,exports){
 /**
  * The base implementation of `_.property` without support for deep paths.
  *
@@ -1558,7 +1596,36 @@ function baseProperty(key) {
 
 module.exports = baseProperty;
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
+var toObject = require('./toObject');
+
+/**
+ * Creates a base function for `_.forIn` or `_.forInRight`.
+ *
+ * @private
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseFor(fromRight) {
+  return function(object, iteratee, keysFunc) {
+    var iterable = toObject(object),
+        props = keysFunc(object),
+        length = props.length,
+        index = fromRight ? length : -1;
+
+    while ((fromRight ? index-- : ++index < length)) {
+      var key = props[index];
+      if (iteratee(iterable[key], key, iterable) === false) {
+        break;
+      }
+    }
+    return object;
+  };
+}
+
+module.exports = createBaseFor;
+
+},{"./toObject":23}],16:[function(require,module,exports){
 var baseProperty = require('./baseProperty');
 
 /**
@@ -1575,7 +1642,7 @@ var getLength = baseProperty('length');
 
 module.exports = getLength;
 
-},{"./baseProperty":12}],14:[function(require,module,exports){
+},{"./baseProperty":14}],17:[function(require,module,exports){
 var isNative = require('../lang/isNative');
 
 /**
@@ -1593,7 +1660,7 @@ function getNative(object, key) {
 
 module.exports = getNative;
 
-},{"../lang/isNative":23}],15:[function(require,module,exports){
+},{"../lang/isNative":28}],18:[function(require,module,exports){
 var getLength = require('./getLength'),
     isLength = require('./isLength');
 
@@ -1610,7 +1677,7 @@ function isArrayLike(value) {
 
 module.exports = isArrayLike;
 
-},{"./getLength":13,"./isLength":18}],16:[function(require,module,exports){
+},{"./getLength":16,"./isLength":21}],19:[function(require,module,exports){
 /** Used to detect unsigned integer values. */
 var reIsUint = /^\d+$/;
 
@@ -1636,7 +1703,7 @@ function isIndex(value, length) {
 
 module.exports = isIndex;
 
-},{}],17:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var isArrayLike = require('./isArrayLike'),
     isIndex = require('./isIndex'),
     isObject = require('../lang/isObject');
@@ -1666,7 +1733,7 @@ function isIterateeCall(value, index, object) {
 
 module.exports = isIterateeCall;
 
-},{"../lang/isObject":24,"./isArrayLike":15,"./isIndex":16}],18:[function(require,module,exports){
+},{"../lang/isObject":29,"./isArrayLike":18,"./isIndex":19}],21:[function(require,module,exports){
 /**
  * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
  * of an array-like value.
@@ -1688,7 +1755,7 @@ function isLength(value) {
 
 module.exports = isLength;
 
-},{}],19:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * Checks if `value` is object-like.
  *
@@ -1702,7 +1769,23 @@ function isObjectLike(value) {
 
 module.exports = isObjectLike;
 
-},{}],20:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
+var isObject = require('../lang/isObject');
+
+/**
+ * Converts `value` to an object if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Object} Returns the object.
+ */
+function toObject(value) {
+  return isObject(value) ? value : Object(value);
+}
+
+module.exports = toObject;
+
+},{"../lang/isObject":29}],24:[function(require,module,exports){
 var isArrayLike = require('../internal/isArrayLike'),
     isObjectLike = require('../internal/isObjectLike');
 
@@ -1738,7 +1821,7 @@ function isArguments(value) {
 
 module.exports = isArguments;
 
-},{"../internal/isArrayLike":15,"../internal/isObjectLike":19}],21:[function(require,module,exports){
+},{"../internal/isArrayLike":18,"../internal/isObjectLike":22}],25:[function(require,module,exports){
 var getNative = require('../internal/getNative'),
     isLength = require('../internal/isLength'),
     isObjectLike = require('../internal/isObjectLike');
@@ -1780,7 +1863,33 @@ var isArray = nativeIsArray || function(value) {
 
 module.exports = isArray;
 
-},{"../internal/getNative":14,"../internal/isLength":18,"../internal/isObjectLike":19}],22:[function(require,module,exports){
+},{"../internal/getNative":17,"../internal/isLength":21,"../internal/isObjectLike":22}],26:[function(require,module,exports){
+var isObjectLike = require('../internal/isObjectLike'),
+    isPlainObject = require('./isPlainObject');
+
+/**
+ * Checks if `value` is a DOM element.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a DOM element, else `false`.
+ * @example
+ *
+ * _.isElement(document.body);
+ * // => true
+ *
+ * _.isElement('<body>');
+ * // => false
+ */
+function isElement(value) {
+  return !!value && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
+}
+
+module.exports = isElement;
+
+},{"../internal/isObjectLike":22,"./isPlainObject":30}],27:[function(require,module,exports){
 var isObject = require('./isObject');
 
 /** `Object#toString` result references. */
@@ -1820,7 +1929,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./isObject":24}],23:[function(require,module,exports){
+},{"./isObject":29}],28:[function(require,module,exports){
 var isFunction = require('./isFunction'),
     isObjectLike = require('../internal/isObjectLike');
 
@@ -1870,7 +1979,7 @@ function isNative(value) {
 
 module.exports = isNative;
 
-},{"../internal/isObjectLike":19,"./isFunction":22}],24:[function(require,module,exports){
+},{"../internal/isObjectLike":22,"./isFunction":27}],29:[function(require,module,exports){
 /**
  * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
  * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
@@ -1900,7 +2009,146 @@ function isObject(value) {
 
 module.exports = isObject;
 
-},{}],25:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
+var baseForIn = require('../internal/baseForIn'),
+    isArguments = require('./isArguments'),
+    isObjectLike = require('../internal/isObjectLike');
+
+/** `Object#toString` result references. */
+var objectTag = '[object Object]';
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * Checks if `value` is a plain object, that is, an object created by the
+ * `Object` constructor or one with a `[[Prototype]]` of `null`.
+ *
+ * **Note:** This method assumes objects created by the `Object` constructor
+ * have no inherited enumerable properties.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ * }
+ *
+ * _.isPlainObject(new Foo);
+ * // => false
+ *
+ * _.isPlainObject([1, 2, 3]);
+ * // => false
+ *
+ * _.isPlainObject({ 'x': 0, 'y': 0 });
+ * // => true
+ *
+ * _.isPlainObject(Object.create(null));
+ * // => true
+ */
+function isPlainObject(value) {
+  var Ctor;
+
+  // Exit early for non `Object` objects.
+  if (!(isObjectLike(value) && objToString.call(value) == objectTag && !isArguments(value)) ||
+      (!hasOwnProperty.call(value, 'constructor') && (Ctor = value.constructor, typeof Ctor == 'function' && !(Ctor instanceof Ctor)))) {
+    return false;
+  }
+  // IE < 9 iterates inherited properties before own properties. If the first
+  // iterated property is an object's own property then there are no inherited
+  // enumerable properties.
+  var result;
+  // In most environments an object's own properties are iterated before
+  // its inherited properties. If the last iterated property is an object's
+  // own property then there are no inherited enumerable properties.
+  baseForIn(value, function(subValue, key) {
+    result = key;
+  });
+  return result === undefined || hasOwnProperty.call(value, result);
+}
+
+module.exports = isPlainObject;
+
+},{"../internal/baseForIn":13,"../internal/isObjectLike":22,"./isArguments":24}],31:[function(require,module,exports){
+var isArguments = require('../lang/isArguments'),
+    isArray = require('../lang/isArray'),
+    isIndex = require('../internal/isIndex'),
+    isLength = require('../internal/isLength'),
+    isObject = require('../lang/isObject');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Creates an array of the own and inherited enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keysIn(new Foo);
+ * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+ */
+function keysIn(object) {
+  if (object == null) {
+    return [];
+  }
+  if (!isObject(object)) {
+    object = Object(object);
+  }
+  var length = object.length;
+  length = (length && isLength(length) &&
+    (isArray(object) || isArguments(object)) && length) || 0;
+
+  var Ctor = object.constructor,
+      index = -1,
+      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+      result = Array(length),
+      skipIndexes = length > 0;
+
+  while (++index < length) {
+    result[index] = (index + '');
+  }
+  for (var key in object) {
+    if (!(skipIndexes && isIndex(key, length)) &&
+        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = keysIn;
+
+},{"../internal/isIndex":19,"../internal/isLength":21,"../lang/isArguments":24,"../lang/isArray":25,"../lang/isObject":29}],32:[function(require,module,exports){
 module.exports = function (point, vs) {
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -1920,7 +2168,7 @@ module.exports = function (point, vs) {
     return inside;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /*
 
 index.js - square matrix multiply
@@ -2079,7 +2327,7 @@ var strassen = function strassen (A, B) {
     }
     return C;
 };
-},{}],27:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 //jshint worker: true, browser: true, node: true
 'use strict';
 
@@ -2180,7 +2428,7 @@ Object.seal(Canvas);
 Object.seal(Canvas.prototype);
 module.exports = Canvas;
 
-},{"./Img":29,"./Renderer":31,"./id":54,"./isWorker":56,"lodash/array/flatten":9}],28:[function(require,module,exports){
+},{"./Img":36,"./Renderer":38,"./id":61,"./isWorker":63,"lodash/array/flatten":9}],35:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker');
@@ -2230,7 +2478,7 @@ Object.seal(Gradient);
 Object.seal(Gradient.prototype);
 
 module.exports = Gradient;
-},{"./isWorker":56}],29:[function(require,module,exports){
+},{"./isWorker":63}],36:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 
@@ -2335,7 +2583,7 @@ Object.seal(Img);
 Object.seal(Img.prototype);
 
 module.exports = Img;
-},{"./id":54,"./isDataUrl":55,"./isWorker":56,"path":3}],30:[function(require,module,exports){
+},{"./id":61,"./isDataUrl":62,"./isWorker":63,"path":3}],37:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -2348,13 +2596,14 @@ Object.seal(Instruction);
 Object.seal(Instruction.prototype);
 
 module.exports = Instruction;
-},{}],31:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 //jshint node: true
 //jshint browser: true
 //jshint worker: true
 
 'use strict';
 var flatten = require('lodash/array/flatten'),
+    isElement = require('lodash/lang/isElement'),
     Canvas = null,
     Gradient = null,
     isWorker = require('./isWorker'),
@@ -2423,14 +2672,14 @@ function Renderer(width, height, parent, worker) {
 
   //create the web worker and hook the workerCommand function
   if (worker) {
-    this.worker = new Worker(worker);
+    this.worker = worker instanceof Worker ? worker : new Worker(worker);
     this.worker.onmessage = this.workerCommand.bind(this);
   } else {
     this.worker = null;
   }
   
   //set parent
-  if (arguments.length < 3) {
+  if (!parent || !isElement(parent)) {
     this.parent = document.createElement('div');
     this.parent.style.margin = '0 auto';
     this.parent.style.width = width + 'px';
@@ -2441,8 +2690,11 @@ function Renderer(width, height, parent, worker) {
   }
   
   //set width and height automatically
-  if (arguments.length < 2) {
+  if (!width || width <= 0) {
     width = window.innerWidth;
+  }
+  
+  if (!height || height <= 0) {
     height = window.innerHeight;
   }
   
@@ -2494,6 +2746,9 @@ Renderer.prototype.render = function render(args) {
   
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
+    if (!child) {
+      continue;
+    }
     props = child.props;
     type = child.type;
     
@@ -3027,7 +3282,7 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     }
 
     //give ~2ms of buffer time
-    img = 16 - img;
+    img = 14 - img;
 
     //account for LOTS of lag beyond 15ms
     if (img < 0) {
@@ -3348,7 +3603,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":27,"./Gradient":28,"./Img":29,"./createLinearGradient":41,"./createRadialGradient":42,"./isWorker":56,"./transformPoints":71,"events":1,"keycode":8,"lodash/array/flatten":9,"point-in-polygon":25,"square-matrix-multiply":26,"util":6}],32:[function(require,module,exports){
+},{"./Canvas":34,"./Gradient":35,"./Img":36,"./createLinearGradient":48,"./createRadialGradient":49,"./isWorker":63,"./transformPoints":78,"events":1,"keycode":8,"lodash/array/flatten":9,"lodash/lang/isElement":26,"point-in-polygon":32,"square-matrix-multiply":33,"util":6}],39:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3359,7 +3614,7 @@ function addColorStop(offset, color) {
 }
 
 module.exports = addColorStop;
-},{"./Instruction":30}],33:[function(require,module,exports){
+},{"./Instruction":37}],40:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3382,7 +3637,7 @@ function arc(x, y, r, startAngle, endAngle, anticlockwise) {
 }
 
 module.exports = arc;
-},{"./Instruction":30}],34:[function(require,module,exports){
+},{"./Instruction":37}],41:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3393,7 +3648,7 @@ function arcTo(x1, y1, x2, y2, r) {
 
 module.exports = arcTo;
 
-},{"./Instruction":30}],35:[function(require,module,exports){
+},{"./Instruction":37}],42:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3402,7 +3657,7 @@ function beginPath() {
   return new Instruction('beginPath');
 }
 module.exports = beginPath;
-},{"./Instruction":30}],36:[function(require,module,exports){
+},{"./Instruction":37}],43:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3419,7 +3674,7 @@ function bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
 }
 
 module.exports = bezierCurveTo;
-},{"./Instruction":30}],37:[function(require,module,exports){
+},{"./Instruction":37}],44:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3433,7 +3688,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":30}],38:[function(require,module,exports){
+},{"./Instruction":37}],45:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3450,7 +3705,7 @@ function clip(children) {
 }
 
 module.exports = clip;
-},{"./beginPath":35,"./clipPath":39}],39:[function(require,module,exports){
+},{"./beginPath":42,"./clipPath":46}],46:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3459,7 +3714,7 @@ function clipPath() {
   return new Instruction('clipPath');
 }
 module.exports = clipPath;
-},{"./Instruction":30}],40:[function(require,module,exports){
+},{"./Instruction":37}],47:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3468,7 +3723,7 @@ function closePath() {
   return new Instruction('closePath');
 }
 module.exports = closePath;
-},{"./Instruction":30}],41:[function(require,module,exports){
+},{"./Instruction":37}],48:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
@@ -3497,7 +3752,7 @@ function createLinearGradient(x0, y0, x1, y1, children, id) {
 
 
 module.exports = createLinearGradient;
-},{"./Gradient":28,"./id":54,"./isWorker":56,"lodash/array/flatten":9}],42:[function(require,module,exports){
+},{"./Gradient":35,"./id":61,"./isWorker":63,"lodash/array/flatten":9}],49:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
@@ -3527,7 +3782,7 @@ function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
 
 
 module.exports = createRadialGradient;
-},{"./Gradient":28,"./id":54,"./isWorker":56}],43:[function(require,module,exports){
+},{"./Gradient":35,"./id":61,"./isWorker":63}],50:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3573,7 +3828,7 @@ function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = drawCanvas;
-},{"./Instruction":30}],44:[function(require,module,exports){
+},{"./Instruction":37}],51:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3619,7 +3874,7 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = drawImage;
-},{"./Instruction":30}],45:[function(require,module,exports){
+},{"./Instruction":37}],52:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3642,7 +3897,7 @@ function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlo
 }
 
 module.exports = ellipse;
-},{"./Instruction":30}],46:[function(require,module,exports){
+},{"./Instruction":37}],53:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3652,7 +3907,7 @@ function fill() {
 }
 
 module.exports = fill;
-},{"./Instruction":30}],47:[function(require,module,exports){
+},{"./Instruction":37}],54:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3673,7 +3928,7 @@ function fillArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = fillArc;
-},{"./Instruction":30}],48:[function(require,module,exports){
+},{"./Instruction":37}],55:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3687,7 +3942,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":30}],49:[function(require,module,exports){
+},{"./Instruction":37}],56:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3711,7 +3966,7 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":28,"./Instruction":30}],50:[function(require,module,exports){
+},{"./Gradient":35,"./Instruction":37}],57:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3726,7 +3981,7 @@ function globalAlpha(alpha, children) {
 }
 
 module.exports = globalAlpha;
-},{"./Instruction":30}],51:[function(require,module,exports){
+},{"./Instruction":37}],58:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3745,7 +4000,7 @@ function globalCompositeOperation(operationType, children) {
 }
 
 module.exports = globalCompositeOperation;
-},{"./Instruction":30}],52:[function(require,module,exports){
+},{"./Instruction":37}],59:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3771,7 +4026,7 @@ function hitRect(id, x, y, width, height) {
 }
 
 module.exports = hitRect;
-},{"./Instruction":30,"./hitRegion":53}],53:[function(require,module,exports){
+},{"./Instruction":37,"./hitRegion":60}],60:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3785,7 +4040,7 @@ function hitRegion(id, points) {
 }
 
 module.exports = hitRegion;
-},{"./Instruction":30}],54:[function(require,module,exports){
+},{"./Instruction":37}],61:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3794,7 +4049,7 @@ function id() {
 }
 
 module.exports = id;
-},{}],55:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 //jshint node: true
 function isDataURL(s) {
     return !!s.match(isDataURL.regex);
@@ -3803,12 +4058,12 @@ isDataURL.regex = /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a
 Object.seal(isDataURL);
 module.exports = isDataURL;
 
-},{}],56:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
 module.exports = typeof document === 'undefined';
-},{}],57:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3856,7 +4111,7 @@ function lineStyle(value, children) {
 }
 
 module.exports = lineStyle;
-},{"./Instruction":30}],58:[function(require,module,exports){
+},{"./Instruction":37}],65:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3869,7 +4124,7 @@ function lineTo(x, y) {
 }
 
 module.exports = lineTo;
-},{"./Instruction":30}],59:[function(require,module,exports){
+},{"./Instruction":37}],66:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3882,7 +4137,7 @@ function moveTo(x, y) {
 }
 
 module.exports = moveTo;
-},{"./Instruction":30}],60:[function(require,module,exports){
+},{"./Instruction":37}],67:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3899,7 +4154,7 @@ function path(children) {
 }
 
 module.exports = path;
-},{"./beginPath":35,"./closePath":40}],61:[function(require,module,exports){
+},{"./beginPath":42,"./closePath":47}],68:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3914,7 +4169,7 @@ function quadraticCurveTo(cpx, cpy, x, y) {
 }
 
 module.exports = quadraticCurveTo;
-},{"./Instruction":30}],62:[function(require,module,exports){
+},{"./Instruction":37}],69:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3931,7 +4186,7 @@ function rotate(r, children) {
 }
 
 module.exports = rotate;
-},{"./Instruction":30,"lodash/array/flatten":9}],63:[function(require,module,exports){
+},{"./Instruction":37,"lodash/array/flatten":9}],70:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3955,7 +4210,7 @@ function scale(x, y, children) {
 }
 
 module.exports = scale;
-},{"./Instruction":30,"lodash/array/flatten":9}],64:[function(require,module,exports){
+},{"./Instruction":37,"lodash/array/flatten":9}],71:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3992,7 +4247,7 @@ function shadowStyle(value, children) {
 }
 
 module.exports = shadowStyle;
-},{"./Instruction":30}],65:[function(require,module,exports){
+},{"./Instruction":37}],72:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4002,7 +4257,7 @@ function stroke() {
 }
 
 module.exports = stroke;
-},{"./Instruction":30}],66:[function(require,module,exports){
+},{"./Instruction":37}],73:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4022,7 +4277,7 @@ function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = strokeArc;
-},{"./Instruction":30}],67:[function(require,module,exports){
+},{"./Instruction":37}],74:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4036,7 +4291,7 @@ function strokeRect(x, y, width, height) {
 }
 
 module.exports = strokeRect;
-},{"./Instruction":30}],68:[function(require,module,exports){
+},{"./Instruction":37}],75:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4095,7 +4350,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
 }
 
 module.exports = text;
-},{"./Instruction":30}],69:[function(require,module,exports){
+},{"./Instruction":37}],76:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4130,7 +4385,7 @@ function textStyle(value, children) {
 }
 
 module.exports = textStyle;
-},{"./Instruction":30}],70:[function(require,module,exports){
+},{"./Instruction":37}],77:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var smm = require('square-matrix-multiply'),
@@ -4235,7 +4490,7 @@ transform.copy = copy;
 
 
 module.exports = transform;
-},{"./Instruction":30,"square-matrix-multiply":26}],71:[function(require,module,exports){
+},{"./Instruction":37,"square-matrix-multiply":33}],78:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4255,7 +4510,7 @@ function transformPoints(points, matrix) {
 }
 
 module.exports = transformPoints;
-},{}],72:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4274,5 +4529,5 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":30,"lodash/array/flatten":9}]},{},[7])(7)
+},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7])(7)
 });

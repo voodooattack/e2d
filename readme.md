@@ -23,7 +23,6 @@ r.on('mouse', function (data) {
   mouse = data;
 });
 function frame() {
-  requestAnimationFrame(frame);
   r.render(
     e2d.fillRect(800, 600), //black fillStyle is default
     
@@ -67,7 +66,6 @@ var imageData = {
 var frame = 0;
 
 function gameLoop() {
-  requestAnimationFrame(gameLoop);
   
   //do something every frame
   frame += 1;
@@ -90,7 +88,7 @@ function gameLoop() {
   );
 }
 
-gameLoop();
+r.on('frame', gameLoop);;
 
 ```
 
@@ -109,7 +107,7 @@ function customContainerItem(x, y, width, height, children) {
 
 # Getting started
 
-I highly recommend using `browserify` or `webpack` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.min.js` file in the `dist` folder.
+I highly recommend using `browserify` or `webpack` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.min.js` file in the `/dist/` folder.
 
 ### Import using script method
 
@@ -145,10 +143,12 @@ var express = require('express'),
 
 app.use(express.static('public'));
 app.get('/bundle.js', browserify('./app.js'));
+//create the renderer here, or inside a webworker
 
-//for use inside webworker 
-app.get('/e2d.js', browserify(['e2d'], { standalone: 'e2d' }));
-//importScripts('e2d.js');
+
+//Uncomment the following line to add worker.js to your project
+//app.get('/worker.js', browserify('./worker.js', { standalone: 'worker' }));
+//browser side, use: var r = new Renderer(width, height, null, 'worker.js');
 
 app.listen(8080);
 ```

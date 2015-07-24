@@ -1,7 +1,7 @@
 {
   "name": "e2d",
   "main": "dist/e2d.min.js",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://github.com/jtenner/e2d",
   "authors": [
     "jtenner <tenner.joshua@gmail.com>"
@@ -13,10 +13,11 @@
     "node"
   ],
   "keywords": [
-    "Canvas",
-    "html5",
+    "canvas",
     "2d",
-    "graphics"
+    "WebWorker",
+    "graphics",
+    "browser"
   ],
   "license": "MIT",
   "ignore": [

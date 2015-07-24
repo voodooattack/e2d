@@ -4,4 +4,4 @@
 
 var e2d = require('./index');
 
-var r = new e2d.Renderer(800, 600, document.body, 'worker.js');
+var r = new e2d.Renderer(800, 600, null, 'worker.js');

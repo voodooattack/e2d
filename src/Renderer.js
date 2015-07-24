@@ -4,6 +4,7 @@
 
 'use strict';
 var flatten = require('lodash/array/flatten'),
+    isElement = require('lodash/lang/isElement'),
     Canvas = null,
     Gradient = null,
     isWorker = require('./isWorker'),
@@ -72,14 +73,14 @@ function Renderer(width, height, parent, worker) {
 
   //create the web worker and hook the workerCommand function
   if (worker) {
-    this.worker = new Worker(worker);
+    this.worker = worker instanceof Worker ? worker : new Worker(worker);
     this.worker.onmessage = this.workerCommand.bind(this);
   } else {
     this.worker = null;
   }
   
   //set parent
-  if (arguments.length < 3) {
+  if (!parent || !isElement(parent)) {
     this.parent = document.createElement('div');
     this.parent.style.margin = '0 auto';
     this.parent.style.width = width + 'px';
@@ -90,8 +91,11 @@ function Renderer(width, height, parent, worker) {
   }
   
   //set width and height automatically
-  if (arguments.length < 2) {
+  if (!width || width <= 0) {
     width = window.innerWidth;
+  }
+  
+  if (!height || height <= 0) {
     height = window.innerHeight;
   }
   
@@ -143,6 +147,9 @@ Renderer.prototype.render = function render(args) {
   
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
+    if (!child) {
+      continue;
+    }
     props = child.props;
     type = child.type;
     
@@ -676,7 +683,7 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     }
 
     //give ~2ms of buffer time
-    img = 16 - img;
+    img = 14 - img;
 
     //account for LOTS of lag beyond 15ms
     if (img < 0) {
