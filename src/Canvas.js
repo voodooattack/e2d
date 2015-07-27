@@ -35,19 +35,13 @@ Canvas.prototype.render = function render(children) {
 Canvas.prototype.toImage = function toImage(imageID) {
   
   var img;
-  img = new Img();
+  img = new Img(imageID || newid());
   
   if (isWorker) {
     postMessage({ type: 'canvas-image', value: { id: this.id, imageID: imageID } });
     return img;
   } else {
-    if (this.worker) {
-      img.id = imageID;
-    } else {
-      img.id = imageID || newid();
-    }
     img.src = this.renderer.canvas.toDataURL('image/png');
-    Img.cache[imageID] = img;
     return img;
   }
 };
