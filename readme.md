@@ -391,22 +391,25 @@ In order to work with web workers, the concept of drawing an image must be abstr
 ```javascript
 var texture = new e2d.Img();
 texture.src = 'url'; //data urls are accepted
-texture.onload = function() {
-  console.log('The image is loaded!');
-};
+texture.once('load', function() {
+  //the texture is loaded
+});
 ```
 
-__drawImage.js__
+__drawImage.js__, __fillImage.js__
 
-Drawing an image is as easy as `drawImage(img)`. It has four forms.
+Drawing an image is as easy as `drawImage(img)` or `fillImage(img)`. Both functions have the same parameters, and can be useful in different situations. It has four forms.
 
 See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage) for more information on how to use drawImage
 ```javascript
 //img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
 var drawImage = e2d.drawImage;
 
-var img = new e2d.Image();
+var img = new e2d.Img();
+
 img.src = 'url';
+img.once('load', callback);
+
 //one paramenter means draw the image at 0, 0 with img.width and img.height as the width/height parameters
 var imgCommand = drawImage(img);
 
@@ -417,6 +420,8 @@ var imgCommandSize = drawImage(img, x, y, width, height); //specify the size of 
 //or draw the image from a source within the image (this is hard to optimize for the browser and may be slow)
 var imgSourceSize = drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
 ```
+
+Using `fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up your app.
 
 __Canvas.js__
 

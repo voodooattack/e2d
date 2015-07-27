@@ -47,7 +47,7 @@ function Renderer(width, height, parent, worker) {
   
   this.tree = null;
   this.isReady = false;
-  this.mouseState = "down";
+  this.mouseState = 'up';
   this.mouseData = {
     x: 0,
     y: 0,
@@ -407,7 +407,7 @@ Renderer.prototype.render = function render(args) {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img], props.dx, props.dy);
+      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy);
       continue;
     }
 
@@ -415,7 +415,7 @@ Renderer.prototype.render = function render(args) {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img], props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
@@ -423,7 +423,55 @@ Renderer.prototype.render = function render(args) {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img], props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      continue;
+    }
+    
+    if (type === 'fillImage') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+
+      cache = Img.cache[props.img].imageElement;
+      ctx.save();
+      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillImageSize') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Img.cache[props.img].imageElement;
+      ctx.save();
+      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillImageSource') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Img.cache[props.img].imageElement;
+      ctx.save();
+      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(cache.dWidth / props.sWidth, cache.dHeight / props.sHeight);
+      ctx.translate(-props.sx, -props.sy);
+      ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
+      ctx.restore();
+      
       continue;
     }
     
@@ -650,7 +698,17 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   if (data.type === 'image') {
     img = new Img(data.value.id);
     Img.cache[data.value.id] = img;
-    return img.generateTexture(data.value.buffer, data.value.opts);
+    return;
+  }
+  if (data.type === 'image-source') {
+    if (Img.cache.hasOwnProperty(data.value.id)) {
+      img = Img.cache[data.value.id];
+      img.src = data.value.src;
+      img.once('load', function() {
+        this.sendWorker('image-load', data.value);
+      }.bind(this));
+    }
+    return;
   }
   
   if (data.type === 'image-cache') {
@@ -954,6 +1012,10 @@ Renderer.prototype.keyUp = function keyUp(evt) {
 };
 
 Renderer.prototype.browserCommand = function(e) {
+  if (e.data.type === 'image-load') {
+    Img.cache[e.data.value.id].emit('load');
+  }
+  
   return this.emit(e.data.type, e.data.value);
 };
 

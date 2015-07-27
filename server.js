@@ -11,6 +11,7 @@ var express = require('express'),
 app.use(express.static('public'));
 
 app.get('/bundle.js', browserify('./app.js', { cache: false }));
-app.get('/standalone.js', browserify('./index.js', { cache: false, standalone: 'e2d' }));
+
+app.get('/worker.js', browserify('./worker.js', { cache: false }));
 
 app.listen(8080);
