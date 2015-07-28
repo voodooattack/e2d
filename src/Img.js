@@ -22,6 +22,7 @@ function Img(id) {
   this.blobOptions = {};
   this.imageElement = null;
   this.imagePattern = null;
+  this.imagePatternRepeat = null;
   if (isWorker) {
     postMessage({ type: 'image', value: { id: this.id, src: '' } });
   }
@@ -51,6 +52,7 @@ Img.prototype.imageLoad = function imageLoad() {
   if (!isWorker) {
     var ctx = document.createElement('canvas').getContext('2d');
     this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
+    this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
   }
   Img.cache[this.id] = this;
   return this.emit('load', this);

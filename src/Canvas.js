@@ -28,7 +28,7 @@ Canvas.prototype.render = function render(children) {
   if (isWorker) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {
-    this.renderer.render(children);
+    this.renderer.render(result);
   }
 };
 

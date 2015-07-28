@@ -6,15 +6,22 @@ A canvas rendering engine HEAVILY inspired by `react.js` to enable `WebWorker` r
 
 Most canvas libraries abstract away different aspect of canvas to make you faster.  When using this library, there isn't much abstraction. In fact, the api mirrors the canvas2d api in a way makes coding canvas actually fun!
 
+Some of the functions fill in parts of the language that aren't implemented yet, like `CanvasRenderingContext2D.prototype.ellipse` and `CanvasRenderingContext2D.prototype.addHitRegion`.
+
 The coolest part of this library is the ability to do your application logic _inside a web worker_.
 
-That's right. In a web worker.
+That's right. In a web worker. The cost for doing application logic this way is at worst about `32ms` of input lag, which is by design. It causes rendering _and_ drawing to happen at the same time in the most efficient way possible.
 
 When using this library, you'll probably want to do something like this:
 
-This works in both browser AND worker.
 
 ```javascript
+//This works in both browser AND worker.
+//  importScripts('e2d.min.js');
+//or
+//  var e2d = require('e2d');
+
+
 var r = e2d.Renderer.create(800, 600);
 
 var mouse = { x: 0, y: 0, state: 'up' };
@@ -41,7 +48,7 @@ r.on('frame', frame);
 r.ready();
 ```
 
-`r.ready()` is required when using a WebWorker because you must participate in the requestAnimationFrame loop browser side.
+Use `r.ready()` to active the requestAnimationFrame loop.  All render commands are ignored until `.ready()` is called.
 
 ### Instruction trees
 
@@ -104,6 +111,52 @@ function customContainerItem(x, y, width, height, children) {
   ]);
 }
 ```
+
+## Performance
+
+The majority of my tesing involved a lot of frame timing. I came to the stunning conclusion that browsers can actually handle calling a very large amount of functions in a very short period of time.
+
+The browser bottlenecks at "draw-time" because the `CanvasRenderingContext2D.prototype` is slow.
+
+Creating a render tree every frame has a very minimal performance impact.
+
+It is also possible to store tree structures for later use to speed up tree generation.
+
+```javascript
+var strokeRed = e2d.lineStyle({ strokeStyle: 'red' }, e2d.stroke());
+```
+
+Examples like the following are actually very performant.
+
+```javascript
+var particles = [];
+for(var i = 0; i < 100; i++) {
+  particles.push({
+    x: Math.random() * config.width,
+    y: Math.random() * config.height,
+    r: Math.random() * sizeRange + smallestRadiusSize
+  });
+}
+
+//later
+function particleMap(particle) {
+  return translate(particle.x, particle.y,
+    fillArc(particle.r)
+  );
+}
+r.on('frame', function() {
+  return r.render(
+    particles.map(particleMap);
+  );
+});
+```
+
+If the goal is to reduce execution time, don't do it pre-emptively.
+
+*The browser bottlenecks more on the drawing operations than on the code you execute!*
+
+Simply write your code in a declarative style, then cache static operations.  After static operations are cached, check your `.map`s, `filter`s, and `reduce`s performance.  Those can easily be turned into `for` loops. 
+
 
 # Getting started
 
@@ -422,6 +475,24 @@ var imgSourceSize = drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height)
 ```
 
 Using `fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up your app.
+
+
+__fillImagePattern.js__
+
+This function will fill the specified area with a repeated image pattern.
+
+```javascript
+var fillImagePattern = e2d.fillImagePattern;
+
+var img = new e2d.Img();
+
+img.src = 'url';
+img.once('load', callback);
+
+var fillImagePatternCommand = fillImagePattern(img, width, height);
+var fillImagePatternCommand2 = fillImagePattern(img, x, y, width, height);
+
+```
 
 __Canvas.js__
 

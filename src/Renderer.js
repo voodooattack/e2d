@@ -39,11 +39,7 @@ function Renderer(width, height, parent, worker) {
   if (!Img) {
     Gradient = require('./Gradient');
   }
-  this.fireFrameTimeout = 16;
-  this.frameTimes = [16, 16, 16, 16, 16, 16, 16, 16, 16, 16];
-  
-  this.startFrame = 0;
-  this.endFrame = 0;
+
   
   this.tree = null;
   this.isReady = false;
@@ -427,6 +423,17 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
     
+    if (type === 'fillImagePattern') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      ctx.fillStyle = Img.cache[props.img].imagePatternRepeat;
+      ctx.translate(props.dx, props.dy);
+      ctx.fillRect(0, 0, props.dWidth, props.dHeight);
+      ctx.restore();
+    }
+    
     if (type === 'fillImage') {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
@@ -636,6 +643,10 @@ Renderer.prototype.render = function render(args) {
       ctx.stroke();
       continue;
     }
+    if (type === 'clipPath') {
+      ctx.clip();
+      continue;
+    }
     
     if (type === 'beginPath') {
       ctx.beginPath();
@@ -726,38 +737,8 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   }
   
   if (data.type === 'render') {  
-
-    //timestamp
-    this.endFrame = Date.now();
-
     //set the tree
     this.tree = data.value;
-
-    //find the delay
-    img = this.endFrame - this.startFrame;
-
-    if (img >= 500) {
-      return;
-    }
-
-    //give ~2ms of buffer time
-    img = 14 - img;
-
-    //account for LOTS of lag beyond 15ms
-    if (img < 0) {
-      img = 0;
-    }
-    //if the lag gets worse decrease the frameTimeout
-    if (img < this.fireFrameTimeout) {
-      this.fireFrameTimeout = img;
-      this.frameTimes.splice(0, this.frameTimes.length);
-    } else {
-      this.frameTimes.push(img);
-      if (this.frameTimes.length >= 10) {
-        this.fireFrameTimeout = Math.min.apply(Math, this.frameTimes);
-        this.frameTimes.shift();
-      }
-    }
     return;
   }
   
@@ -855,16 +836,14 @@ Renderer.prototype.hookRender = function hookRender() {
       //if the worker exists, we should check to see if the worker has sent back anything yet
       if (this.worker) {
         if (this.tree !== null) {
-          //because this function is indepentant and async of the 'fireFrame' command inside a worker,
-          //it is possible for the worker to not return a frame.
+          //fire the frame right away
+          this.fireFrame();
           
           //render the current frame from the worker
           this.render(this.tree);
           
           //reset the tree/frame
           this.tree = null;
-          //okay we can ask for the next frame now, but we should wait to fire it to reduce input lag.
-          setTimeout(this.fireFrame.bind(this), this.fireFrameTimeout);
         } else {
           //the worker isn't finished yet and we missed the window
           didRender = false;
@@ -1020,7 +999,6 @@ Renderer.prototype.browserCommand = function(e) {
 };
 
 Renderer.prototype.fireFrame = function() {
-  this.startFrame = Date.now();
   return this.sendWorker('frame', {});
 };
 

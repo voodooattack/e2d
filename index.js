@@ -20,6 +20,7 @@ module.exports = {
     fill: require('./src/fill'),
     fillArc: require('./src/fillArc'),
     fillImage: require('./src/fillImage'),
+    fillImagePattern: require('./src/fillImagePattern'),
     fillRect: require('./src/fillRect'),
     fillStyle: require('./src/fillStyle'),
     globalAlpha: require('./src/globalAlpha'),
