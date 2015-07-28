@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1265,6 +1265,8 @@ module.exports = {
     ellipse: require('./src/ellipse'),
     fill: require('./src/fill'),
     fillArc: require('./src/fillArc'),
+    fillImage: require('./src/fillImage'),
+    fillImagePattern: require('./src/fillImagePattern'),
     fillRect: require('./src/fillRect'),
     fillStyle: require('./src/fillStyle'),
     globalAlpha: require('./src/globalAlpha'),
@@ -1294,7 +1296,7 @@ module.exports = {
     transformPoints: require('./src/transformPoints'),
     translate: require('./src/translate')
 };
-},{"./src/Canvas":34,"./src/Gradient":35,"./src/Img":36,"./src/Instruction":37,"./src/Renderer":38,"./src/addColorStop":39,"./src/arc":40,"./src/arcTo":41,"./src/beginPath":42,"./src/bezierCurveTo":43,"./src/clearRect":44,"./src/clip":45,"./src/clipPath":46,"./src/closePath":47,"./src/createLinearGradient":48,"./src/createRadialGradient":49,"./src/drawCanvas":50,"./src/drawImage":51,"./src/ellipse":52,"./src/fill":53,"./src/fillArc":54,"./src/fillRect":55,"./src/fillStyle":56,"./src/globalAlpha":57,"./src/globalCompositeOperation":58,"./src/hitRect":59,"./src/hitRegion":60,"./src/isDataUrl":62,"./src/isWorker":63,"./src/lineStyle":64,"./src/lineTo":65,"./src/moveTo":66,"./src/path":67,"./src/quadraticCurveTo":68,"./src/rotate":69,"./src/scale":70,"./src/shadowStyle":71,"./src/stroke":72,"./src/strokeArc":73,"./src/strokeRect":74,"./src/text":75,"./src/textStyle":76,"./src/transform":77,"./src/transformPoints":78,"./src/translate":79}],8:[function(require,module,exports){
+},{"./src/Canvas":34,"./src/Gradient":35,"./src/Img":36,"./src/Instruction":37,"./src/Renderer":38,"./src/addColorStop":39,"./src/arc":40,"./src/arcTo":41,"./src/beginPath":42,"./src/bezierCurveTo":43,"./src/clearRect":44,"./src/clip":45,"./src/clipPath":46,"./src/closePath":47,"./src/createLinearGradient":48,"./src/createRadialGradient":49,"./src/drawCanvas":50,"./src/drawImage":51,"./src/ellipse":52,"./src/fill":53,"./src/fillArc":54,"./src/fillImage":55,"./src/fillImagePattern":56,"./src/fillRect":57,"./src/fillStyle":58,"./src/globalAlpha":59,"./src/globalCompositeOperation":60,"./src/hitRect":61,"./src/hitRegion":62,"./src/isDataUrl":64,"./src/isWorker":65,"./src/lineStyle":66,"./src/lineTo":67,"./src/moveTo":68,"./src/path":69,"./src/quadraticCurveTo":70,"./src/rotate":71,"./src/scale":72,"./src/shadowStyle":73,"./src/stroke":74,"./src/strokeArc":75,"./src/strokeRect":76,"./src/text":77,"./src/textStyle":78,"./src/transform":79,"./src/transformPoints":80,"./src/translate":81}],8:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -2358,23 +2360,21 @@ Canvas.prototype.render = function render(children) {
   if (isWorker) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {
-    this.renderer.render(children);
+    this.renderer.render(result);
   }
 };
 
 Canvas.prototype.toImage = function toImage(imageID) {
-  imageID = imageID || newid();
+  
   var img;
+  img = new Img(imageID || newid());
+  
   if (isWorker) {
     postMessage({ type: 'canvas-image', value: { id: this.id, imageID: imageID } });
-    img = new Img();
-    img.id = imageID;
     return img;
   } else {
-    img = new Image();
     img.src = this.renderer.canvas.toDataURL('image/png');
-    Img.cache[imageID] = img;
-    return;
+    return img;
   }
 };
 
@@ -2428,7 +2428,7 @@ Object.seal(Canvas);
 Object.seal(Canvas.prototype);
 module.exports = Canvas;
 
-},{"./Img":36,"./Renderer":38,"./id":61,"./isWorker":63,"lodash/array/flatten":9}],35:[function(require,module,exports){
+},{"./Img":36,"./Renderer":38,"./id":63,"./isWorker":65,"lodash/array/flatten":9}],35:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker');
@@ -2478,16 +2478,21 @@ Object.seal(Gradient);
 Object.seal(Gradient.prototype);
 
 module.exports = Gradient;
-},{"./isWorker":63}],36:[function(require,module,exports){
+},{"./isWorker":65}],36:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 
 var path = require('path'),
     isWorker = require('./isWorker'),
     isDataUrl = require('./isDataUrl'),
+    events = require('events'),
+    util = require('util'),
     newid = require('./id');
 
+util.inherits(Img, events.EventEmitter);
+
 function Img(id) {
+  events.EventEmitter.call(this);
   this._src = "";
   this.isDataUrl = false;
   this.id = id || newid();
@@ -2496,62 +2501,49 @@ function Img(id) {
   this.texture = null;
   this.type = 'image';
   this.blobOptions = {};
+  this.imageElement = null;
+  this.imagePattern = null;
+  this.imagePatternRepeat = null;
+  if (isWorker) {
+    postMessage({ type: 'image', value: { id: this.id, src: '' } });
+  }
   Object.seal(this);
 }
 Img.cache = {};
 Img.cachable = [];
 Object.defineProperty(Img.prototype, 'src', {
   set: function(val) {
-    if (typeof window !== 'undefined') {
+    this.isDataUrl = isDataUrl(val);
+    if (isWorker) {
+      Img.cache[this.id] = this;
+      postMessage({ type: 'image-source', value: { id: this.id, src: val } });
       return;
     }
-    var self = this;
-    this._src = val;
-    this.isDataUrl = isDataUrl(val);
-    if (this.isDataUrl) {
-      this.id = Date.now().toString();
-      this.makeDataUrl();
-    } else {
-      this.id = val;
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', val, true);
-      xhr.responseType = 'arraybuffer';
-      xhr.onload = function() {
-        self.buffer = this.response;
-        self.blobOptions = { type: 'image/' + path.extname(self._src).slice(1) };
-        self.generateTexture(this.response, self.blobOptions);
-      };
-      xhr.send();
-    }
+    var element = new Image();
+    this.imageElement = element;
+    element.src = val;
+    element.onload = this.imageLoad.bind(this);
   },
   get: function() {
     return this._src;
   }
 });
-Img.prototype.generateTexture = function generateTexture(buffer, options) {
-  var msg = {
-      type: 'image',
-      value: {
-        buffer: buffer,
-        opts: options,
-        id: this.id
-      }
-    }, 
-    img;
-  if (isWorker) {
-    postMessage(msg, [buffer]);
-  } else {
-    img = new Image();
-    img.src = (window.URL || window.webkitURL).createObjectURL(new Blob([buffer], options));
+
+Img.prototype.imageLoad = function imageLoad() {
+  if (!isWorker) {
+    var ctx = document.createElement('canvas').getContext('2d');
+    this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
+    this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
   }
-  this.onload();
+  Img.cache[this.id] = this;
+  return this.emit('load', this);
 };
 
 Img.prototype.cache = function dispose() {
   if (isWorker) {
-    return postMessage({ type: 'image-cache', value: { id: this.id }});
+    postMessage({ type: 'image-cache', value: { id: this.id }});
   } else {
-    Image.cachable.push(this.id);
+    Img.cachable.push(this.id);
   }
   return this;
 };
@@ -2560,10 +2552,10 @@ Img.prototype.dispose = function dispose() {
   if (isWorker) {
     return postMessage({ type: 'image-dispose', value: { id: this.id }});
   } else {
-    Image.cache[this.id] = null;
-    var index = Image.cachable.indexOf(this.id);
+    Img.cache[this.id] = null;
+    var index = Img.cachable.indexOf(this.id);
     if (index !== -1) {
-      Image.cachable.splice(index, 1);
+      Img.cachable.splice(index, 1);
     }
   }
 };
@@ -2583,7 +2575,7 @@ Object.seal(Img);
 Object.seal(Img.prototype);
 
 module.exports = Img;
-},{"./id":61,"./isDataUrl":62,"./isWorker":63,"path":3}],37:[function(require,module,exports){
+},{"./id":63,"./isDataUrl":64,"./isWorker":65,"events":1,"path":3,"util":6}],37:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -2638,15 +2630,11 @@ function Renderer(width, height, parent, worker) {
   if (!Img) {
     Gradient = require('./Gradient');
   }
-  this.fireFrameTimeout = 16;
-  this.frameTimes = [16, 16, 16, 16, 16, 16, 16, 16, 16, 16];
-  
-  this.startFrame = 0;
-  this.endFrame = 0;
+
   
   this.tree = null;
   this.isReady = false;
-  this.mouseState = "down";
+  this.mouseState = 'up';
   this.mouseData = {
     x: 0,
     y: 0,
@@ -3006,7 +2994,7 @@ Renderer.prototype.render = function render(args) {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img], props.dx, props.dy);
+      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy);
       continue;
     }
 
@@ -3014,7 +3002,7 @@ Renderer.prototype.render = function render(args) {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img], props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
@@ -3022,7 +3010,66 @@ Renderer.prototype.render = function render(args) {
       if (!Img.cache.hasOwnProperty(props.img)) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img], props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      continue;
+    }
+    
+    if (type === 'fillImagePattern') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      ctx.fillStyle = Img.cache[props.img].imagePatternRepeat;
+      ctx.translate(props.dx, props.dy);
+      ctx.fillRect(0, 0, props.dWidth, props.dHeight);
+      ctx.restore();
+    }
+    
+    if (type === 'fillImage') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+
+      cache = Img.cache[props.img].imageElement;
+      ctx.save();
+      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillImageSize') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Img.cache[props.img].imageElement;
+      ctx.save();
+      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillImageSource') {
+      if (!Img.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Img.cache[props.img].imageElement;
+      ctx.save();
+      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(cache.dWidth / props.sWidth, cache.dHeight / props.sHeight);
+      ctx.translate(-props.sx, -props.sy);
+      ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
+      ctx.restore();
+      
       continue;
     }
     
@@ -3187,6 +3234,10 @@ Renderer.prototype.render = function render(args) {
       ctx.stroke();
       continue;
     }
+    if (type === 'clipPath') {
+      ctx.clip();
+      continue;
+    }
     
     if (type === 'beginPath') {
       ctx.beginPath();
@@ -3249,7 +3300,17 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   if (data.type === 'image') {
     img = new Img(data.value.id);
     Img.cache[data.value.id] = img;
-    return img.generateTexture(data.value.buffer, data.value.opts);
+    return;
+  }
+  if (data.type === 'image-source') {
+    if (Img.cache.hasOwnProperty(data.value.id)) {
+      img = Img.cache[data.value.id];
+      img.src = data.value.src;
+      img.once('load', function() {
+        this.sendWorker('image-load', data.value);
+      }.bind(this));
+    }
+    return;
   }
   
   if (data.type === 'image-cache') {
@@ -3267,38 +3328,8 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   }
   
   if (data.type === 'render') {  
-
-    //timestamp
-    this.endFrame = Date.now();
-
     //set the tree
     this.tree = data.value;
-
-    //find the delay
-    img = this.endFrame - this.startFrame;
-
-    if (img >= 500) {
-      return;
-    }
-
-    //give ~2ms of buffer time
-    img = 14 - img;
-
-    //account for LOTS of lag beyond 15ms
-    if (img < 0) {
-      img = 0;
-    }
-    //if the lag gets worse decrease the frameTimeout
-    if (img < this.fireFrameTimeout) {
-      this.fireFrameTimeout = img;
-      this.frameTimes.splice(0, this.frameTimes.length);
-    } else {
-      this.frameTimes.push(img);
-      if (this.frameTimes.length >= 10) {
-        this.fireFrameTimeout = Math.min.apply(Math, this.frameTimes);
-        this.frameTimes.shift();
-      }
-    }
     return;
   }
   
@@ -3396,16 +3427,14 @@ Renderer.prototype.hookRender = function hookRender() {
       //if the worker exists, we should check to see if the worker has sent back anything yet
       if (this.worker) {
         if (this.tree !== null) {
-          //because this function is indepentant and async of the 'fireFrame' command inside a worker,
-          //it is possible for the worker to not return a frame.
+          //fire the frame right away
+          this.fireFrame();
           
           //render the current frame from the worker
           this.render(this.tree);
           
           //reset the tree/frame
           this.tree = null;
-          //okay we can ask for the next frame now, but we should wait to fire it to reduce input lag.
-          setTimeout(this.fireFrame.bind(this), this.fireFrameTimeout);
         } else {
           //the worker isn't finished yet and we missed the window
           didRender = false;
@@ -3553,11 +3582,14 @@ Renderer.prototype.keyUp = function keyUp(evt) {
 };
 
 Renderer.prototype.browserCommand = function(e) {
+  if (e.data.type === 'image-load') {
+    Img.cache[e.data.value.id].emit('load');
+  }
+  
   return this.emit(e.data.type, e.data.value);
 };
 
 Renderer.prototype.fireFrame = function() {
-  this.startFrame = Date.now();
   return this.sendWorker('frame', {});
 };
 
@@ -3603,7 +3635,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":34,"./Gradient":35,"./Img":36,"./createLinearGradient":48,"./createRadialGradient":49,"./isWorker":63,"./transformPoints":78,"events":1,"keycode":8,"lodash/array/flatten":9,"lodash/lang/isElement":26,"point-in-polygon":32,"square-matrix-multiply":33,"util":6}],39:[function(require,module,exports){
+},{"./Canvas":34,"./Gradient":35,"./Img":36,"./createLinearGradient":48,"./createRadialGradient":49,"./isWorker":65,"./transformPoints":80,"events":1,"keycode":8,"lodash/array/flatten":9,"lodash/lang/isElement":26,"point-in-polygon":32,"square-matrix-multiply":33,"util":6}],39:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3752,7 +3784,7 @@ function createLinearGradient(x0, y0, x1, y1, children, id) {
 
 
 module.exports = createLinearGradient;
-},{"./Gradient":35,"./id":61,"./isWorker":63,"lodash/array/flatten":9}],49:[function(require,module,exports){
+},{"./Gradient":35,"./id":63,"./isWorker":65,"lodash/array/flatten":9}],49:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
@@ -3782,7 +3814,7 @@ function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
 
 
 module.exports = createRadialGradient;
-},{"./Gradient":35,"./id":61,"./isWorker":63}],50:[function(require,module,exports){
+},{"./Gradient":35,"./id":63,"./isWorker":65}],50:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3933,6 +3965,89 @@ module.exports = fillArc;
 'use strict';
 var Instruction = require('./Instruction');
 
+function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
+  if (arguments.length === 9) {
+    return new Instruction('fillImageSource', {
+      img: img.id,
+      sx: sx,
+      sy: sy,
+      sWidth: sWidth,
+      sHeight: sHeight,
+      dx: dx,
+      dy: dy,
+      dWidth: dWidth,
+      dHeight: dHeight
+    });
+  }
+  
+  if (arguments.length >= 5) {
+    return new Instruction('fillImageSize', {
+      img: img.id,
+      dx: sx,
+      dy: sy,
+      dWidth: sWidth,
+      dHeight: sHeight
+    });
+  }
+  
+  if (arguments.length >= 3) {
+    return new Instruction('fillImage', {
+      img: img.id,
+      dx: sx,
+      dy: sy
+    });
+  }  
+
+  return new Instruction('fillImage', {
+    img: img.id,
+    dx: 0,
+    dy: 0
+  });
+}
+
+module.exports = fillImage;
+},{"./Instruction":37}],56:[function(require,module,exports){
+//jshint node: true
+'use strict';
+var Instruction = require('./Instruction');
+
+function fillImagePattern(img, dx, dy, dWidth, dHeight) {
+  
+  if (arguments.length >= 5) {
+    return new Instruction('fillImagePattern', {
+      img: img.id,
+      dx: dx,
+      dy: dy,
+      dWidth: dWidth,
+      dHeight: dHeight
+    });
+  }
+  
+  if (arguments.length >= 3) {
+    return new Instruction('fillImagePattern', {
+      img: img.id,
+      dx: 0,
+      dy: 0,
+      dWidth: dx,
+      dHeight: dy
+    });
+  }  
+
+  return new Instruction('fillImagePattern', {
+    img: img.id,
+    dx: 0,
+    dy: 0,
+    dWidth: 0,
+    dHeight: 0
+  });
+}
+
+module.exports = fillImagePattern;
+},{"./Instruction":37}],57:[function(require,module,exports){
+//jshint node: true
+'use strict';
+var Instruction = require('./Instruction');
+
 function fillRect(x, y, width, height) {
   if (arguments.length >= 4) {
     return new Instruction("fillRect", { x: x, y: y, width: width, height: height });
@@ -3942,7 +4057,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":37}],56:[function(require,module,exports){
+},{"./Instruction":37}],58:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3966,7 +4081,7 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":35,"./Instruction":37}],57:[function(require,module,exports){
+},{"./Gradient":35,"./Instruction":37}],59:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3981,7 +4096,7 @@ function globalAlpha(alpha, children) {
 }
 
 module.exports = globalAlpha;
-},{"./Instruction":37}],58:[function(require,module,exports){
+},{"./Instruction":37}],60:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4000,7 +4115,7 @@ function globalCompositeOperation(operationType, children) {
 }
 
 module.exports = globalCompositeOperation;
-},{"./Instruction":37}],59:[function(require,module,exports){
+},{"./Instruction":37}],61:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4026,7 +4141,7 @@ function hitRect(id, x, y, width, height) {
 }
 
 module.exports = hitRect;
-},{"./Instruction":37,"./hitRegion":60}],60:[function(require,module,exports){
+},{"./Instruction":37,"./hitRegion":62}],62:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4040,7 +4155,7 @@ function hitRegion(id, points) {
 }
 
 module.exports = hitRegion;
-},{"./Instruction":37}],61:[function(require,module,exports){
+},{"./Instruction":37}],63:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4049,7 +4164,7 @@ function id() {
 }
 
 module.exports = id;
-},{}],62:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 //jshint node: true
 function isDataURL(s) {
     return !!s.match(isDataURL.regex);
@@ -4058,12 +4173,12 @@ isDataURL.regex = /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a
 Object.seal(isDataURL);
 module.exports = isDataURL;
 
-},{}],63:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
 module.exports = typeof document === 'undefined';
-},{}],64:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4111,7 +4226,7 @@ function lineStyle(value, children) {
 }
 
 module.exports = lineStyle;
-},{"./Instruction":37}],65:[function(require,module,exports){
+},{"./Instruction":37}],67:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4124,7 +4239,7 @@ function lineTo(x, y) {
 }
 
 module.exports = lineTo;
-},{"./Instruction":37}],66:[function(require,module,exports){
+},{"./Instruction":37}],68:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4137,7 +4252,7 @@ function moveTo(x, y) {
 }
 
 module.exports = moveTo;
-},{"./Instruction":37}],67:[function(require,module,exports){
+},{"./Instruction":37}],69:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4154,7 +4269,7 @@ function path(children) {
 }
 
 module.exports = path;
-},{"./beginPath":42,"./closePath":47}],68:[function(require,module,exports){
+},{"./beginPath":42,"./closePath":47}],70:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4169,7 +4284,7 @@ function quadraticCurveTo(cpx, cpy, x, y) {
 }
 
 module.exports = quadraticCurveTo;
-},{"./Instruction":37}],69:[function(require,module,exports){
+},{"./Instruction":37}],71:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4186,7 +4301,7 @@ function rotate(r, children) {
 }
 
 module.exports = rotate;
-},{"./Instruction":37,"lodash/array/flatten":9}],70:[function(require,module,exports){
+},{"./Instruction":37,"lodash/array/flatten":9}],72:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4210,7 +4325,7 @@ function scale(x, y, children) {
 }
 
 module.exports = scale;
-},{"./Instruction":37,"lodash/array/flatten":9}],71:[function(require,module,exports){
+},{"./Instruction":37,"lodash/array/flatten":9}],73:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4247,7 +4362,7 @@ function shadowStyle(value, children) {
 }
 
 module.exports = shadowStyle;
-},{"./Instruction":37}],72:[function(require,module,exports){
+},{"./Instruction":37}],74:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4257,7 +4372,7 @@ function stroke() {
 }
 
 module.exports = stroke;
-},{"./Instruction":37}],73:[function(require,module,exports){
+},{"./Instruction":37}],75:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4277,7 +4392,7 @@ function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = strokeArc;
-},{"./Instruction":37}],74:[function(require,module,exports){
+},{"./Instruction":37}],76:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4291,7 +4406,7 @@ function strokeRect(x, y, width, height) {
 }
 
 module.exports = strokeRect;
-},{"./Instruction":37}],75:[function(require,module,exports){
+},{"./Instruction":37}],77:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4350,7 +4465,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
 }
 
 module.exports = text;
-},{"./Instruction":37}],76:[function(require,module,exports){
+},{"./Instruction":37}],78:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4385,7 +4500,7 @@ function textStyle(value, children) {
 }
 
 module.exports = textStyle;
-},{"./Instruction":37}],77:[function(require,module,exports){
+},{"./Instruction":37}],79:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var smm = require('square-matrix-multiply'),
@@ -4490,7 +4605,7 @@ transform.copy = copy;
 
 
 module.exports = transform;
-},{"./Instruction":37,"square-matrix-multiply":33}],78:[function(require,module,exports){
+},{"./Instruction":37,"square-matrix-multiply":33}],80:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4510,7 +4625,7 @@ function transformPoints(points, matrix) {
 }
 
 module.exports = transformPoints;
-},{}],79:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4529,5 +4644,4 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7])(7)
-});
+},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7]);
