@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2638,10 +2638,12 @@ function Renderer(width, height, parent, worker) {
   this.mouseData = {
     x: 0,
     y: 0,
-    state: this.mouseState
+    state: this.mouseState,
+    activeRegions: []
   };
   this.mouseRegions = [];
   this.activeRegions = [];
+  this.styleQueue = [];
   
   //this is the basic structure of the data sent to the web worker
   this.keyData = {};
@@ -3518,14 +3520,11 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
     }
   }
   
-  this.mouseData = {
-    x: mousePoint[0],
-    y: mousePoint[1],
-    state: this.mouseState,
-    activeRegions: this.activeRegions 
-  };
-  
-  
+  this.mouseData.x = mousePoint[0];
+  this.mouseData.y = mousePoint[1];
+  this.mouseData.state = this.mouseState;
+  this.mouseData.activeRegions = this.activeRegions;
+
   //send the mouse event to the worker
   this.sendWorker('mouse', this.mouseData);
   
@@ -3595,9 +3594,7 @@ Renderer.prototype.fireFrame = function() {
 
 Renderer.prototype.style = function style() {
   var styles = [],
-      styleVal,
-      name,
-      value;
+      name;
   for (var i = 0; i < arguments.length; i++) {
     styles.push(arguments[i]);
   }
@@ -3605,9 +3602,15 @@ Renderer.prototype.style = function style() {
   if (isWorker) {
     this.sendBrowser('style', styles);
   } else {
-    for(i = 0; i < styles.length; i++) {
-      styleVal = styles[i];
-      for(name in styleVal) {
+    this.styleQueue.push(styles);
+  }
+};
+
+Renderer.prototype.applyStyles = function applyStyles() {
+  var styleVal, value;
+  for(var i = 0; i < this.styleQueue.length; i++) {
+      styleVal = this.styleQueue[i];
+      for(var name in styleVal) {
         if (styleVal.hasOwnProperty(name)) {
           value = styleVal[name];
           if (value === null) {
@@ -3618,9 +3621,7 @@ Renderer.prototype.style = function style() {
         }
       }
     }
-  }
 };
-
 
 Renderer.prototype.ready = function ready() {
   if (isWorker) {
@@ -4644,4 +4645,5 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7]);
+},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7])(7)
+});
