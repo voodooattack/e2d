@@ -3271,6 +3271,7 @@ Renderer.prototype.render = function render(args) {
     }
   }
   
+  return this.applyStyles();
 };
 
 Renderer.create = function create(width, height, parent, worker) {
@@ -3602,7 +3603,10 @@ Renderer.prototype.style = function style() {
   if (isWorker) {
     this.sendBrowser('style', styles);
   } else {
-    this.styleQueue.push(styles);
+    for (i = 0; i < styles.length; i++) {
+      this.styleQueue.push(styles[i]);
+    }
+    
   }
 };
 
