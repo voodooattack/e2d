@@ -153,10 +153,9 @@ r.on('frame', function() {
 
 If the goal is to reduce execution time, don't do it pre-emptively.
 
-*The browser bottlenecks more on the drawing operations than on the code you execute!*
+*The browser bottlenecks more on the drawing operations than it does on the code you execute!*
 
-Simply write your code in a declarative style, then cache static operations.  After static operations are cached, check your `.map`s, `filter`s, and `reduce`s performance.  Those can easily be turned into `for` loops. 
-
+Simply write your code in a declarative style, then cache static operations when you are done.  After static operations are cached, check your `.map`s, `filter`s, and `reduce`s performance. If they are truly bottlenecking your  rendering, they can easily be turned into `for` loops with a little bit of clever logic. 
 
 # Getting started
 

@@ -47,10 +47,12 @@ function Renderer(width, height, parent, worker) {
   this.mouseData = {
     x: 0,
     y: 0,
-    state: this.mouseState
+    state: this.mouseState,
+    activeRegions: []
   };
   this.mouseRegions = [];
   this.activeRegions = [];
+  this.styleQueue = [];
   
   //this is the basic structure of the data sent to the web worker
   this.keyData = {};
@@ -927,14 +929,11 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
     }
   }
   
-  this.mouseData = {
-    x: mousePoint[0],
-    y: mousePoint[1],
-    state: this.mouseState,
-    activeRegions: this.activeRegions 
-  };
-  
-  
+  this.mouseData.x = mousePoint[0];
+  this.mouseData.y = mousePoint[1];
+  this.mouseData.state = this.mouseState;
+  this.mouseData.activeRegions = this.activeRegions;
+
   //send the mouse event to the worker
   this.sendWorker('mouse', this.mouseData);
   
@@ -1004,9 +1003,7 @@ Renderer.prototype.fireFrame = function() {
 
 Renderer.prototype.style = function style() {
   var styles = [],
-      styleVal,
-      name,
-      value;
+      name;
   for (var i = 0; i < arguments.length; i++) {
     styles.push(arguments[i]);
   }
@@ -1014,9 +1011,15 @@ Renderer.prototype.style = function style() {
   if (isWorker) {
     this.sendBrowser('style', styles);
   } else {
-    for(i = 0; i < styles.length; i++) {
-      styleVal = styles[i];
-      for(name in styleVal) {
+    this.styleQueue.push(styles);
+  }
+};
+
+Renderer.prototype.applyStyles = function applyStyles() {
+  var styleVal, value;
+  for(var i = 0; i < this.styleQueue.length; i++) {
+      styleVal = this.styleQueue[i];
+      for(var name in styleVal) {
         if (styleVal.hasOwnProperty(name)) {
           value = styleVal[name];
           if (value === null) {
@@ -1027,9 +1030,7 @@ Renderer.prototype.style = function style() {
         }
       }
     }
-  }
 };
-
 
 Renderer.prototype.ready = function ready() {
   if (isWorker) {
