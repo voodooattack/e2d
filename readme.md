@@ -441,12 +441,18 @@ __Img.js__
 In order to work with web workers, the concept of drawing an image must be abstracted to the web worker.  Therefore, create an image like this:
 
 ```javascript
-var texture = new e2d.Img();
+var texture = new e2d.Img().cache();
 texture.src = 'url'; //data urls are accepted
 texture.once('load', function() {
   //the texture is loaded
 });
 ```
+
+Image references must be stored on the main thread because images must be created on the main thread regardless of where they are instantiated. Please remember to call `.cache()`.  It signals the browser to store the image reference to be drawn more than once.
+
+Images are automatically disposed unless `.cache()`ed and will need to be `.disposed()` manually.
+
+This helps prevent memory leaks inside the browser which needs memory to be free when it isn't being used.
 
 __drawImage.js__, __fillImage.js__
 
@@ -454,10 +460,9 @@ Drawing an image is as easy as `drawImage(img)` or `fillImage(img)`. Both functi
 
 See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage) for more information on how to use drawImage
 ```javascript
-//img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
 var drawImage = e2d.drawImage;
 
-var img = new e2d.Img();
+var img = new e2d.Img().cache();
 
 img.src = 'url';
 img.once('load', callback);

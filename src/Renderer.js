@@ -213,7 +213,7 @@ Renderer.prototype.render = function render(args) {
     
     if (type === 'rotate') {
       cosr = Math.cos(props.r);
-      sinr = Math.cos(props.r);
+      sinr = Math.sin(props.r);
       
       matrix = smm(transformStack[transformStack.length - 1], [
         [cosr, -sinr, 0],
