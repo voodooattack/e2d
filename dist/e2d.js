@@ -2641,6 +2641,8 @@ function Renderer(width, height, parent, worker) {
     state: this.mouseState,
     activeRegions: []
   };
+  this.lastMouseEvent = null;
+  this.ranMouseEvent = false;
   this.mouseRegions = [];
   this.activeRegions = [];
   this.styleQueue = [];
@@ -3426,10 +3428,16 @@ Renderer.prototype.hookRender = function hookRender() {
   
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
-      
+    
       //if the worker exists, we should check to see if the worker has sent back anything yet
       if (this.worker) {
         if (this.tree !== null) {
+          
+          //fire the mouse event again if it wasn't run
+          if (this.lastMouseEvent && !this.ranMouseEvent) {
+            this.mouseMove(this.lastMouseEvent);
+          }
+          
           //fire the frame right away
           this.fireFrame();
           
@@ -3443,12 +3451,17 @@ Renderer.prototype.hookRender = function hookRender() {
           didRender = false;
         }
       } else {
+        //fire the mouse event again if it wasn't run
+        if (this.lastMouseEvent && !this.ranMouseEvent) {
+          this.mouseMove(this.lastMouseEvent);
+        }
         //we are browser side, so this should fire the frame synchronously
         this.fireFrame();
       }
     
       //clean up the cache, but only after the frame is rendered and when the browser has time to
       if (didRender) {
+        this.ranMouseEvent = false;
         setTimeout(this.cleanUpCache.bind(this), 0);
       }
   }
@@ -3508,6 +3521,8 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
   var rect = this.canvas.getBoundingClientRect(),
       mousePoint = [0,0],
       region;
+  this.lastMouseEvent = evt;
+  this.ranMouseEvent = true;
   
   mousePoint[0] = evt.clientX - rect.left;
   mousePoint[1] = evt.clientY - rect.top;
@@ -3613,18 +3628,14 @@ Renderer.prototype.style = function style() {
 Renderer.prototype.applyStyles = function applyStyles() {
   var styleVal, value;
   for(var i = 0; i < this.styleQueue.length; i++) {
-      styleVal = this.styleQueue[i];
-      for(var name in styleVal) {
-        if (styleVal.hasOwnProperty(name)) {
-          value = styleVal[name];
-          if (value === null) {
-            this.canvas.style.removeProperty(name);
-            continue;
-          }
-          this.canvas.style.setProperty(name, value);
-        }
+    styleVal = this.styleQueue[i];
+    for(var name in styleVal) {
+      if (styleVal.hasOwnProperty(name)) {
+        this.canvas.style[name] = styleVal[name];
       }
     }
+  }
+  this.styleQueue.splice(0, this.styleQueue.length); 
 };
 
 Renderer.prototype.ready = function ready() {
