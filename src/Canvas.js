@@ -8,14 +8,18 @@ var isWorker = require('./isWorker'),
 
 function Canvas(width, height, id) {
   this.id = id || newid();
+  this.width = width;
+  this.height = height;
   var Renderer = require('./Renderer');
   if (!isWorker) {
     this.renderer = new Renderer(width, height, document.createElement('div'));
   } else {
+    postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: [] } });
     this.renderer = null;
   }
-  this.width = width;
-  this.height = height;
+
+  this.fillPattern = null;
+  Canvas.cache[this.id] = this;
   Object.seal(this);
 }
 
@@ -29,6 +33,7 @@ Canvas.prototype.render = function render(children) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {
     this.renderer.render(result);
+    this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
   }
 };
 
@@ -81,14 +86,14 @@ Canvas.cleanUp = function cleanUp() {
   Canvas.cache = index;
 };
 
-Canvas.prototype.resize = function (width, height) {
+Canvas.prototype.resize = function resize(width, height) {
   return this.renderer.resize(width, height);
 };
 
 Canvas.cache = {};
 Canvas.cachable = [];
 
-Canvas.create = function (width, height, id) {
+Canvas.create = function create(width, height, id) {
   return new Canvas(width, height, id);
 };
 

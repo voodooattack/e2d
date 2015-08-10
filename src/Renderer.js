@@ -1,6 +1,4 @@
-//jshint node: true
-//jshint browser: true
-//jshint worker: true
+//jshint node: true, browser: true, worker: true
 
 'use strict';
 var flatten = require('lodash/array/flatten'),
@@ -124,6 +122,7 @@ Renderer.prototype.render = function render(args) {
       sinr,
       cosr,
       fillStyleStack = [],
+      strokeStyleStack = [],
       lineStyleStack = [],
       textStyleStack = [],
       shadowStyleStack = [],
@@ -159,17 +158,9 @@ Renderer.prototype.render = function render(args) {
         [props.b, props.d, props.f],
         [0,       0,       1      ]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.transform(props.a, props.b, props.c, props.d, props.e, props.f);
+      //ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -179,17 +170,8 @@ Renderer.prototype.render = function render(args) {
         [0,       props.y, 0],
         [0,       0,       1]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.scale(props.x, props.y);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -197,19 +179,10 @@ Renderer.prototype.render = function render(args) {
       matrix = smm(transformStack[transformStack.length - 1], [
         [1, 0, props.x],
         [0, 1, props.y],
-        [0, 0, 1            ]
+        [0, 0, 1      ]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.translate(props.x, props.y);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -222,23 +195,14 @@ Renderer.prototype.render = function render(args) {
         [sinr, cosr,  0],
         [0,    0,     1]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.rotate(props.r);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
     if (type === 'restore') {
-      transformStack.pop();
-      ctx.restore();
+      matrix = transformStack.pop();
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -257,6 +221,10 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
     
+    if (type === 'rect') {
+      ctx.rect(props.x, props.y, props.width, props.height);
+    }
+    
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
@@ -271,14 +239,31 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
     
+    if (type === 'strokeStyle') {
+      strokeStyleStack.push(ctx.strokeStyle);
+      ctx.strokeStyle = props.value;
+      continue;
+    }
+    
+    if (type == 'strokeGradient') {
+      strokeStyleStack.push(ctx.strokeStyle);
+      if (Gradient.cache.hasOwnProperty(props.value.id)) {
+        ctx.strokeStyle = Gradient.cache[props.value.id].grd;
+      }
+      continue;
+    }
+    
     if (type === 'endFillStyle') {
       ctx.fillStyle = fillStyleStack.pop();
       continue;
     }
     
+    if (type === 'endStrokeStyle') {
+      ctx.strokeStyle = strokeStyleStack.pop();
+      continue;
+    }
     if (type === 'lineStyle') {
       lineStyleStack.push({
-        strokeStyle: ctx.strokeStyle,
         lineWidth: ctx.lineWidth,
         lineCap: ctx.lineCap,
         lineJoin: ctx.lineJoin,
@@ -286,9 +271,7 @@ Renderer.prototype.render = function render(args) {
         lineDash: ctx.getLineDash(),
         lineDashOffset: ctx.lineDashOffset
       });
-      if (props.strokeStyle !== null) {
-        ctx.strokeStyle = props.strokeStyle;
-      }
+
       if (props.lineWidth !== null) {
         ctx.lineWidth = props.lineWidth;
       }
@@ -312,7 +295,6 @@ Renderer.prototype.render = function render(args) {
     
     if (type === 'endLineStyle') {
       cache = lineStyleStack.pop();
-      ctx.strokeStyle = cache.strokeStyle;
       ctx.lineWidth = cache.lineWidth;
       ctx.lineCap = cache.lineCap;
       ctx.lineJoin = cache.lineJoin;
@@ -479,6 +461,55 @@ Renderer.prototype.render = function render(args) {
       ctx.fillStyle = Img.cache[props.img].imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(cache.dWidth / props.sWidth, cache.dHeight / props.sHeight);
+      ctx.translate(-props.sx, -props.sy);
+      ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
+      ctx.restore();
+      
+      continue;
+    }
+    
+    
+    if (type === 'fillCanvas') {
+      if (!Canvas.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+
+      cache = Canvas.cache[props.img];
+      ctx.save();
+      ctx.fillStyle = cache.fillPattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillCanvasSize') {
+      if (!Canvas.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Canvas.cache[props.img];
+      ctx.save();
+      ctx.fillStyle = cache.fillPattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillCanvasSource') {
+      if (!Canvas.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Canvas.cache[props.img];
+      ctx.save();
+      ctx.fillStyle = cache.fillPattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(cache.width / props.sWidth, cache.height / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
       ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
       ctx.restore();

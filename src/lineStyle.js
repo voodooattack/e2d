@@ -6,7 +6,6 @@ function lineStyle(value, children) {
   
   value = value || {};
   var result = {
-    strokeStyle: null,
     lineWidth: null,
     lineCap: null,
     lineJoin: null,
@@ -15,9 +14,6 @@ function lineStyle(value, children) {
     lineDashOffset: null
   };
   
-  if (typeof value.strokeStyle !== 'undefined') {
-    result.strokeStyle = value.strokeStyle; 
-  }
   if (typeof value.lineWidth !== 'undefined') {
     result.lineWidth = value.lineWidth;
   }
