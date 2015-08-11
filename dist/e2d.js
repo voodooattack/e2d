@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1265,6 +1265,7 @@ module.exports = {
     ellipse: require('./src/ellipse'),
     fill: require('./src/fill'),
     fillArc: require('./src/fillArc'),
+    fillCanvas: require('./src/fillCanvas'),
     fillImage: require('./src/fillImage'),
     fillImagePattern: require('./src/fillImagePattern'),
     fillRect: require('./src/fillRect'),
@@ -1283,6 +1284,7 @@ module.exports = {
     moveTo: require('./src/moveTo'),
     path: require('./src/path'),
     quadraticCurveTo: require('./src/quadraticCurveTo'),
+    rect: require('./src/rect'),
     Renderer: require('./src/Renderer'),
     rotate: require('./src/rotate'),
     scale: require('./src/scale'),
@@ -1290,13 +1292,14 @@ module.exports = {
     stroke: require('./src/stroke'),
     strokeArc: require('./src/strokeArc'),
     strokeRect: require('./src/strokeRect'),
+    strokeStyle: require('./src/strokeStyle'),
     text: require('./src/text'),
     textStyle: require('./src/textStyle'),
     transform: require('./src/transform'),
     transformPoints: require('./src/transformPoints'),
     translate: require('./src/translate')
 };
-},{"./src/Canvas":34,"./src/Gradient":35,"./src/Img":36,"./src/Instruction":37,"./src/Renderer":38,"./src/addColorStop":39,"./src/arc":40,"./src/arcTo":41,"./src/beginPath":42,"./src/bezierCurveTo":43,"./src/clearRect":44,"./src/clip":45,"./src/clipPath":46,"./src/closePath":47,"./src/createLinearGradient":48,"./src/createRadialGradient":49,"./src/drawCanvas":50,"./src/drawImage":51,"./src/ellipse":52,"./src/fill":53,"./src/fillArc":54,"./src/fillImage":55,"./src/fillImagePattern":56,"./src/fillRect":57,"./src/fillStyle":58,"./src/globalAlpha":59,"./src/globalCompositeOperation":60,"./src/hitRect":61,"./src/hitRegion":62,"./src/isDataUrl":64,"./src/isWorker":65,"./src/lineStyle":66,"./src/lineTo":67,"./src/moveTo":68,"./src/path":69,"./src/quadraticCurveTo":70,"./src/rotate":71,"./src/scale":72,"./src/shadowStyle":73,"./src/stroke":74,"./src/strokeArc":75,"./src/strokeRect":76,"./src/text":77,"./src/textStyle":78,"./src/transform":79,"./src/transformPoints":80,"./src/translate":81}],8:[function(require,module,exports){
+},{"./src/Canvas":34,"./src/Gradient":35,"./src/Img":36,"./src/Instruction":37,"./src/Renderer":38,"./src/addColorStop":39,"./src/arc":40,"./src/arcTo":41,"./src/beginPath":42,"./src/bezierCurveTo":43,"./src/clearRect":44,"./src/clip":45,"./src/clipPath":46,"./src/closePath":47,"./src/createLinearGradient":48,"./src/createRadialGradient":49,"./src/drawCanvas":50,"./src/drawImage":51,"./src/ellipse":52,"./src/fill":53,"./src/fillArc":54,"./src/fillCanvas":55,"./src/fillImage":56,"./src/fillImagePattern":57,"./src/fillRect":58,"./src/fillStyle":59,"./src/globalAlpha":60,"./src/globalCompositeOperation":61,"./src/hitRect":62,"./src/hitRegion":63,"./src/isDataUrl":65,"./src/isWorker":66,"./src/lineStyle":67,"./src/lineTo":68,"./src/moveTo":69,"./src/path":70,"./src/quadraticCurveTo":71,"./src/rect":72,"./src/rotate":73,"./src/scale":74,"./src/shadowStyle":75,"./src/stroke":76,"./src/strokeArc":77,"./src/strokeRect":78,"./src/strokeStyle":79,"./src/text":80,"./src/textStyle":81,"./src/transform":82,"./src/transformPoints":83,"./src/translate":84}],8:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -2340,14 +2343,18 @@ var isWorker = require('./isWorker'),
 
 function Canvas(width, height, id) {
   this.id = id || newid();
+  this.width = width;
+  this.height = height;
   var Renderer = require('./Renderer');
   if (!isWorker) {
     this.renderer = new Renderer(width, height, document.createElement('div'));
   } else {
+    postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: [] } });
     this.renderer = null;
   }
-  this.width = width;
-  this.height = height;
+
+  this.fillPattern = null;
+  Canvas.cache[this.id] = this;
   Object.seal(this);
 }
 
@@ -2361,6 +2368,7 @@ Canvas.prototype.render = function render(children) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {
     this.renderer.render(result);
+    this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
   }
 };
 
@@ -2413,14 +2421,14 @@ Canvas.cleanUp = function cleanUp() {
   Canvas.cache = index;
 };
 
-Canvas.prototype.resize = function (width, height) {
+Canvas.prototype.resize = function resize(width, height) {
   return this.renderer.resize(width, height);
 };
 
 Canvas.cache = {};
 Canvas.cachable = [];
 
-Canvas.create = function (width, height, id) {
+Canvas.create = function create(width, height, id) {
   return new Canvas(width, height, id);
 };
 
@@ -2428,7 +2436,7 @@ Object.seal(Canvas);
 Object.seal(Canvas.prototype);
 module.exports = Canvas;
 
-},{"./Img":36,"./Renderer":38,"./id":63,"./isWorker":65,"lodash/array/flatten":9}],35:[function(require,module,exports){
+},{"./Img":36,"./Renderer":38,"./id":64,"./isWorker":66,"lodash/array/flatten":9}],35:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker');
@@ -2478,7 +2486,7 @@ Object.seal(Gradient);
 Object.seal(Gradient.prototype);
 
 module.exports = Gradient;
-},{"./isWorker":65}],36:[function(require,module,exports){
+},{"./isWorker":66}],36:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 
@@ -2575,7 +2583,7 @@ Object.seal(Img);
 Object.seal(Img.prototype);
 
 module.exports = Img;
-},{"./id":63,"./isDataUrl":64,"./isWorker":65,"events":1,"path":3,"util":6}],37:[function(require,module,exports){
+},{"./id":64,"./isDataUrl":65,"./isWorker":66,"events":1,"path":3,"util":6}],37:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -2589,9 +2597,7 @@ Object.seal(Instruction.prototype);
 
 module.exports = Instruction;
 },{}],38:[function(require,module,exports){
-//jshint node: true
-//jshint browser: true
-//jshint worker: true
+//jshint node: true, browser: true, worker: true
 
 'use strict';
 var flatten = require('lodash/array/flatten'),
@@ -2715,6 +2721,7 @@ Renderer.prototype.render = function render(args) {
       sinr,
       cosr,
       fillStyleStack = [],
+      strokeStyleStack = [],
       lineStyleStack = [],
       textStyleStack = [],
       shadowStyleStack = [],
@@ -2733,9 +2740,6 @@ Renderer.prototype.render = function render(args) {
     return this.sendBrowser('render', children);
   }
   
-  this.mouseRegions = [];
-  this.activeRegions = [];
-  
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
     if (!child) {
@@ -2750,17 +2754,8 @@ Renderer.prototype.render = function render(args) {
         [props.b, props.d, props.f],
         [0,       0,       1      ]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.transform(props.a, props.b, props.c, props.d, props.e, props.f);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -2770,17 +2765,8 @@ Renderer.prototype.render = function render(args) {
         [0,       props.y, 0],
         [0,       0,       1]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.scale(props.x, props.y);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -2788,19 +2774,10 @@ Renderer.prototype.render = function render(args) {
       matrix = smm(transformStack[transformStack.length - 1], [
         [1, 0, props.x],
         [0, 1, props.y],
-        [0, 0, 1            ]
+        [0, 0, 1      ]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.translate(props.x, props.y);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -2813,23 +2790,15 @@ Renderer.prototype.render = function render(args) {
         [sinr, cosr,  0],
         [0,    0,     1]
       ]);
-      cache = {
-        a: matrix[0][0],
-        b: matrix[1][0],
-        c: matrix[0][1],
-        d: matrix[1][1],
-        e: matrix[0][2],
-        f: matrix[1][2]
-      };
       transformStack.push(matrix);
-      ctx.save();
-      ctx.rotate(props.r);
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
     if (type === 'restore') {
       transformStack.pop();
-      ctx.restore();
+      matrix = transformStack[transformStack.length - 1];
+      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
     
@@ -2848,6 +2817,10 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
     
+    if (type === 'rect') {
+      ctx.rect(props.x, props.y, props.width, props.height);
+    }
+    
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
@@ -2862,14 +2835,31 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
     
+    if (type === 'strokeStyle') {
+      strokeStyleStack.push(ctx.strokeStyle);
+      ctx.strokeStyle = props.value;
+      continue;
+    }
+    
+    if (type == 'strokeGradient') {
+      strokeStyleStack.push(ctx.strokeStyle);
+      if (Gradient.cache.hasOwnProperty(props.value.id)) {
+        ctx.strokeStyle = Gradient.cache[props.value.id].grd;
+      }
+      continue;
+    }
+    
     if (type === 'endFillStyle') {
       ctx.fillStyle = fillStyleStack.pop();
       continue;
     }
     
+    if (type === 'endStrokeStyle') {
+      ctx.strokeStyle = strokeStyleStack.pop();
+      continue;
+    }
     if (type === 'lineStyle') {
       lineStyleStack.push({
-        strokeStyle: ctx.strokeStyle,
         lineWidth: ctx.lineWidth,
         lineCap: ctx.lineCap,
         lineJoin: ctx.lineJoin,
@@ -2877,9 +2867,7 @@ Renderer.prototype.render = function render(args) {
         lineDash: ctx.getLineDash(),
         lineDashOffset: ctx.lineDashOffset
       });
-      if (props.strokeStyle !== null) {
-        ctx.strokeStyle = props.strokeStyle;
-      }
+
       if (props.lineWidth !== null) {
         ctx.lineWidth = props.lineWidth;
       }
@@ -2903,7 +2891,6 @@ Renderer.prototype.render = function render(args) {
     
     if (type === 'endLineStyle') {
       cache = lineStyleStack.pop();
-      ctx.strokeStyle = cache.strokeStyle;
       ctx.lineWidth = cache.lineWidth;
       ctx.lineCap = cache.lineCap;
       ctx.lineJoin = cache.lineJoin;
@@ -3070,6 +3057,55 @@ Renderer.prototype.render = function render(args) {
       ctx.fillStyle = Img.cache[props.img].imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(cache.dWidth / props.sWidth, cache.dHeight / props.sHeight);
+      ctx.translate(-props.sx, -props.sy);
+      ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
+      ctx.restore();
+      
+      continue;
+    }
+    
+    
+    if (type === 'fillCanvas') {
+      if (!Canvas.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+
+      cache = Canvas.cache[props.img];
+      ctx.save();
+      ctx.fillStyle = cache.fillPattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillCanvasSize') {
+      if (!Canvas.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Canvas.cache[props.img];
+      ctx.save();
+      ctx.fillStyle = cache.fillPattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
+      ctx.fillRect(0, 0, cache.width, cache.height);
+      ctx.restore();
+      
+      continue;
+    }
+
+    if (type === 'fillCanvasSource') {
+      if (!Canvas.cache.hasOwnProperty(props.img)) {
+        continue;
+      }
+      
+      cache = Canvas.cache[props.img];
+      ctx.save();
+      ctx.fillStyle = cache.fillPattern;
+      ctx.translate(props.dx, props.dy);
+      ctx.scale(cache.width / props.sWidth, cache.height / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
       ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
       ctx.restore();
@@ -3423,8 +3459,6 @@ Renderer.prototype.resize = function(width, height) {
 };
 
 Renderer.prototype.hookRender = function hookRender() {
-  //This function is never called worker side, so we can't check isWorker to determine where this code is run.
-  var didRender = true;
   
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
@@ -3446,9 +3480,6 @@ Renderer.prototype.hookRender = function hookRender() {
           
           //reset the tree/frame
           this.tree = null;
-        } else {
-          //the worker isn't finished yet and we missed the window
-          didRender = false;
         }
       } else {
         //fire the mouse event again if it wasn't run
@@ -3457,12 +3488,6 @@ Renderer.prototype.hookRender = function hookRender() {
         }
         //we are browser side, so this should fire the frame synchronously
         this.fireFrame();
-      }
-    
-      //clean up the cache, but only after the frame is rendered and when the browser has time to
-      if (didRender) {
-        this.ranMouseEvent = false;
-        setTimeout(this.cleanUpCache.bind(this), 0);
       }
   }
   
@@ -3605,7 +3630,11 @@ Renderer.prototype.browserCommand = function(e) {
 };
 
 Renderer.prototype.fireFrame = function() {
-  return this.sendWorker('frame', {});
+  this.mouseRegions.splice(0, this.mouseRegions.length);
+  this.sendWorker('frame', {});
+  this.activeRegions.splice(0, this.activeRegions.length);
+  this.ranMouseEvent = false;
+  return setTimeout(this.cleanUpCache.bind(this), 0);
 };
 
 Renderer.prototype.style = function style() {
@@ -3651,7 +3680,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":34,"./Gradient":35,"./Img":36,"./createLinearGradient":48,"./createRadialGradient":49,"./isWorker":65,"./transformPoints":80,"events":1,"keycode":8,"lodash/array/flatten":9,"lodash/lang/isElement":26,"point-in-polygon":32,"square-matrix-multiply":33,"util":6}],39:[function(require,module,exports){
+},{"./Canvas":34,"./Gradient":35,"./Img":36,"./createLinearGradient":48,"./createRadialGradient":49,"./isWorker":66,"./transformPoints":83,"events":1,"keycode":8,"lodash/array/flatten":9,"lodash/lang/isElement":26,"point-in-polygon":32,"square-matrix-multiply":33,"util":6}],39:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3800,7 +3829,7 @@ function createLinearGradient(x0, y0, x1, y1, children, id) {
 
 
 module.exports = createLinearGradient;
-},{"./Gradient":35,"./id":63,"./isWorker":65,"lodash/array/flatten":9}],49:[function(require,module,exports){
+},{"./Gradient":35,"./id":64,"./isWorker":66,"lodash/array/flatten":9}],49:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
@@ -3830,7 +3859,7 @@ function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
 
 
 module.exports = createRadialGradient;
-},{"./Gradient":35,"./id":63,"./isWorker":65}],50:[function(require,module,exports){
+},{"./Gradient":35,"./id":64,"./isWorker":66}],50:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3983,6 +4012,52 @@ var Instruction = require('./Instruction');
 
 function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
+    return new Instruction('fillCanvasSource', {
+      img: img.id,
+      sx: sx,
+      sy: sy,
+      sWidth: sWidth,
+      sHeight: sHeight,
+      dx: dx,
+      dy: dy,
+      dWidth: dWidth,
+      dHeight: dHeight
+    });
+  }
+  
+  if (arguments.length >= 5) {
+    return new Instruction('fillCanvasSize', {
+      img: img.id,
+      dx: sx,
+      dy: sy,
+      dWidth: sWidth,
+      dHeight: sHeight
+    });
+  }
+  
+  if (arguments.length >= 3) {
+    return new Instruction('fillCanvas', {
+      img: img.id,
+      dx: sx,
+      dy: sy
+    });
+  }  
+
+  return new Instruction('fillCanvas', {
+    img: img.id,
+    dx: 0,
+    dy: 0
+  });
+}
+
+module.exports = fillImage;
+},{"./Instruction":37}],56:[function(require,module,exports){
+//jshint node: true
+'use strict';
+var Instruction = require('./Instruction');
+
+function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
+  if (arguments.length === 9) {
     return new Instruction('fillImageSource', {
       img: img.id,
       sx: sx,
@@ -4022,7 +4097,7 @@ function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = fillImage;
-},{"./Instruction":37}],56:[function(require,module,exports){
+},{"./Instruction":37}],57:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4059,7 +4134,7 @@ function fillImagePattern(img, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = fillImagePattern;
-},{"./Instruction":37}],57:[function(require,module,exports){
+},{"./Instruction":37}],58:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4073,7 +4148,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":37}],58:[function(require,module,exports){
+},{"./Instruction":37}],59:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4097,7 +4172,7 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":35,"./Instruction":37}],59:[function(require,module,exports){
+},{"./Gradient":35,"./Instruction":37}],60:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4112,7 +4187,7 @@ function globalAlpha(alpha, children) {
 }
 
 module.exports = globalAlpha;
-},{"./Instruction":37}],60:[function(require,module,exports){
+},{"./Instruction":37}],61:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4131,7 +4206,7 @@ function globalCompositeOperation(operationType, children) {
 }
 
 module.exports = globalCompositeOperation;
-},{"./Instruction":37}],61:[function(require,module,exports){
+},{"./Instruction":37}],62:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4157,7 +4232,7 @@ function hitRect(id, x, y, width, height) {
 }
 
 module.exports = hitRect;
-},{"./Instruction":37,"./hitRegion":62}],62:[function(require,module,exports){
+},{"./Instruction":37,"./hitRegion":63}],63:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4171,7 +4246,7 @@ function hitRegion(id, points) {
 }
 
 module.exports = hitRegion;
-},{"./Instruction":37}],63:[function(require,module,exports){
+},{"./Instruction":37}],64:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4180,7 +4255,7 @@ function id() {
 }
 
 module.exports = id;
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 //jshint node: true
 function isDataURL(s) {
     return !!s.match(isDataURL.regex);
@@ -4189,12 +4264,12 @@ isDataURL.regex = /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a
 Object.seal(isDataURL);
 module.exports = isDataURL;
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
 module.exports = typeof document === 'undefined';
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4203,7 +4278,6 @@ function lineStyle(value, children) {
   
   value = value || {};
   var result = {
-    strokeStyle: null,
     lineWidth: null,
     lineCap: null,
     lineJoin: null,
@@ -4212,9 +4286,6 @@ function lineStyle(value, children) {
     lineDashOffset: null
   };
   
-  if (typeof value.strokeStyle !== 'undefined') {
-    result.strokeStyle = value.strokeStyle; 
-  }
   if (typeof value.lineWidth !== 'undefined') {
     result.lineWidth = value.lineWidth;
   }
@@ -4242,7 +4313,7 @@ function lineStyle(value, children) {
 }
 
 module.exports = lineStyle;
-},{"./Instruction":37}],67:[function(require,module,exports){
+},{"./Instruction":37}],68:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4255,7 +4326,7 @@ function lineTo(x, y) {
 }
 
 module.exports = lineTo;
-},{"./Instruction":37}],68:[function(require,module,exports){
+},{"./Instruction":37}],69:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4268,7 +4339,7 @@ function moveTo(x, y) {
 }
 
 module.exports = moveTo;
-},{"./Instruction":37}],69:[function(require,module,exports){
+},{"./Instruction":37}],70:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4285,7 +4356,7 @@ function path(children) {
 }
 
 module.exports = path;
-},{"./beginPath":42,"./closePath":47}],70:[function(require,module,exports){
+},{"./beginPath":42,"./closePath":47}],71:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4300,7 +4371,21 @@ function quadraticCurveTo(cpx, cpy, x, y) {
 }
 
 module.exports = quadraticCurveTo;
-},{"./Instruction":37}],71:[function(require,module,exports){
+},{"./Instruction":37}],72:[function(require,module,exports){
+//jshint node: true
+'use strict';
+var Instruction = require('./Instruction');
+
+function rect(x, y, width, height) {
+  if (arguments.length > 2) {
+    return new Instruction("rect", { x: x, y: y, width: width, height: height });
+  } else {
+    return new Instruction("rect", { x: 0, y: 0, width: x, height: y });
+  }
+}
+
+module.exports = rect;
+},{"./Instruction":37}],73:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4317,7 +4402,7 @@ function rotate(r, children) {
 }
 
 module.exports = rotate;
-},{"./Instruction":37,"lodash/array/flatten":9}],72:[function(require,module,exports){
+},{"./Instruction":37,"lodash/array/flatten":9}],74:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4341,7 +4426,7 @@ function scale(x, y, children) {
 }
 
 module.exports = scale;
-},{"./Instruction":37,"lodash/array/flatten":9}],73:[function(require,module,exports){
+},{"./Instruction":37,"lodash/array/flatten":9}],75:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4378,7 +4463,7 @@ function shadowStyle(value, children) {
 }
 
 module.exports = shadowStyle;
-},{"./Instruction":37}],74:[function(require,module,exports){
+},{"./Instruction":37}],76:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4388,7 +4473,7 @@ function stroke() {
 }
 
 module.exports = stroke;
-},{"./Instruction":37}],75:[function(require,module,exports){
+},{"./Instruction":37}],77:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4408,7 +4493,7 @@ function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = strokeArc;
-},{"./Instruction":37}],76:[function(require,module,exports){
+},{"./Instruction":37}],78:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4422,7 +4507,31 @@ function strokeRect(x, y, width, height) {
 }
 
 module.exports = strokeRect;
-},{"./Instruction":37}],77:[function(require,module,exports){
+},{"./Instruction":37}],79:[function(require,module,exports){
+//jshint node: true
+'use strict';
+var Instruction = require('./Instruction'),
+    Gradient = require('./Gradient');
+
+function fillStyle(value, children) {
+  var instruction;
+  if (value instanceof Gradient) {
+    instruction = new Instruction('strokeGradient', { value: { id: value.id } });
+  }
+  
+  if (!instruction) {
+    instruction = new Instruction('strokeStyle', { value: value });
+  }
+  var result = [instruction];
+  for(var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
+  }
+  result.push(new Instruction('endStrokeStyle'));
+  return result;
+}
+
+module.exports = fillStyle;
+},{"./Gradient":35,"./Instruction":37}],80:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4481,7 +4590,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
 }
 
 module.exports = text;
-},{"./Instruction":37}],78:[function(require,module,exports){
+},{"./Instruction":37}],81:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4516,7 +4625,7 @@ function textStyle(value, children) {
 }
 
 module.exports = textStyle;
-},{"./Instruction":37}],79:[function(require,module,exports){
+},{"./Instruction":37}],82:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var smm = require('square-matrix-multiply'),
@@ -4621,7 +4730,7 @@ transform.copy = copy;
 
 
 module.exports = transform;
-},{"./Instruction":37,"square-matrix-multiply":33}],80:[function(require,module,exports){
+},{"./Instruction":37,"square-matrix-multiply":33}],83:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4641,7 +4750,7 @@ function transformPoints(points, matrix) {
 }
 
 module.exports = transformPoints;
-},{}],81:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4660,5 +4769,4 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7])(7)
-});
+},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7]);
