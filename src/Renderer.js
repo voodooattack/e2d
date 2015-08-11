@@ -141,9 +141,6 @@ Renderer.prototype.render = function render(args) {
     return this.sendBrowser('render', children);
   }
   
-  this.mouseRegions = [];
-  this.activeRegions = [];
-  
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
     if (!child) {
@@ -159,7 +156,6 @@ Renderer.prototype.render = function render(args) {
         [0,       0,       1      ]
       ]);
       transformStack.push(matrix);
-      //ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
@@ -201,7 +197,8 @@ Renderer.prototype.render = function render(args) {
     }
     
     if (type === 'restore') {
-      matrix = transformStack.pop();
+      transformStack.pop();
+      matrix = transformStack[transformStack.length - 1];
       ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
       continue;
     }
@@ -863,8 +860,6 @@ Renderer.prototype.resize = function(width, height) {
 };
 
 Renderer.prototype.hookRender = function hookRender() {
-  //This function is never called worker side, so we can't check isWorker to determine where this code is run.
-  var didRender = true;
   
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
@@ -886,9 +881,6 @@ Renderer.prototype.hookRender = function hookRender() {
           
           //reset the tree/frame
           this.tree = null;
-        } else {
-          //the worker isn't finished yet and we missed the window
-          didRender = false;
         }
       } else {
         //fire the mouse event again if it wasn't run
@@ -897,12 +889,6 @@ Renderer.prototype.hookRender = function hookRender() {
         }
         //we are browser side, so this should fire the frame synchronously
         this.fireFrame();
-      }
-    
-      //clean up the cache, but only after the frame is rendered and when the browser has time to
-      if (didRender) {
-        this.ranMouseEvent = false;
-        setTimeout(this.cleanUpCache.bind(this), 0);
       }
   }
   
@@ -1045,7 +1031,11 @@ Renderer.prototype.browserCommand = function(e) {
 };
 
 Renderer.prototype.fireFrame = function() {
-  return this.sendWorker('frame', {});
+  this.mouseRegions.splice(0, this.mouseRegions.length);
+  this.sendWorker('frame', {});
+  this.activeRegions.splice(0, this.activeRegions.length);
+  this.ranMouseEvent = false;
+  return setTimeout(this.cleanUpCache.bind(this), 0);
 };
 
 Renderer.prototype.style = function style() {
