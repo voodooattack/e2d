@@ -11,11 +11,7 @@ function transform(stack, children) {
       sinVal,
       sx,
       sy,
-      result = [
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-      ],
+      result = new Float64Array([1, 0, 0, 1, 0, 0]),
       props,
       transformResult,
       len = stack.length;
@@ -23,11 +19,17 @@ function transform(stack, children) {
     t = stack[i];
     
     if (t.hasOwnProperty('transform')) {
-      result = smm(result, [
+      /*result = smm(result, [
         [t.transform.a,t.transform.c,t.transform.e],
         [t.transform.b,t.transform.d,t.transform.f],
         [0,0,1]
-      ]);
+      ]);*/
+      result[0] = result[0] * t.transform.a + result[2] * t.transform.b;
+      result[1] = result[1] * t.transform.a + result[3] * t.transform.b;
+      result[2] = result[0] * t.transform.c + result[2] * t.transform.d;
+      result[3] = result[1] * t.transform.c + result[3] * t.transform.d;
+      result[4] = result[0] * t.transform.e + result[2] * t.transform.f + result[4];
+      result[5] = result[1] * t.transform.e + result[3] * t.transform.f + result[5];
       continue;
     }
     
@@ -35,41 +37,36 @@ function transform(stack, children) {
       sx = t.translate.x;
       sy = t.translate.y;
       
-      result = smm(result, [
-        [1, 0, sx],
-        [0, 1, sy],
-        [0, 0, 1]
-      ]);
+      result[4] += result[0] * sx + result[2] * sy;
+      result[5] += result[1] * sx + result[3] * sy;
     }
     
     if (t.hasOwnProperty('scale')) {
       sx = t.scale.x;
       sy = t.scale.y;
-      
-      result = smm(result, [
-        [sx, 0, 0],
-        [0, sy, 0],
-        [0, 0, 1]
-      ]);
+      result[0] *= sx;
+      result[1] *= sx;
+      result[2] *= sy;
+      result[3] *= sy;
     }
     
     if (t.hasOwnProperty('rotate')) {
       sinVal = Math.sin(t.rotate);
       cosVal = Math.cos(t.rotate);
-      result = smm(result, [
-        [cosVal, -sinVal, 0],
-        [sinVal, cosVal, 0],
-        [0, 0, 1]
-      ]);
+      
+      result[0] = result[0] * cosVal + result[2] * -sinVal;
+      result[1] = result[1] * cosVal + result[3] * -sinVal;
+      result[2] = result[0] * sinVal + result[2] * cosVal;
+      result[3] = result[1] * sinVal + result[3] * cosVal;
     }
   }
   props = {
-    a: result[0][0],
-    b: result[1][0],
-    c: result[0][1],
-    d: result[1][1],
-    e: result[0][2],
-    f: result[1][2]
+    a: result[0],
+    b: result[1],
+    c: result[2],
+    d: result[3],
+    e: result[4],
+    f: result[5]
   };
   
   transformResult = [new Instruction('transform', props)];
@@ -80,25 +77,6 @@ function transform(stack, children) {
   
   return transformResult;
 }
-function copy(target, children) {
-  var t = target[0],
-    result = [new Instruction('transform', {
-      a: t.props.a,
-      b: t.props.b,
-      c: t.props.c,
-      d: t.props.d,
-      e: t.props.e,
-      f: t.props.f
-    })];
-  
-  for(var i = 1; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
-  result.push(new Instruction('restore'));
-  return result;
-}
-
-transform.copy = copy;
 
 
 module.exports = transform;

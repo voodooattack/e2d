@@ -14,6 +14,9 @@ That's right. In a web worker. The cost for doing application logic this way is 
 
 When using this library, you'll probably want to do something like this:
 
+# API Stability
+
+This API is basically under heavy rewrite to make some of the parts faster and more optimized. That means you should use the library with the intent of helping me make it better!  It's almost ready for production use, but I need your help.  Pull requests are encouraged and would seriously help me speed up the process of making this API a reality.
 
 ```javascript
 //This works in both browser AND worker.
@@ -335,7 +338,7 @@ r.style({
 Also supports:
 
 1. Unlimited arguments, it will apply every style manually to the canvas
-2. `null` values will remove style attributes
+2. `null` values will remove style attributes `(value === null)`
 3. Arrays of style objects
 
 # Render Commands

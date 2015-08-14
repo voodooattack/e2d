@@ -1,8 +1,7 @@
 //jshint node: true, browser: true, worker: true
 
 'use strict';
-var flatten = require('lodash/array/flatten'),
-    isElement = require('lodash/lang/isElement'),
+var isElement = require('lodash/lang/isElement'),
     Canvas = null,
     Gradient = null,
     isWorker = require('./isWorker'),
@@ -12,15 +11,10 @@ var flatten = require('lodash/array/flatten'),
     util = require('util'),
     Img = require('./Img'),
     keycode = require('keycode'),
-    smm = require('square-matrix-multiply'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
     pi2 = Math.PI * 2,
-    identity = [
-      [1, 0, 0],
-      [0, 1, 0],
-      [0, 0, 1]
-    ];
+    identity = new Float64Array([1, 0, 0, 1, 0, 0]);
 
 util.inherits(Renderer, events.EventEmitter);
 
@@ -78,14 +72,14 @@ function Renderer(width, height, parent, worker) {
   }
   
   //set parent
-  if (!parent || !isElement(parent)) {
+  if (parent && parent.nodeType === 1) {
+    this.parent = parent;
+  } else {
     this.parent = document.createElement('div');
     this.parent.style.margin = '0 auto';
     this.parent.style.width = width + 'px';
     this.parent.style.height = height + 'px';
     document.body.appendChild(this.parent);
-  } else {
-    this.parent = parent;
   }
   
   //set width and height automatically
@@ -130,12 +124,12 @@ Renderer.prototype.render = function render(args) {
       transformStack = [identity],
       globalCompositeOperationStack = [],
       ctx = this.ctx,
-      children = [];
+      children = [],
+      concat = children.concat;
   
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
   }
-  children = flatten(children, true);
   
   if (isWorker) {
     return this.sendBrowser('render', children);
@@ -143,42 +137,62 @@ Renderer.prototype.render = function render(args) {
   
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
+    
+    if (child && child.constructor === Array) {
+      children = concat.apply([], children);
+      child = children[i];
+      while(child && child.constructor === Array) {
+        children = concat.apply([], children);
+        child = children[i];
+      }
+      len = children.length;
+    }
+    
     if (!child) {
       continue;
     }
+    
     props = child.props;
     type = child.type;
     
     if (type === 'transform') {
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [props.a, props.c, props.e],
-        [props.b, props.d, props.f],
-        [0,       0,       1      ]
+      
+      cache = transformStack[transformStack.length - 1];
+      matrix = new Float64Array([
+        cache[0] * props.a + cache[2] * props.b,
+        cache[1] * props.a + cache[3] * props.b,
+        cache[0] * props.c + cache[2] * props.d,
+        cache[1] * props.c + cache[3] * props.d,
+        cache[0] * props.e + cache[2] * props.f + cache[4],
+        cache[1] * props.e + cache[3] * props.f + cache[5]
       ]);
+      
+      
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
     if (type === 'scale') {
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [props.x, 0,       0],
-        [0,       props.y, 0],
-        [0,       0,       1]
-      ]);
+
+      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix[0] *= props.x;
+      matrix[1] *= props.x;
+      matrix[2] *= props.y;
+      matrix[3] *= props.y;
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
     if (type === 'translate') {
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [1, 0, props.x],
-        [0, 1, props.y],
-        [0, 0, 1      ]
-      ]);
+      
+      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix[4] += matrix[0] * props.x + matrix[2] * props.y;
+      matrix[5] += matrix[1] * props.x + matrix[3] * props.y;
+      
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
@@ -186,20 +200,22 @@ Renderer.prototype.render = function render(args) {
       cosr = Math.cos(props.r);
       sinr = Math.sin(props.r);
       
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [cosr, -sinr, 0],
-        [sinr, cosr,  0],
-        [0,    0,     1]
-      ]);
+      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      
+      matrix[0] = matrix[0] * cosr + matrix[2] * -sinr;
+      matrix[1] = matrix[1] * cosr + matrix[3] * -sinr;
+      matrix[2] = matrix[0] * sinr + matrix[2] * cosr;
+      matrix[3] = matrix[1] * sinr + matrix[3] * cosr;
+      
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
     if (type === 'restore') {
       transformStack.pop();
       matrix = transformStack[transformStack.length - 1];
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
@@ -1039,12 +1055,31 @@ Renderer.prototype.fireFrame = function() {
 };
 
 Renderer.prototype.style = function style() {
-  var styles = [],
+  var children = [],
+      styles = [],
+      concat = children.concat,
+      len,
+      i,
+      child,
       name;
-  for (var i = 0; i < arguments.length; i++) {
-    styles.push(arguments[i]);
+  for(i = 0, len = arguments.length; i < len; i++) {
+    children.push(arguments[i]);
   }
-  styles = flatten(styles);
+  
+  for (i = 0, len = children.length; i < len; i++) {
+    if (child && child.constructor === Array) {
+      children = concat.apply([], children);
+      child = children[i];
+      while(child && child.constructor === Array) {
+        children = concat.apply([], children);
+        child = children[i];
+      }
+      len = children.length;
+    }
+    if (child) {
+      styles.push(child);
+    }
+  }
   if (isWorker) {
     this.sendBrowser('style', styles);
   } else {

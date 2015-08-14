@@ -14,11 +14,17 @@ r.on('frame', function() {
   return r.render(
     e2d.clearRect(800, 600),
     e2d.translate(100, 100,
-      e2d.beginPath(),
-      e2d.moveTo(0, 0),
-      e2d.lineTo(100, 0),
-      e2d.closePath(),
+      e2d.scale(100,
+        e2d.rotate(Math.PI,
+          e2d.beginPath(),
+          e2d.moveTo(0, 0),
+          e2d.lineTo(1, 1),
+          e2d.lineTo(0, 1),
+          e2d.closePath()
+        )
+      ),
       strokeStyle
+      
    )
   );
 });
