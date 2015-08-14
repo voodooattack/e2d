@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1299,7 +1299,7 @@ module.exports = {
     transformPoints: require('./src/transformPoints'),
     translate: require('./src/translate')
 };
-},{"./src/Canvas":34,"./src/Gradient":35,"./src/Img":36,"./src/Instruction":37,"./src/Renderer":38,"./src/addColorStop":39,"./src/arc":40,"./src/arcTo":41,"./src/beginPath":42,"./src/bezierCurveTo":43,"./src/clearRect":44,"./src/clip":45,"./src/clipPath":46,"./src/closePath":47,"./src/createLinearGradient":48,"./src/createRadialGradient":49,"./src/drawCanvas":50,"./src/drawImage":51,"./src/ellipse":52,"./src/fill":53,"./src/fillArc":54,"./src/fillCanvas":55,"./src/fillImage":56,"./src/fillImagePattern":57,"./src/fillRect":58,"./src/fillStyle":59,"./src/globalAlpha":60,"./src/globalCompositeOperation":61,"./src/hitRect":62,"./src/hitRegion":63,"./src/isDataUrl":65,"./src/isWorker":66,"./src/lineStyle":67,"./src/lineTo":68,"./src/moveTo":69,"./src/path":70,"./src/quadraticCurveTo":71,"./src/rect":72,"./src/rotate":73,"./src/scale":74,"./src/shadowStyle":75,"./src/stroke":76,"./src/strokeArc":77,"./src/strokeRect":78,"./src/strokeStyle":79,"./src/text":80,"./src/textStyle":81,"./src/transform":82,"./src/transformPoints":83,"./src/translate":84}],8:[function(require,module,exports){
+},{"./src/Canvas":10,"./src/Gradient":11,"./src/Img":12,"./src/Instruction":13,"./src/Renderer":14,"./src/addColorStop":15,"./src/arc":16,"./src/arcTo":17,"./src/beginPath":18,"./src/bezierCurveTo":19,"./src/clearRect":20,"./src/clip":21,"./src/clipPath":22,"./src/closePath":23,"./src/createLinearGradient":24,"./src/createRadialGradient":25,"./src/drawCanvas":26,"./src/drawImage":27,"./src/ellipse":28,"./src/fill":29,"./src/fillArc":30,"./src/fillCanvas":31,"./src/fillImage":32,"./src/fillImagePattern":33,"./src/fillRect":34,"./src/fillStyle":35,"./src/globalAlpha":36,"./src/globalCompositeOperation":37,"./src/hitRect":38,"./src/hitRegion":39,"./src/isDataUrl":41,"./src/isWorker":42,"./src/lineStyle":43,"./src/lineTo":44,"./src/moveTo":45,"./src/path":46,"./src/quadraticCurveTo":47,"./src/rect":48,"./src/rotate":49,"./src/scale":50,"./src/shadowStyle":51,"./src/stroke":52,"./src/strokeArc":53,"./src/strokeRect":54,"./src/strokeStyle":55,"./src/text":56,"./src/textStyle":57,"./src/transform":58,"./src/transformPoints":59,"./src/translate":60}],8:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -1449,711 +1449,6 @@ for (var alias in aliases) {
 }
 
 },{}],9:[function(require,module,exports){
-var baseFlatten = require('../internal/baseFlatten'),
-    isIterateeCall = require('../internal/isIterateeCall');
-
-/**
- * Flattens a nested array. If `isDeep` is `true` the array is recursively
- * flattened, otherwise it is only flattened a single level.
- *
- * @static
- * @memberOf _
- * @category Array
- * @param {Array} array The array to flatten.
- * @param {boolean} [isDeep] Specify a deep flatten.
- * @param- {Object} [guard] Enables use as a callback for functions like `_.map`.
- * @returns {Array} Returns the new flattened array.
- * @example
- *
- * _.flatten([1, [2, 3, [4]]]);
- * // => [1, 2, 3, [4]]
- *
- * // using `isDeep`
- * _.flatten([1, [2, 3, [4]]], true);
- * // => [1, 2, 3, 4]
- */
-function flatten(array, isDeep, guard) {
-  var length = array ? array.length : 0;
-  if (guard && isIterateeCall(array, isDeep, guard)) {
-    isDeep = false;
-  }
-  return length ? baseFlatten(array, isDeep) : [];
-}
-
-module.exports = flatten;
-
-},{"../internal/baseFlatten":11,"../internal/isIterateeCall":20}],10:[function(require,module,exports){
-/**
- * Appends the elements of `values` to `array`.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {Array} values The values to append.
- * @returns {Array} Returns `array`.
- */
-function arrayPush(array, values) {
-  var index = -1,
-      length = values.length,
-      offset = array.length;
-
-  while (++index < length) {
-    array[offset + index] = values[index];
-  }
-  return array;
-}
-
-module.exports = arrayPush;
-
-},{}],11:[function(require,module,exports){
-var arrayPush = require('./arrayPush'),
-    isArguments = require('../lang/isArguments'),
-    isArray = require('../lang/isArray'),
-    isArrayLike = require('./isArrayLike'),
-    isObjectLike = require('./isObjectLike');
-
-/**
- * The base implementation of `_.flatten` with added support for restricting
- * flattening and specifying the start index.
- *
- * @private
- * @param {Array} array The array to flatten.
- * @param {boolean} [isDeep] Specify a deep flatten.
- * @param {boolean} [isStrict] Restrict flattening to arrays-like objects.
- * @param {Array} [result=[]] The initial result value.
- * @returns {Array} Returns the new flattened array.
- */
-function baseFlatten(array, isDeep, isStrict, result) {
-  result || (result = []);
-
-  var index = -1,
-      length = array.length;
-
-  while (++index < length) {
-    var value = array[index];
-    if (isObjectLike(value) && isArrayLike(value) &&
-        (isStrict || isArray(value) || isArguments(value))) {
-      if (isDeep) {
-        // Recursively flatten arrays (susceptible to call stack limits).
-        baseFlatten(value, isDeep, isStrict, result);
-      } else {
-        arrayPush(result, value);
-      }
-    } else if (!isStrict) {
-      result[result.length] = value;
-    }
-  }
-  return result;
-}
-
-module.exports = baseFlatten;
-
-},{"../lang/isArguments":24,"../lang/isArray":25,"./arrayPush":10,"./isArrayLike":18,"./isObjectLike":22}],12:[function(require,module,exports){
-var createBaseFor = require('./createBaseFor');
-
-/**
- * The base implementation of `baseForIn` and `baseForOwn` which iterates
- * over `object` properties returned by `keysFunc` invoking `iteratee` for
- * each property. Iteratee functions may exit iteration early by explicitly
- * returning `false`.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @param {Function} keysFunc The function to get the keys of `object`.
- * @returns {Object} Returns `object`.
- */
-var baseFor = createBaseFor();
-
-module.exports = baseFor;
-
-},{"./createBaseFor":15}],13:[function(require,module,exports){
-var baseFor = require('./baseFor'),
-    keysIn = require('../object/keysIn');
-
-/**
- * The base implementation of `_.forIn` without support for callback
- * shorthands and `this` binding.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Object} Returns `object`.
- */
-function baseForIn(object, iteratee) {
-  return baseFor(object, iteratee, keysIn);
-}
-
-module.exports = baseForIn;
-
-},{"../object/keysIn":31,"./baseFor":12}],14:[function(require,module,exports){
-/**
- * The base implementation of `_.property` without support for deep paths.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @returns {Function} Returns the new function.
- */
-function baseProperty(key) {
-  return function(object) {
-    return object == null ? undefined : object[key];
-  };
-}
-
-module.exports = baseProperty;
-
-},{}],15:[function(require,module,exports){
-var toObject = require('./toObject');
-
-/**
- * Creates a base function for `_.forIn` or `_.forInRight`.
- *
- * @private
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
-function createBaseFor(fromRight) {
-  return function(object, iteratee, keysFunc) {
-    var iterable = toObject(object),
-        props = keysFunc(object),
-        length = props.length,
-        index = fromRight ? length : -1;
-
-    while ((fromRight ? index-- : ++index < length)) {
-      var key = props[index];
-      if (iteratee(iterable[key], key, iterable) === false) {
-        break;
-      }
-    }
-    return object;
-  };
-}
-
-module.exports = createBaseFor;
-
-},{"./toObject":23}],16:[function(require,module,exports){
-var baseProperty = require('./baseProperty');
-
-/**
- * Gets the "length" property value of `object`.
- *
- * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
- * that affects Safari on at least iOS 8.1-8.3 ARM64.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {*} Returns the "length" value.
- */
-var getLength = baseProperty('length');
-
-module.exports = getLength;
-
-},{"./baseProperty":14}],17:[function(require,module,exports){
-var isNative = require('../lang/isNative');
-
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
-function getNative(object, key) {
-  var value = object == null ? undefined : object[key];
-  return isNative(value) ? value : undefined;
-}
-
-module.exports = getNative;
-
-},{"../lang/isNative":28}],18:[function(require,module,exports){
-var getLength = require('./getLength'),
-    isLength = require('./isLength');
-
-/**
- * Checks if `value` is array-like.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
- */
-function isArrayLike(value) {
-  return value != null && isLength(getLength(value));
-}
-
-module.exports = isArrayLike;
-
-},{"./getLength":16,"./isLength":21}],19:[function(require,module,exports){
-/** Used to detect unsigned integer values. */
-var reIsUint = /^\d+$/;
-
-/**
- * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
- * of an array-like value.
- */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
-function isIndex(value, length) {
-  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
-  length = length == null ? MAX_SAFE_INTEGER : length;
-  return value > -1 && value % 1 == 0 && value < length;
-}
-
-module.exports = isIndex;
-
-},{}],20:[function(require,module,exports){
-var isArrayLike = require('./isArrayLike'),
-    isIndex = require('./isIndex'),
-    isObject = require('../lang/isObject');
-
-/**
- * Checks if the provided arguments are from an iteratee call.
- *
- * @private
- * @param {*} value The potential iteratee value argument.
- * @param {*} index The potential iteratee index or key argument.
- * @param {*} object The potential iteratee object argument.
- * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
- */
-function isIterateeCall(value, index, object) {
-  if (!isObject(object)) {
-    return false;
-  }
-  var type = typeof index;
-  if (type == 'number'
-      ? (isArrayLike(object) && isIndex(index, object.length))
-      : (type == 'string' && index in object)) {
-    var other = object[index];
-    return value === value ? (value === other) : (other !== other);
-  }
-  return false;
-}
-
-module.exports = isIterateeCall;
-
-},{"../lang/isObject":29,"./isArrayLike":18,"./isIndex":19}],21:[function(require,module,exports){
-/**
- * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
- * of an array-like value.
- */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/**
- * Checks if `value` is a valid array-like length.
- *
- * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
- */
-function isLength(value) {
-  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-}
-
-module.exports = isLength;
-
-},{}],22:[function(require,module,exports){
-/**
- * Checks if `value` is object-like.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- */
-function isObjectLike(value) {
-  return !!value && typeof value == 'object';
-}
-
-module.exports = isObjectLike;
-
-},{}],23:[function(require,module,exports){
-var isObject = require('../lang/isObject');
-
-/**
- * Converts `value` to an object if it's not one.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {Object} Returns the object.
- */
-function toObject(value) {
-  return isObject(value) ? value : Object(value);
-}
-
-module.exports = toObject;
-
-},{"../lang/isObject":29}],24:[function(require,module,exports){
-var isArrayLike = require('../internal/isArrayLike'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Native method references. */
-var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-
-/**
- * Checks if `value` is classified as an `arguments` object.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isArguments(function() { return arguments; }());
- * // => true
- *
- * _.isArguments([1, 2, 3]);
- * // => false
- */
-function isArguments(value) {
-  return isObjectLike(value) && isArrayLike(value) &&
-    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
-}
-
-module.exports = isArguments;
-
-},{"../internal/isArrayLike":18,"../internal/isObjectLike":22}],25:[function(require,module,exports){
-var getNative = require('../internal/getNative'),
-    isLength = require('../internal/isLength'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** `Object#toString` result references. */
-var arrayTag = '[object Array]';
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/* Native method references for those with the same name as other `lodash` methods. */
-var nativeIsArray = getNative(Array, 'isArray');
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(function() { return arguments; }());
- * // => false
- */
-var isArray = nativeIsArray || function(value) {
-  return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag;
-};
-
-module.exports = isArray;
-
-},{"../internal/getNative":17,"../internal/isLength":21,"../internal/isObjectLike":22}],26:[function(require,module,exports){
-var isObjectLike = require('../internal/isObjectLike'),
-    isPlainObject = require('./isPlainObject');
-
-/**
- * Checks if `value` is a DOM element.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a DOM element, else `false`.
- * @example
- *
- * _.isElement(document.body);
- * // => true
- *
- * _.isElement('<body>');
- * // => false
- */
-function isElement(value) {
-  return !!value && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
-}
-
-module.exports = isElement;
-
-},{"../internal/isObjectLike":22,"./isPlainObject":30}],27:[function(require,module,exports){
-var isObject = require('./isObject');
-
-/** `Object#toString` result references. */
-var funcTag = '[object Function]';
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in older versions of Chrome and Safari which return 'function' for regexes
-  // and Safari 8 equivalents which return 'object' for typed array constructors.
-  return isObject(value) && objToString.call(value) == funcTag;
-}
-
-module.exports = isFunction;
-
-},{"./isObject":29}],28:[function(require,module,exports){
-var isFunction = require('./isFunction'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** Used to detect host constructors (Safari > 5). */
-var reIsHostCtor = /^\[object .+?Constructor\]$/;
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var fnToString = Function.prototype.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Used to detect if a method is native. */
-var reIsNative = RegExp('^' +
-  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-);
-
-/**
- * Checks if `value` is a native function.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
- * @example
- *
- * _.isNative(Array.prototype.push);
- * // => true
- *
- * _.isNative(_);
- * // => false
- */
-function isNative(value) {
-  if (value == null) {
-    return false;
-  }
-  if (isFunction(value)) {
-    return reIsNative.test(fnToString.call(value));
-  }
-  return isObjectLike(value) && reIsHostCtor.test(value);
-}
-
-module.exports = isNative;
-
-},{"../internal/isObjectLike":22,"./isFunction":27}],29:[function(require,module,exports){
-/**
- * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
- * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(1);
- * // => false
- */
-function isObject(value) {
-  // Avoid a V8 JIT bug in Chrome 19-20.
-  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-module.exports = isObject;
-
-},{}],30:[function(require,module,exports){
-var baseForIn = require('../internal/baseForIn'),
-    isArguments = require('./isArguments'),
-    isObjectLike = require('../internal/isObjectLike');
-
-/** `Object#toString` result references. */
-var objectTag = '[object Object]';
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objToString = objectProto.toString;
-
-/**
- * Checks if `value` is a plain object, that is, an object created by the
- * `Object` constructor or one with a `[[Prototype]]` of `null`.
- *
- * **Note:** This method assumes objects created by the `Object` constructor
- * have no inherited enumerable properties.
- *
- * @static
- * @memberOf _
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- * }
- *
- * _.isPlainObject(new Foo);
- * // => false
- *
- * _.isPlainObject([1, 2, 3]);
- * // => false
- *
- * _.isPlainObject({ 'x': 0, 'y': 0 });
- * // => true
- *
- * _.isPlainObject(Object.create(null));
- * // => true
- */
-function isPlainObject(value) {
-  var Ctor;
-
-  // Exit early for non `Object` objects.
-  if (!(isObjectLike(value) && objToString.call(value) == objectTag && !isArguments(value)) ||
-      (!hasOwnProperty.call(value, 'constructor') && (Ctor = value.constructor, typeof Ctor == 'function' && !(Ctor instanceof Ctor)))) {
-    return false;
-  }
-  // IE < 9 iterates inherited properties before own properties. If the first
-  // iterated property is an object's own property then there are no inherited
-  // enumerable properties.
-  var result;
-  // In most environments an object's own properties are iterated before
-  // its inherited properties. If the last iterated property is an object's
-  // own property then there are no inherited enumerable properties.
-  baseForIn(value, function(subValue, key) {
-    result = key;
-  });
-  return result === undefined || hasOwnProperty.call(value, result);
-}
-
-module.exports = isPlainObject;
-
-},{"../internal/baseForIn":13,"../internal/isObjectLike":22,"./isArguments":24}],31:[function(require,module,exports){
-var isArguments = require('../lang/isArguments'),
-    isArray = require('../lang/isArray'),
-    isIndex = require('../internal/isIndex'),
-    isLength = require('../internal/isLength'),
-    isObject = require('../lang/isObject');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * Creates an array of the own and inherited enumerable property names of `object`.
- *
- * **Note:** Non-object values are coerced to objects.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.keysIn(new Foo);
- * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
- */
-function keysIn(object) {
-  if (object == null) {
-    return [];
-  }
-  if (!isObject(object)) {
-    object = Object(object);
-  }
-  var length = object.length;
-  length = (length && isLength(length) &&
-    (isArray(object) || isArguments(object)) && length) || 0;
-
-  var Ctor = object.constructor,
-      index = -1,
-      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
-      result = Array(length),
-      skipIndexes = length > 0;
-
-  while (++index < length) {
-    result[index] = (index + '');
-  }
-  for (var key in object) {
-    if (!(skipIndexes && isIndex(key, length)) &&
-        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
-      result.push(key);
-    }
-  }
-  return result;
-}
-
-module.exports = keysIn;
-
-},{"../internal/isIndex":19,"../internal/isLength":21,"../lang/isArguments":24,"../lang/isArray":25,"../lang/isObject":29}],32:[function(require,module,exports){
 module.exports = function (point, vs) {
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -2173,172 +1468,12 @@ module.exports = function (point, vs) {
     return inside;
 };
 
-},{}],33:[function(require,module,exports){
-/*
-
-index.js - square matrix multiply
-
-The MIT License (MIT)
-
-Copyright (c) 2013 Tristan Slominski
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-*/
-
-"use strict";
-
-var squareMatrixMultiply = module.exports = function squareMatrixMultiply (A, B, algorithm) {
-    switch (algorithm && algorithm.toLowerCase()) {
-        case 'strassen': 
-            return strassen(A, B);
-        case 'naive':
-        default:
-            return naive(A, B);
-    }
-};
-
-var naive = function naive (A, B) {
-    var n = A.length;
-    var C = [];
-    for (var e = 0; e < n; e++) {
-        C.push([]);
-    }
-    for (var i = 0; i < n; i++) {
-        for (var j = 0; j < n; j++) {
-            C[i][j] = 0;
-            for (var k = 0; k < n; k++) {
-                C[i][j] = C[i][j] + (A[i][k] * B[k][j]);
-            }
-        }
-    }
-    return C;
-};
-
-var strassen = function strassen (A, B) {
-    var n = A.length;
-    var C = [];
-    for (var e = 0; e < n; e++) {
-        C.push([]);
-    }
-    if (n == 1) {
-        C[0][0] = A[0][0] * B[0][0];
-    } else {
-        var halfOfN = n / 2;
-
-        // matrix partitions initialization
-        var A11 = [], A12 = [], A21 = [], A22 = [];
-        var B11 = [], B12 = [], B21 = [], B22 = [];
-        for (e = 0; e < halfOfN; e++) {
-            A11.push([]);
-            A12.push([]);
-            A21.push([]);
-            A22.push([]);
-            B11.push([]);
-            B12.push([]);
-            B21.push([]);
-            B22.push([]);
-        }
-        var row, column;
-        for (row = 0; row < halfOfN; row++) {
-            for (column = 0; column < halfOfN; column++) {
-                A11[row][column] = A[row][column];
-                B11[row][column] = B[row][column];
-            }
-            for (column = halfOfN; column < n; column++) {
-                A12[row][column - halfOfN] = A[row][column];
-                B12[row][column - halfOfN] = B[row][column];
-            }
-        }
-        for (row = halfOfN; row < n; row++) {
-            for (column = 0; column < halfOfN; column++) {
-                A21[row - halfOfN][column] = A[row][column];
-                B21[row - halfOfN][column] = B[row][column];
-            }
-            for (column = halfOfN; column < n; column++) {
-                A22[row - halfOfN][column - halfOfN] = A[row][column];
-                B22[row - halfOfN][column - halfOfN] = B[row][column];
-            }
-        }
-
-        // strassen matrices
-        var S1 = [], S2 = [], S3 = [], S4 = [], S5 = [], S6 = [], S7 = [],
-            S8 = [], S9 = [], S10 = [];
-        for (e = 0; e < halfOfN; e++) {
-            S1.push([]);
-            S2.push([]);
-            S3.push([]);
-            S4.push([]);
-            S5.push([]);
-            S6.push([]);
-            S7.push([]);
-            S8.push([]);
-            S9.push([]);
-            S10.push([]);
-        }
-
-        for (row = 0; row < halfOfN; row++) {
-            for (column = 0; column < halfOfN; column++) {
-                S1[row][column] = B12[row][column] - B22[row][column];
-                S2[row][column] = A11[row][column] + A12[row][column];
-                S3[row][column] = A21[row][column] + A22[row][column];
-                S4[row][column] = B21[row][column] - B11[row][column];
-                S5[row][column] = A11[row][column] + A22[row][column];
-                S6[row][column] = B11[row][column] + B22[row][column];
-                S7[row][column] = A12[row][column] - A22[row][column];
-                S8[row][column] = B21[row][column] + B22[row][column];
-                S9[row][column] = A11[row][column] - A21[row][column];
-                S10[row][column] = B11[row][column] + B12[row][column];
-            }
-        }
-
-        // actual computations
-        var P1 = strassen(A11, S1);
-        var P2 = strassen(S2, B22);
-        var P3 = strassen(S3, B11);
-        var P4 = strassen(A22, S4);
-        var P5 = strassen(S5, S6);
-        var P6 = strassen(S7, S8);
-        var P7 = strassen(S9, S10);
-
-        // assemble computations in original matrix
-        for (row = 0; row < halfOfN; row++) {
-            for (column = 0; column < halfOfN; column++) {
-                C[row][column]                     = P5[row][column] + P4[row][column] - P2[row][column] + P6[row][column];
-                C[row][column + halfOfN]           = P1[row][column] + P2[row][column];
-                C[row + halfOfN][column]           = P3[row][column] + P4[row][column];
-                C[row + halfOfN][column + halfOfN] = P5[row][column] + P1[row][column] - P3[row][column] - P7[row][column];
-            }
-        }
-    }
-    return C;
-};
-},{}],34:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 //jshint worker: true, browser: true, node: true
 'use strict';
 
 var isWorker = require('./isWorker'),
     Img = require('./Img'),
-    flatten = require('lodash/array/flatten'),
     newid = require('./id');
 
 function Canvas(width, height, id) {
@@ -2359,11 +1494,26 @@ function Canvas(width, height, id) {
 }
 
 Canvas.prototype.render = function render(children) {
-  var result = [];
-  for (var i = 0; i < arguments.length; i++) {
+  var result = [],
+      i,
+      len,
+      child,
+      concat = result.concat;
+  for (i = 0; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
-  result = flatten(result);
+  for(i = 0, len = result.length; i < len; i++) {
+    child = result[i];
+    if (child && child.constructor === Array) {
+      result = concat.apply([], result);
+      child = result[i];
+      while(child && child.constructor === Array) {
+        result = concat.apply([], result);
+        child = result[i];
+      }
+      len = result.length;
+    }
+  }
   if (isWorker) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {
@@ -2436,7 +1586,7 @@ Object.seal(Canvas);
 Object.seal(Canvas.prototype);
 module.exports = Canvas;
 
-},{"./Img":36,"./Renderer":38,"./id":64,"./isWorker":66,"lodash/array/flatten":9}],35:[function(require,module,exports){
+},{"./Img":12,"./Renderer":14,"./id":40,"./isWorker":42}],11:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker');
@@ -2486,7 +1636,7 @@ Object.seal(Gradient);
 Object.seal(Gradient.prototype);
 
 module.exports = Gradient;
-},{"./isWorker":66}],36:[function(require,module,exports){
+},{"./isWorker":42}],12:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 
@@ -2583,7 +1733,7 @@ Object.seal(Img);
 Object.seal(Img.prototype);
 
 module.exports = Img;
-},{"./id":64,"./isDataUrl":65,"./isWorker":66,"events":1,"path":3,"util":6}],37:[function(require,module,exports){
+},{"./id":40,"./isDataUrl":41,"./isWorker":42,"events":1,"path":3,"util":6}],13:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -2596,13 +1746,11 @@ Object.seal(Instruction);
 Object.seal(Instruction.prototype);
 
 module.exports = Instruction;
-},{}],38:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 
 'use strict';
-var flatten = require('lodash/array/flatten'),
-    isElement = require('lodash/lang/isElement'),
-    Canvas = null,
+var Canvas = null,
     Gradient = null,
     isWorker = require('./isWorker'),
     createLinearGradient = require('./createLinearGradient'),
@@ -2611,15 +1759,10 @@ var flatten = require('lodash/array/flatten'),
     util = require('util'),
     Img = require('./Img'),
     keycode = require('keycode'),
-    smm = require('square-matrix-multiply'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
     pi2 = Math.PI * 2,
-    identity = [
-      [1, 0, 0],
-      [0, 1, 0],
-      [0, 0, 1]
-    ];
+    identity = new Float64Array([1, 0, 0, 1, 0, 0]);
 
 util.inherits(Renderer, events.EventEmitter);
 
@@ -2677,14 +1820,14 @@ function Renderer(width, height, parent, worker) {
   }
   
   //set parent
-  if (!parent || !isElement(parent)) {
+  if (parent && parent.nodeType === 1) {
+    this.parent = parent;
+  } else {
     this.parent = document.createElement('div');
     this.parent.style.margin = '0 auto';
     this.parent.style.width = width + 'px';
     this.parent.style.height = height + 'px';
     document.body.appendChild(this.parent);
-  } else {
-    this.parent = parent;
   }
   
   //set width and height automatically
@@ -2729,12 +1872,12 @@ Renderer.prototype.render = function render(args) {
       transformStack = [identity],
       globalCompositeOperationStack = [],
       ctx = this.ctx,
-      children = [];
+      children = [],
+      concat = children.concat;
   
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
   }
-  children = flatten(children, true);
   
   if (isWorker) {
     return this.sendBrowser('render', children);
@@ -2742,42 +1885,62 @@ Renderer.prototype.render = function render(args) {
   
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
+    
+    if (child && child.constructor === Array) {
+      children = concat.apply([], children);
+      child = children[i];
+      while(child && child.constructor === Array) {
+        children = concat.apply([], children);
+        child = children[i];
+      }
+      len = children.length;
+    }
+    
     if (!child) {
       continue;
     }
+    
     props = child.props;
     type = child.type;
     
     if (type === 'transform') {
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [props.a, props.c, props.e],
-        [props.b, props.d, props.f],
-        [0,       0,       1      ]
+      
+      cache = transformStack[transformStack.length - 1];
+      matrix = new Float64Array([
+        cache[0] * props.a + cache[2] * props.b,
+        cache[1] * props.a + cache[3] * props.b,
+        cache[0] * props.c + cache[2] * props.d,
+        cache[1] * props.c + cache[3] * props.d,
+        cache[0] * props.e + cache[2] * props.f + cache[4],
+        cache[1] * props.e + cache[3] * props.f + cache[5]
       ]);
+      
+      
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
     if (type === 'scale') {
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [props.x, 0,       0],
-        [0,       props.y, 0],
-        [0,       0,       1]
-      ]);
+
+      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix[0] *= props.x;
+      matrix[1] *= props.x;
+      matrix[2] *= props.y;
+      matrix[3] *= props.y;
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
     if (type === 'translate') {
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [1, 0, props.x],
-        [0, 1, props.y],
-        [0, 0, 1      ]
-      ]);
+      
+      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix[4] += matrix[0] * props.x + matrix[2] * props.y;
+      matrix[5] += matrix[1] * props.x + matrix[3] * props.y;
+      
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
@@ -2785,20 +1948,22 @@ Renderer.prototype.render = function render(args) {
       cosr = Math.cos(props.r);
       sinr = Math.sin(props.r);
       
-      matrix = smm(transformStack[transformStack.length - 1], [
-        [cosr, -sinr, 0],
-        [sinr, cosr,  0],
-        [0,    0,     1]
-      ]);
+      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      
+      matrix[0] = matrix[0] * cosr + matrix[2] * -sinr;
+      matrix[1] = matrix[1] * cosr + matrix[3] * -sinr;
+      matrix[2] = matrix[0] * sinr + matrix[2] * cosr;
+      matrix[3] = matrix[1] * sinr + matrix[3] * cosr;
+      
       transformStack.push(matrix);
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
     if (type === 'restore') {
       transformStack.pop();
       matrix = transformStack[transformStack.length - 1];
-      ctx.setTransform(matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1], matrix[0][2], matrix[1][2]);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
     
@@ -3638,12 +2803,31 @@ Renderer.prototype.fireFrame = function() {
 };
 
 Renderer.prototype.style = function style() {
-  var styles = [],
+  var children = [],
+      styles = [],
+      concat = children.concat,
+      len,
+      i,
+      child,
       name;
-  for (var i = 0; i < arguments.length; i++) {
-    styles.push(arguments[i]);
+  for(i = 0, len = arguments.length; i < len; i++) {
+    children.push(arguments[i]);
   }
-  styles = flatten(styles);
+  
+  for (i = 0, len = children.length; i < len; i++) {
+    if (child && child.constructor === Array) {
+      children = concat.apply([], children);
+      child = children[i];
+      while(child && child.constructor === Array) {
+        children = concat.apply([], children);
+        child = children[i];
+      }
+      len = children.length;
+    }
+    if (child) {
+      styles.push(child);
+    }
+  }
   if (isWorker) {
     this.sendBrowser('style', styles);
   } else {
@@ -3680,7 +2864,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":34,"./Gradient":35,"./Img":36,"./createLinearGradient":48,"./createRadialGradient":49,"./isWorker":66,"./transformPoints":83,"events":1,"keycode":8,"lodash/array/flatten":9,"lodash/lang/isElement":26,"point-in-polygon":32,"square-matrix-multiply":33,"util":6}],39:[function(require,module,exports){
+},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./isWorker":42,"./transformPoints":59,"events":1,"keycode":8,"point-in-polygon":9,"util":6}],15:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3691,7 +2875,7 @@ function addColorStop(offset, color) {
 }
 
 module.exports = addColorStop;
-},{"./Instruction":37}],40:[function(require,module,exports){
+},{"./Instruction":13}],16:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3714,7 +2898,7 @@ function arc(x, y, r, startAngle, endAngle, anticlockwise) {
 }
 
 module.exports = arc;
-},{"./Instruction":37}],41:[function(require,module,exports){
+},{"./Instruction":13}],17:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3725,7 +2909,7 @@ function arcTo(x1, y1, x2, y2, r) {
 
 module.exports = arcTo;
 
-},{"./Instruction":37}],42:[function(require,module,exports){
+},{"./Instruction":13}],18:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3734,7 +2918,7 @@ function beginPath() {
   return new Instruction('beginPath');
 }
 module.exports = beginPath;
-},{"./Instruction":37}],43:[function(require,module,exports){
+},{"./Instruction":13}],19:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3751,7 +2935,7 @@ function bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
 }
 
 module.exports = bezierCurveTo;
-},{"./Instruction":37}],44:[function(require,module,exports){
+},{"./Instruction":13}],20:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3765,7 +2949,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":37}],45:[function(require,module,exports){
+},{"./Instruction":13}],21:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3782,7 +2966,7 @@ function clip(children) {
 }
 
 module.exports = clip;
-},{"./beginPath":42,"./clipPath":46}],46:[function(require,module,exports){
+},{"./beginPath":18,"./clipPath":22}],22:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3791,7 +2975,7 @@ function clipPath() {
   return new Instruction('clipPath');
 }
 module.exports = clipPath;
-},{"./Instruction":37}],47:[function(require,module,exports){
+},{"./Instruction":13}],23:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3800,11 +2984,10 @@ function closePath() {
   return new Instruction('closePath');
 }
 module.exports = closePath;
-},{"./Instruction":37}],48:[function(require,module,exports){
+},{"./Instruction":13}],24:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
-    flatten = require('lodash/array/flatten'),
     Gradient = require('./Gradient'),
     newid = require('./id');
 
@@ -3829,7 +3012,7 @@ function createLinearGradient(x0, y0, x1, y1, children, id) {
 
 
 module.exports = createLinearGradient;
-},{"./Gradient":35,"./id":64,"./isWorker":66,"lodash/array/flatten":9}],49:[function(require,module,exports){
+},{"./Gradient":11,"./id":40,"./isWorker":42}],25:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
@@ -3859,7 +3042,7 @@ function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
 
 
 module.exports = createRadialGradient;
-},{"./Gradient":35,"./id":64,"./isWorker":66}],50:[function(require,module,exports){
+},{"./Gradient":11,"./id":40,"./isWorker":42}],26:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3905,7 +3088,7 @@ function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = drawCanvas;
-},{"./Instruction":37}],51:[function(require,module,exports){
+},{"./Instruction":13}],27:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3951,7 +3134,7 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = drawImage;
-},{"./Instruction":37}],52:[function(require,module,exports){
+},{"./Instruction":13}],28:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3974,7 +3157,7 @@ function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlo
 }
 
 module.exports = ellipse;
-},{"./Instruction":37}],53:[function(require,module,exports){
+},{"./Instruction":13}],29:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3984,7 +3167,7 @@ function fill() {
 }
 
 module.exports = fill;
-},{"./Instruction":37}],54:[function(require,module,exports){
+},{"./Instruction":13}],30:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4005,7 +3188,7 @@ function fillArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = fillArc;
-},{"./Instruction":37}],55:[function(require,module,exports){
+},{"./Instruction":13}],31:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4051,7 +3234,7 @@ function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = fillImage;
-},{"./Instruction":37}],56:[function(require,module,exports){
+},{"./Instruction":13}],32:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4097,7 +3280,7 @@ function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = fillImage;
-},{"./Instruction":37}],57:[function(require,module,exports){
+},{"./Instruction":13}],33:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4134,7 +3317,7 @@ function fillImagePattern(img, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = fillImagePattern;
-},{"./Instruction":37}],58:[function(require,module,exports){
+},{"./Instruction":13}],34:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4148,7 +3331,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":37}],59:[function(require,module,exports){
+},{"./Instruction":13}],35:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4172,7 +3355,7 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":35,"./Instruction":37}],60:[function(require,module,exports){
+},{"./Gradient":11,"./Instruction":13}],36:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4187,7 +3370,7 @@ function globalAlpha(alpha, children) {
 }
 
 module.exports = globalAlpha;
-},{"./Instruction":37}],61:[function(require,module,exports){
+},{"./Instruction":13}],37:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4206,7 +3389,7 @@ function globalCompositeOperation(operationType, children) {
 }
 
 module.exports = globalCompositeOperation;
-},{"./Instruction":37}],62:[function(require,module,exports){
+},{"./Instruction":13}],38:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4232,7 +3415,7 @@ function hitRect(id, x, y, width, height) {
 }
 
 module.exports = hitRect;
-},{"./Instruction":37,"./hitRegion":63}],63:[function(require,module,exports){
+},{"./Instruction":13,"./hitRegion":39}],39:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4246,7 +3429,7 @@ function hitRegion(id, points) {
 }
 
 module.exports = hitRegion;
-},{"./Instruction":37}],64:[function(require,module,exports){
+},{"./Instruction":13}],40:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4255,7 +3438,7 @@ function id() {
 }
 
 module.exports = id;
-},{}],65:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 //jshint node: true
 function isDataURL(s) {
     return !!s.match(isDataURL.regex);
@@ -4264,12 +3447,12 @@ isDataURL.regex = /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a
 Object.seal(isDataURL);
 module.exports = isDataURL;
 
-},{}],66:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
 module.exports = typeof document === 'undefined';
-},{}],67:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4313,7 +3496,7 @@ function lineStyle(value, children) {
 }
 
 module.exports = lineStyle;
-},{"./Instruction":37}],68:[function(require,module,exports){
+},{"./Instruction":13}],44:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4326,7 +3509,7 @@ function lineTo(x, y) {
 }
 
 module.exports = lineTo;
-},{"./Instruction":37}],69:[function(require,module,exports){
+},{"./Instruction":13}],45:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4339,7 +3522,7 @@ function moveTo(x, y) {
 }
 
 module.exports = moveTo;
-},{"./Instruction":37}],70:[function(require,module,exports){
+},{"./Instruction":13}],46:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4356,7 +3539,7 @@ function path(children) {
 }
 
 module.exports = path;
-},{"./beginPath":42,"./closePath":47}],71:[function(require,module,exports){
+},{"./beginPath":18,"./closePath":23}],47:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4371,7 +3554,7 @@ function quadraticCurveTo(cpx, cpy, x, y) {
 }
 
 module.exports = quadraticCurveTo;
-},{"./Instruction":37}],72:[function(require,module,exports){
+},{"./Instruction":13}],48:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4385,11 +3568,10 @@ function rect(x, y, width, height) {
 }
 
 module.exports = rect;
-},{"./Instruction":37}],73:[function(require,module,exports){
+},{"./Instruction":13}],49:[function(require,module,exports){
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-    flatten = require('lodash/array/flatten');
+var Instruction = require('./Instruction');
 
 function rotate(r, children) {
   r = +r;
@@ -4402,11 +3584,10 @@ function rotate(r, children) {
 }
 
 module.exports = rotate;
-},{"./Instruction":37,"lodash/array/flatten":9}],74:[function(require,module,exports){
+},{"./Instruction":13}],50:[function(require,module,exports){
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-    flatten = require('lodash/array/flatten');
+var Instruction = require('./Instruction');
 
 function scale(x, y, children) {
   var i = 2;
@@ -4426,7 +3607,7 @@ function scale(x, y, children) {
 }
 
 module.exports = scale;
-},{"./Instruction":37,"lodash/array/flatten":9}],75:[function(require,module,exports){
+},{"./Instruction":13}],51:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4463,7 +3644,7 @@ function shadowStyle(value, children) {
 }
 
 module.exports = shadowStyle;
-},{"./Instruction":37}],76:[function(require,module,exports){
+},{"./Instruction":13}],52:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4473,7 +3654,7 @@ function stroke() {
 }
 
 module.exports = stroke;
-},{"./Instruction":37}],77:[function(require,module,exports){
+},{"./Instruction":13}],53:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4493,7 +3674,7 @@ function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = strokeArc;
-},{"./Instruction":37}],78:[function(require,module,exports){
+},{"./Instruction":13}],54:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4507,7 +3688,7 @@ function strokeRect(x, y, width, height) {
 }
 
 module.exports = strokeRect;
-},{"./Instruction":37}],79:[function(require,module,exports){
+},{"./Instruction":13}],55:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4531,7 +3712,7 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":35,"./Instruction":37}],80:[function(require,module,exports){
+},{"./Gradient":11,"./Instruction":13}],56:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4590,7 +3771,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
 }
 
 module.exports = text;
-},{"./Instruction":37}],81:[function(require,module,exports){
+},{"./Instruction":13}],57:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4625,11 +3806,10 @@ function textStyle(value, children) {
 }
 
 module.exports = textStyle;
-},{"./Instruction":37}],82:[function(require,module,exports){
+},{"./Instruction":13}],58:[function(require,module,exports){
 //jshint node: true
 'use strict';
-var smm = require('square-matrix-multiply'),
-    Instruction = require('./Instruction');
+var Instruction = require('./Instruction');
 
 function transform(stack, children) {
   var t,
@@ -4639,11 +3819,7 @@ function transform(stack, children) {
       sinVal,
       sx,
       sy,
-      result = [
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-      ],
+      result = new Float64Array([1, 0, 0, 1, 0, 0]),
       props,
       transformResult,
       len = stack.length;
@@ -4651,11 +3827,13 @@ function transform(stack, children) {
     t = stack[i];
     
     if (t.hasOwnProperty('transform')) {
-      result = smm(result, [
-        [t.transform.a,t.transform.c,t.transform.e],
-        [t.transform.b,t.transform.d,t.transform.f],
-        [0,0,1]
-      ]);
+
+      result[0] = result[0] * t.transform.a + result[2] * t.transform.b;
+      result[1] = result[1] * t.transform.a + result[3] * t.transform.b;
+      result[2] = result[0] * t.transform.c + result[2] * t.transform.d;
+      result[3] = result[1] * t.transform.c + result[3] * t.transform.d;
+      result[4] = result[0] * t.transform.e + result[2] * t.transform.f + result[4];
+      result[5] = result[1] * t.transform.e + result[3] * t.transform.f + result[5];
       continue;
     }
     
@@ -4663,74 +3841,50 @@ function transform(stack, children) {
       sx = t.translate.x;
       sy = t.translate.y;
       
-      result = smm(result, [
-        [1, 0, sx],
-        [0, 1, sy],
-        [0, 0, 1]
-      ]);
+      result[4] += result[0] * sx + result[2] * sy;
+      result[5] += result[1] * sx + result[3] * sy;
     }
     
     if (t.hasOwnProperty('scale')) {
       sx = t.scale.x;
       sy = t.scale.y;
-      
-      result = smm(result, [
-        [sx, 0, 0],
-        [0, sy, 0],
-        [0, 0, 1]
-      ]);
+      result[0] *= sx;
+      result[1] *= sx;
+      result[2] *= sy;
+      result[3] *= sy;
     }
     
     if (t.hasOwnProperty('rotate')) {
       sinVal = Math.sin(t.rotate);
       cosVal = Math.cos(t.rotate);
-      result = smm(result, [
-        [cosVal, -sinVal, 0],
-        [sinVal, cosVal, 0],
-        [0, 0, 1]
-      ]);
+      
+      result[0] = result[0] * cosVal + result[2] * -sinVal;
+      result[1] = result[1] * cosVal + result[3] * -sinVal;
+      result[2] = result[0] * sinVal + result[2] * cosVal;
+      result[3] = result[1] * sinVal + result[3] * cosVal;
     }
   }
   props = {
-    a: result[0][0],
-    b: result[1][0],
-    c: result[0][1],
-    d: result[1][1],
-    e: result[0][2],
-    f: result[1][2]
+    a: result[0],
+    b: result[1],
+    c: result[2],
+    d: result[3],
+    e: result[4],
+    f: result[5]
   };
   
   transformResult = [new Instruction('transform', props)];
-  for(i = 1; i < arguments.length; i++) {
+  for(i = 1, len = arguments.length; i < len; i++) {
     transformResult.push(arguments[i]);
   }
   transformResult.push(new Instruction('restore'));
   
   return transformResult;
 }
-function copy(target, children) {
-  var t = target[0],
-    result = [new Instruction('transform', {
-      a: t.props.a,
-      b: t.props.b,
-      c: t.props.c,
-      d: t.props.d,
-      e: t.props.e,
-      f: t.props.f
-    })];
-  
-  for(var i = 1; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
-  result.push(new Instruction('restore'));
-  return result;
-}
-
-transform.copy = copy;
 
 
 module.exports = transform;
-},{"./Instruction":37,"square-matrix-multiply":33}],83:[function(require,module,exports){
+},{"./Instruction":13}],59:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4742,25 +3896,29 @@ function transformPoints(points, matrix) {
   for(var i = 0; i < len; i++) {
     point = points[i];
     result.push([
-      matrix[0][0] * point[0] + matrix[0][1] * point[1] + matrix[0][2],
-      matrix[1][0] * point[0] + matrix[1][1] * point[1] + matrix[1][2]
+      matrix[0] * point[0] + matrix[2] * point[1] + matrix[4],
+      matrix[1] * point[0] + matrix[3] * point[1] + matrix[5]
     ]);
   }
   return result;
 }
 
 module.exports = transformPoints;
-},{}],84:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-  flatten = require('lodash/array/flatten');
+var Instruction = require('./Instruction');
 
 function translate(x, y, children) {
   
   var result = [new Instruction('translate', { x: x, y: y })];
-  
+  var val;
   for (var i = 2; i < arguments.length; i++) {
+    val = arguments[i];
+    if (Array.isArray(val)) {
+      result = result.concat(val);
+      continue;
+    }
     result.push(arguments[i]);
   }
   
@@ -4769,4 +3927,5 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":37,"lodash/array/flatten":9}]},{},[7]);
+},{"./Instruction":13}]},{},[7])(7)
+});

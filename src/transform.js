@@ -1,7 +1,6 @@
 //jshint node: true
 'use strict';
-var smm = require('square-matrix-multiply'),
-    Instruction = require('./Instruction');
+var Instruction = require('./Instruction');
 
 function transform(stack, children) {
   var t,
@@ -19,11 +18,7 @@ function transform(stack, children) {
     t = stack[i];
     
     if (t.hasOwnProperty('transform')) {
-      /*result = smm(result, [
-        [t.transform.a,t.transform.c,t.transform.e],
-        [t.transform.b,t.transform.d,t.transform.f],
-        [0,0,1]
-      ]);*/
+
       result[0] = result[0] * t.transform.a + result[2] * t.transform.b;
       result[1] = result[1] * t.transform.a + result[3] * t.transform.b;
       result[2] = result[0] * t.transform.c + result[2] * t.transform.d;
@@ -70,7 +65,7 @@ function transform(stack, children) {
   };
   
   transformResult = [new Instruction('transform', props)];
-  for(i = 1; i < arguments.length; i++) {
+  for(i = 1, len = arguments.length; i < len; i++) {
     transformResult.push(arguments[i]);
   }
   transformResult.push(new Instruction('restore'));

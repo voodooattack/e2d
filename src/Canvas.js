@@ -3,7 +3,6 @@
 
 var isWorker = require('./isWorker'),
     Img = require('./Img'),
-    flatten = require('lodash/array/flatten'),
     newid = require('./id');
 
 function Canvas(width, height, id) {
@@ -24,11 +23,26 @@ function Canvas(width, height, id) {
 }
 
 Canvas.prototype.render = function render(children) {
-  var result = [];
-  for (var i = 0; i < arguments.length; i++) {
+  var result = [],
+      i,
+      len,
+      child,
+      concat = result.concat;
+  for (i = 0; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
-  result = flatten(result);
+  for(i = 0, len = result.length; i < len; i++) {
+    child = result[i];
+    if (child && child.constructor === Array) {
+      result = concat.apply([], result);
+      child = result[i];
+      while(child && child.constructor === Array) {
+        result = concat.apply([], result);
+        child = result[i];
+      }
+      len = result.length;
+    }
+  }
   if (isWorker) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {

@@ -1,7 +1,6 @@
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
-    flatten = require('lodash/array/flatten'),
     Gradient = require('./Gradient'),
     newid = require('./id');
 

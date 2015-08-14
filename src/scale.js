@@ -1,7 +1,6 @@
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-    flatten = require('lodash/array/flatten');
+var Instruction = require('./Instruction');
 
 function scale(x, y, children) {
   var i = 2;

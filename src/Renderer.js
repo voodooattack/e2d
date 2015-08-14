@@ -1,8 +1,7 @@
 //jshint node: true, browser: true, worker: true
 
 'use strict';
-var isElement = require('lodash/lang/isElement'),
-    Canvas = null,
+var Canvas = null,
     Gradient = null,
     isWorker = require('./isWorker'),
     createLinearGradient = require('./createLinearGradient'),
