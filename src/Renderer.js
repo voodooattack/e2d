@@ -202,10 +202,10 @@ Renderer.prototype.render = function render(args) {
       cache = transformStack[transformStack.length - 1];
       matrix = new Float64Array(cache);
       
-      matrix[0] = cache[0] * cosr + cache[2] * -sinr;
-      matrix[1] = cache[1] * cosr + cache[3] * -sinr;
-      matrix[2] = cache[0] * sinr + cache[2] * cosr;
-      matrix[3] = cache[1] * sinr + cache[3] * cosr;
+      matrix[0] = cache[0] * cosr + cache[2] * sinr;
+      matrix[1] = cache[1] * cosr + cache[3] * sinr;
+      matrix[2] = cache[0] * -sinr + cache[2] * cosr;
+      matrix[3] = cache[1] * -sinr + cache[3] * cosr;
       
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);

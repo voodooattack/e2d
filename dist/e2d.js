@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1951,10 +1951,10 @@ Renderer.prototype.render = function render(args) {
       cache = transformStack[transformStack.length - 1];
       matrix = new Float64Array(cache);
       
-      matrix[0] = cache[0] * cosr + cache[2] * -sinr;
-      matrix[1] = cache[1] * cosr + cache[3] * -sinr;
-      matrix[2] = cache[0] * sinr + cache[2] * cosr;
-      matrix[3] = cache[1] * sinr + cache[3] * cosr;
+      matrix[0] = cache[0] * cosr + cache[2] * sinr;
+      matrix[1] = cache[1] * cosr + cache[3] * sinr;
+      matrix[2] = cache[0] * -sinr + cache[2] * cosr;
+      matrix[3] = cache[1] * -sinr + cache[3] * cosr;
       
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
@@ -3929,5 +3929,4 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":13}]},{},[7])(7)
-});
+},{"./Instruction":13}]},{},[7]);
