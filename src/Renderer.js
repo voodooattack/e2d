@@ -1066,6 +1066,7 @@ Renderer.prototype.style = function style() {
   }
   
   for (i = 0, len = children.length; i < len; i++) {
+    child = children[i];
     if (child && child.constructor === Array) {
       children = concat.apply([], children);
       child = children[i];

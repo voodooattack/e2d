@@ -14,9 +14,7 @@
   },
   "dependencies": {
     "keycode": "^2.1.0",
-    "lodash": "^3.10.0",
-    "point-in-polygon": "^1.0.0",
-    "square-matrix-multiply": "^0.2.2"
+    "point-in-polygon": "^1.0.0"
   },
   "repository": {
     "type": "git",
