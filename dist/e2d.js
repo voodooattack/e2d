@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1718,6 +1718,27 @@ Img.prototype.dispose = function dispose() {
   }
 };
 
+Object.defineProperty(Img.prototype, 'width', {
+  enumerable: true,
+  get: function() {
+    return this.texture.width;
+  },
+  set: function(value) {
+    this.texture.width = value;
+  }
+});
+
+
+Object.defineProperty(Img.prototype, 'height', {
+  enumerable: true,
+  get: function() {
+    return this.texture.height;
+  },
+  set: function(value) {
+    this.texture.height = value;
+  }
+});
+
 Img.cleanUp = function cleanUp() {
   var index = {},
       key;
@@ -1728,6 +1749,8 @@ Img.cleanUp = function cleanUp() {
   
   Img.cache = index;
 };
+
+
 
 Object.seal(Img);
 Object.seal(Img.prototype);
@@ -1762,7 +1785,8 @@ var Canvas = null,
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
     pi2 = Math.PI * 2,
-    identity = new Float64Array([1, 0, 0, 1, 0, 0]);
+    identity = new Float64Array([1, 0, 0, 1, 0, 0]),
+    newid = require('./id');
 
 util.inherits(Renderer, events.EventEmitter);
 
@@ -1904,7 +1928,6 @@ Renderer.prototype.render = function render(args) {
     type = child.type;
     
     if (type === 'transform') {
-      
       cache = transformStack[transformStack.length - 1];
       matrix = new Float64Array([
         cache[0] * props.a + cache[2] * props.b,
@@ -1915,21 +1938,22 @@ Renderer.prototype.render = function render(args) {
         cache[1] * props.e + cache[3] * props.f + cache[5]
       ]);
       
-      
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      
       continue;
     }
     
     if (type === 'scale') {
-
       matrix = new Float64Array(transformStack[transformStack.length - 1]);
       matrix[0] *= props.x;
       matrix[1] *= props.x;
       matrix[2] *= props.y;
       matrix[3] *= props.y;
+      
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      
       continue;
     }
     
@@ -1941,6 +1965,7 @@ Renderer.prototype.render = function render(args) {
       
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      
       continue;
     }
     
@@ -1958,6 +1983,7 @@ Renderer.prototype.render = function render(args) {
       
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      
       continue;
     }
     
@@ -1965,31 +1991,38 @@ Renderer.prototype.render = function render(args) {
       transformStack.pop();
       matrix = transformStack[transformStack.length - 1];
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      
       continue;
     }
     
     if (type === 'fillRect') {
       ctx.fillRect(props.x, props.y, props.width, props.height);
+      
       continue;
     }
     
     if (type === 'strokeRect') {
       ctx.strokeRect(props.x, props.y, props.width, props.height);
+      
       continue;
     }
     
     if (type === 'clearRect') {
       ctx.clearRect(props.x, props.y, props.width, props.height);
+      
       continue;
     }
     
     if (type === 'rect') {
       ctx.rect(props.x, props.y, props.width, props.height);
+      
+      continue;
     }
     
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
+      
       continue;
     }
     
@@ -1998,12 +2031,14 @@ Renderer.prototype.render = function render(args) {
       if (Gradient.cache.hasOwnProperty(props.value.id)) {
         ctx.fillStyle = Gradient.cache[props.value.id].grd;
       }
+      
       continue;
     }
     
     if (type === 'strokeStyle') {
       strokeStyleStack.push(ctx.strokeStyle);
       ctx.strokeStyle = props.value;
+      
       continue;
     }
     
@@ -2012,16 +2047,19 @@ Renderer.prototype.render = function render(args) {
       if (Gradient.cache.hasOwnProperty(props.value.id)) {
         ctx.strokeStyle = Gradient.cache[props.value.id].grd;
       }
+      
       continue;
     }
     
     if (type === 'endFillStyle') {
       ctx.fillStyle = fillStyleStack.pop();
+      
       continue;
     }
     
     if (type === 'endStrokeStyle') {
       ctx.strokeStyle = strokeStyleStack.pop();
+      
       continue;
     }
     if (type === 'lineStyle') {
@@ -2052,6 +2090,7 @@ Renderer.prototype.render = function render(args) {
       if (props.lineDashOffset !== null) {
         ctx.lineDashOffset = props.lineDashOffset;
       }
+      
       continue;
     }
     
@@ -2063,6 +2102,7 @@ Renderer.prototype.render = function render(args) {
       ctx.miterLimit = cache.miterLimit;
       ctx.setLineDash(cache.lineDash);
       ctx.lineDashOffset = cache.lineDashOffset;
+      
       continue;
     }
 
@@ -2085,6 +2125,7 @@ Renderer.prototype.render = function render(args) {
       if (props.lineJoin !== null) {
         ctx.direction = props.direction;
       }
+      
       continue;
     }
     
@@ -2094,6 +2135,7 @@ Renderer.prototype.render = function render(args) {
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
       ctx.direction = cache.direction;
+      
       continue;
     }
     
@@ -2116,6 +2158,7 @@ Renderer.prototype.render = function render(args) {
       if (props.shadowOffsetY !== null) {
         ctx.shadowOffsetY = props.shadowOffsetY;
       }
+      
       continue;
     }
     
@@ -2125,6 +2168,7 @@ Renderer.prototype.render = function render(args) {
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
       ctx.shadowOffsetY = cache.shadowOffsetY;
+      
       continue;
     }
     
@@ -2136,6 +2180,7 @@ Renderer.prototype.render = function render(args) {
         if (props.stroke) {
           ctx.strokeText(props.text, props.x, props.y, props.maxWidth);
         }
+        
         continue;
       }
       if (props.fill) {
@@ -2144,6 +2189,7 @@ Renderer.prototype.render = function render(args) {
       if (props.stroke) {
         ctx.strokeText(props.text, props.x, props.y);
       }
+      
       continue;
     }
     
@@ -2160,6 +2206,7 @@ Renderer.prototype.render = function render(args) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
+      
       continue;
     }
 
@@ -2168,6 +2215,7 @@ Renderer.prototype.render = function render(args) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      
       continue;
     }
     
@@ -2180,6 +2228,8 @@ Renderer.prototype.render = function render(args) {
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, props.dWidth, props.dHeight);
       ctx.restore();
+      
+      continue;
     }
     
     if (type === 'fillImage') {
@@ -2292,6 +2342,7 @@ Renderer.prototype.render = function render(args) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
+      
       continue;
     }
 
@@ -2300,6 +2351,7 @@ Renderer.prototype.render = function render(args) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      
       continue;
     }
     
@@ -2308,6 +2360,7 @@ Renderer.prototype.render = function render(args) {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       ctx.closePath();
       ctx.stroke();
+      
       continue;
     }
     
@@ -2316,6 +2369,7 @@ Renderer.prototype.render = function render(args) {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, true);
       ctx.closePath();
       ctx.stroke();
+      
       continue;
     }
     
@@ -2325,6 +2379,7 @@ Renderer.prototype.render = function render(args) {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       ctx.closePath();
       ctx.fill();
+      
       continue;
     }
     
@@ -2333,31 +2388,37 @@ Renderer.prototype.render = function render(args) {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       ctx.closePath();
       ctx.fill();
+      
       continue;
     }
     
     if (type === 'moveTo') {
       ctx.moveTo(props.x, props.y);
+      
       continue;
     }
     
     if (type === 'lineTo') {
       ctx.lineTo(props.x, props.y);
+      
       continue;
     }
     
     if (type === 'bezierCurveTo') {
       ctx.bezierCurveTo(props.cp1x, props.cp1y, props.cp2x, props.cp2y, props.x, props.y);
+      
       continue;
     }
     
     if (type === 'quadraticCurveTo') {
       ctx.quadraticCurveTo(props.cpx, props.cpy, props.x, props.y);
+      
       continue;
     }
     
     if (type === 'anticlockwise-arc') {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, true);
+      
       continue;
     }
     
@@ -2368,16 +2429,19 @@ Renderer.prototype.render = function render(args) {
     
     if (type === 'full-arc') {
       ctx.arc(props.x, props.y, props.r, 0, pi2);
+      
       continue;
     }
     
     if (type === 'quick-arc') {
       ctx.arc(0, 0, props.r, 0, pi2);
+      
       continue;
     }
     
     if (type === 'arcTo') {
       ctx.arcTo(props.x1, props.y1, props.x2, props.y2, props.r);
+      
       continue;
     }
     
@@ -2388,6 +2452,7 @@ Renderer.prototype.render = function render(args) {
       this.scale(props.radiusX, props.radiusY);
       this.arc(0, 0, 1, props.startAngle, props.endAngle, true);
       this.restore();
+      
       continue;
     }
 
@@ -2398,6 +2463,7 @@ Renderer.prototype.render = function render(args) {
       this.scale(props.radiusX, props.radiusY);
       this.arc(0, 0, 1, props.startAngle, props.endAngle);
       this.restore();
+      
       continue;
     }
     
@@ -2408,6 +2474,7 @@ Renderer.prototype.render = function render(args) {
       this.scale(props.radiusX, props.radiusY);
       this.arc(0, 0, 1, 0, pi2);
       this.restore();
+      
       continue;
     }
     
@@ -2417,22 +2484,26 @@ Renderer.prototype.render = function render(args) {
       this.scale(props.radiusX, props.radiusY);
       this.arc(0, 0, 1, 0, pi2);
       this.restore();
+      
       continue;
     }
     
     if (type === 'globalCompositeOperation') {
       globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
+      
       continue;
     }
     
     if (type === 'endGlobalCompositeOperation') {
       ctx.globalCompositeOperation = globalCompositeOperationStack.pop();
+      
       continue;
     }
     
     if (type === 'fill') {
       ctx.fill();
+      
       continue;
     }
     
@@ -2442,27 +2513,32 @@ Renderer.prototype.render = function render(args) {
     }
     if (type === 'clipPath') {
       ctx.clip();
+      
       continue;
     }
     
     if (type === 'beginPath') {
       ctx.beginPath();
+      
       continue;
     }
     
     if (type === 'closePath') {
       ctx.closePath();
+      
       continue;
     }
     
     if (type === 'globalAlpha') {
       globalAlphaStack.push(ctx.globalAlpha);
       ctx.globalAlpha *= props.value;
+      
       continue;
     }
     
     if (type === 'endGlobalAlpha') {
       ctx.globalAlpha = globalAlphaStack.pop();
+      
       continue;
     }
     
@@ -2471,6 +2547,7 @@ Renderer.prototype.render = function render(args) {
         id: props.id,
         points: transformPoints(props.points, transformStack[transformStack.length - 1])
       });
+      
       continue;
     }
   }
@@ -2603,6 +2680,10 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   
   if (data.type === 'style') {
     return this.style(data.value);
+  }
+  
+  if (data.type === 'measureText') {
+    return this.measureText(data.value.font, data.value.text, null, data.value.id);
   }
   
   return this.emit(data.type, data.value);
@@ -2862,11 +2943,31 @@ Renderer.prototype.ready = function ready() {
     return requestAnimationFrame(this.hookRender.bind(this));
   }
 };
+
+Renderer.prototype.measureText = function measureText(font, text, cb, id) {
+  id = id || newid();
+  if (isWorker) {
+    this.sendBrowser('measureText', { font: font, text: text, id: id });
+    return this.once('measureText-' + id, cb);
+  }
+  var oldFont = this.ctx.font,
+      result;
+  
+  this.ctx.font = font;
+  result = this.ctx.measureText(text);
+  this.ctx.font = oldFont;
+  if (this.worker) {
+    this.sendWorker('measureText-' + id, result);
+  }
+  if (cb && typeof cb === 'function') {
+    return setTimeout(cb.bind(null, result), 0);
+  }
+};
 Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./isWorker":42,"./transformPoints":59,"events":1,"keycode":8,"point-in-polygon":9,"util":6}],15:[function(require,module,exports){
+},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./id":40,"./isWorker":42,"./transformPoints":59,"events":1,"keycode":8,"point-in-polygon":9,"util":6}],15:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3929,4 +4030,5 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":13}]},{},[7]);
+},{"./Instruction":13}]},{},[7])(7)
+});

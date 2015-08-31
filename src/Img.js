@@ -79,6 +79,27 @@ Img.prototype.dispose = function dispose() {
   }
 };
 
+Object.defineProperty(Img.prototype, 'width', {
+  enumerable: true,
+  get: function() {
+    return this.texture.width;
+  },
+  set: function(value) {
+    this.texture.width = value;
+  }
+});
+
+
+Object.defineProperty(Img.prototype, 'height', {
+  enumerable: true,
+  get: function() {
+    return this.texture.height;
+  },
+  set: function(value) {
+    this.texture.height = value;
+  }
+});
+
 Img.cleanUp = function cleanUp() {
   var index = {},
       key;
@@ -89,6 +110,8 @@ Img.cleanUp = function cleanUp() {
   
   Img.cache = index;
 };
+
+
 
 Object.seal(Img);
 Object.seal(Img.prototype);

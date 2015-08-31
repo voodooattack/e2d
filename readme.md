@@ -1000,16 +1000,20 @@ r.render(
 )
 ```
 
+See [createLinearGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) and  [createRadialGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient) on mdn for more information on how to use these functions.
+
 __transformPoints.js__
 
 This utility function is used by the mouse event to capture if a mouse region is active by using the current transform stack to calculate exactly the region defined by the relative polygon specified.
 
 ```javascript
-var matrix = [
-  [a, c, e],
-  [b, d, f],
-  [0, 0, 1]
-];
+var matrix = new Float64Array([a, b, c, d, e, f]);
+//or...
+var matrix = new Float64Array([d11, d12, d21, d22, d31, d32]);
+//lookup map
+//[d11, d21, d31]  ---- [a, c, e]
+//[d12, d22, d32]  ---- [b, d, f]
+//[  0,   0,   1]  ---- [0, 0, 1]
 
 var points = [
   [x, y],
@@ -1019,10 +1023,9 @@ var points = [
 ];
 
 var newPoints = transformPoints(points, matrix);
-//returns an array of [x, y] points with the coordinates transformed
 ```
 
-See [createLinearGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) and  [createRadialGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient) on mdn for more information on how to use these functions.
+It returns an array of `[x, y]` points with the coordinates transformed.
 
 
 This project is released under the MIT license (c) Joshua Tenner 2015.
