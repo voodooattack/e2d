@@ -1721,10 +1721,10 @@ Img.prototype.dispose = function dispose() {
 Object.defineProperty(Img.prototype, 'width', {
   enumerable: true,
   get: function() {
-    return this.texture.width;
+    return this.imageElement.width;
   },
   set: function(value) {
-    this.texture.width = value;
+    this.imageElement.width = value;
   }
 });
 
@@ -1732,10 +1732,10 @@ Object.defineProperty(Img.prototype, 'width', {
 Object.defineProperty(Img.prototype, 'height', {
   enumerable: true,
   get: function() {
-    return this.texture.height;
+    return this.imageElement.height;
   },
   set: function(value) {
-    this.texture.height = value;
+    this.imageElement.height = value;
   }
 });
 
@@ -3554,7 +3554,7 @@ module.exports = isDataURL;
 //jshint node: true
 'use strict';
 
-module.exports = typeof document === 'undefined';
+module.exports = typeof window === 'undefined';
 },{}],43:[function(require,module,exports){
 //jshint node: true
 'use strict';
