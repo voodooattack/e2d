@@ -1,6 +1,6 @@
 {
   "name": "e2d",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "A canvas rendering engine HEAVILY inspired by react.js to help enforce one way data flow patterns.",
   "main": "index.js",
   "scripts": {

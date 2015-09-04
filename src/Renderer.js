@@ -75,11 +75,11 @@ function Renderer(width, height, parent, worker) {
   if (parent && parent.nodeType === 1) {
     this.parent = parent;
   } else {
-    this.parent = document.createElement('div');
+    this.parent = window.document.createElement('div');
     this.parent.style.margin = '0 auto';
     this.parent.style.width = width + 'px';
     this.parent.style.height = height + 'px';
-    document.body.appendChild(this.parent);
+    window.document.body.appendChild(this.parent);
   }
   
   //set width and height automatically
@@ -91,7 +91,7 @@ function Renderer(width, height, parent, worker) {
     height = window.innerHeight;
   }
   
-  this.canvas = document.createElement('canvas');
+  this.canvas = window.document.createElement('canvas');
   this.ctx = this.canvas.getContext('2d');
   
   this.canvas.width = width;
@@ -966,7 +966,7 @@ Renderer.prototype.hookRender = function hookRender() {
       }
   }
   
-  return requestAnimationFrame(this.hookRender.bind(this));
+  return window.requestAnimationFrame(this.hookRender.bind(this));
 };
 
 Renderer.prototype.cleanUpCache = function cleanUpCache() {
@@ -1007,13 +1007,13 @@ Renderer.prototype.sendAll = function sendAll(type, value) {
 
 Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
   //whenever the mouse moves, report the position
-  document.addEventListener('mousemove', this.mouseMove.bind(this));
+  window.document.addEventListener('mousemove', this.mouseMove.bind(this));
   
   //only report mousedown on canvas
   this.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
   
   //mouse up can happen anywhere
-  return document.addEventListener('mouseup', this.mouseUp.bind(this));
+  return window.document.addEventListener('mouseup', this.mouseUp.bind(this));
 };
 
 Renderer.prototype.mouseMove = function mouseMove(evt) {
@@ -1077,7 +1077,7 @@ Renderer.prototype.hookKeyboardEvents = function hookMouseEvents() {
   this.canvas.addEventListener('keydown', this.keyDown.bind(this));
   
   //but keyup should be captured everywhere
-  return document.addEventListener('keyUp', this.keyUp.bind(this));
+  return window.document.addEventListener('keyUp', this.keyUp.bind(this));
 };
 
 Renderer.prototype.keyChange = function keyChange(evt) {
@@ -1168,7 +1168,7 @@ Renderer.prototype.ready = function ready() {
   } else {
     this.isReady = true;
     this.fireFrame();
-    return requestAnimationFrame(this.hookRender.bind(this));
+    return window.requestAnimationFrame(this.hookRender.bind(this));
   }
 };
 

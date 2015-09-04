@@ -38,7 +38,7 @@ Object.defineProperty(Img.prototype, 'src', {
       postMessage({ type: 'image-source', value: { id: this.id, src: val } });
       return;
     }
-    var element = new Image();
+    var element = new window.Image();
     this.imageElement = element;
     element.src = val;
     element.onload = this.imageLoad.bind(this);
@@ -50,7 +50,7 @@ Object.defineProperty(Img.prototype, 'src', {
 
 Img.prototype.imageLoad = function imageLoad() {
   if (!isWorker) {
-    var ctx = document.createElement('canvas').getContext('2d');
+    var ctx = window.document.createElement('canvas').getContext('2d');
     this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
     this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
   }

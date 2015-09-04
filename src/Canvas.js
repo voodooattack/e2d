@@ -11,7 +11,7 @@ function Canvas(width, height, id) {
   this.height = height;
   var Renderer = require('./Renderer');
   if (!isWorker) {
-    this.renderer = new Renderer(width, height, document.createElement('div'));
+    this.renderer = new Renderer(width, height, window.document.createElement('div'));
   } else {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: [] } });
     this.renderer = null;
