@@ -1,4 +1,60 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.e2d = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+//jshint node: true
+'use strict';
+
+module.exports = {
+    addColorStop: require('./src/addColorStop'),
+    arc: require('./src/arc'),
+    arcTo: require('./src/arcTo'),
+    beginPath: require('./src/beginPath'),
+    bezierCurveTo: require('./src/bezierCurveTo'),
+    Canvas: require('./src/Canvas'),
+    clearRect: require('./src/clearRect'),
+    clip: require('./src/clip'),
+    clipPath: require('./src/clipPath'),
+    closePath: require('./src/closePath'),
+    createLinearGradient: require('./src/createLinearGradient'),
+    createRadialGradient: require('./src/createRadialGradient'),
+    drawCanvas: require('./src/drawCanvas'),
+    drawImage: require('./src/drawImage'),
+    ellipse: require('./src/ellipse'),
+    fill: require('./src/fill'),
+    fillArc: require('./src/fillArc'),
+    fillCanvas: require('./src/fillCanvas'),
+    fillImage: require('./src/fillImage'),
+    fillImagePattern: require('./src/fillImagePattern'),
+    fillRect: require('./src/fillRect'),
+    fillStyle: require('./src/fillStyle'),
+    globalAlpha: require('./src/globalAlpha'),
+    globalCompositeOperation: require('./src/globalCompositeOperation'),
+    Gradient: require('./src/Gradient'),
+    hitRect: require('./src/hitRect'),
+    hitRegion: require('./src/hitRegion'),
+    Img: require('./src/Img'),
+    Instruction: require('./src/Instruction'),
+    isDataUrl: require('./src/isDataUrl'),
+    isWorker: require('./src/isWorker'),
+    lineStyle: require('./src/lineStyle'),
+    lineTo: require('./src/lineTo'),
+    moveTo: require('./src/moveTo'),
+    path: require('./src/path'),
+    quadraticCurveTo: require('./src/quadraticCurveTo'),
+    rect: require('./src/rect'),
+    Renderer: require('./src/Renderer'),
+    rotate: require('./src/rotate'),
+    scale: require('./src/scale'),
+    shadowStyle: require('./src/shadowStyle'),
+    stroke: require('./src/stroke'),
+    strokeArc: require('./src/strokeArc'),
+    strokeRect: require('./src/strokeRect'),
+    strokeStyle: require('./src/strokeStyle'),
+    text: require('./src/text'),
+    textStyle: require('./src/textStyle'),
+    transform: require('./src/transform'),
+    transformPoints: require('./src/transformPoints'),
+    translate: require('./src/translate')
+};
+},{"./src/Canvas":10,"./src/Gradient":11,"./src/Img":12,"./src/Instruction":13,"./src/Renderer":14,"./src/addColorStop":15,"./src/arc":16,"./src/arcTo":17,"./src/beginPath":18,"./src/bezierCurveTo":19,"./src/clearRect":20,"./src/clip":21,"./src/clipPath":22,"./src/closePath":23,"./src/createLinearGradient":24,"./src/createRadialGradient":25,"./src/drawCanvas":26,"./src/drawImage":27,"./src/ellipse":28,"./src/fill":29,"./src/fillArc":30,"./src/fillCanvas":31,"./src/fillImage":32,"./src/fillImagePattern":33,"./src/fillRect":34,"./src/fillStyle":35,"./src/globalAlpha":36,"./src/globalCompositeOperation":37,"./src/hitRect":38,"./src/hitRegion":39,"./src/isDataUrl":41,"./src/isWorker":42,"./src/lineStyle":43,"./src/lineTo":44,"./src/moveTo":45,"./src/path":46,"./src/quadraticCurveTo":47,"./src/rect":48,"./src/rotate":49,"./src/scale":50,"./src/shadowStyle":51,"./src/stroke":52,"./src/strokeArc":53,"./src/strokeRect":54,"./src/strokeStyle":55,"./src/text":56,"./src/textStyle":57,"./src/transform":58,"./src/transformPoints":59,"./src/translate":60}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -301,7 +357,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -326,7 +382,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -554,7 +610,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":4}],4:[function(require,module,exports){
+},{"_process":5}],5:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -646,14 +702,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1243,63 +1299,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":5,"_process":4,"inherits":2}],7:[function(require,module,exports){
-//jshint node: true
-'use strict';
-
-module.exports = {
-    addColorStop: require('./src/addColorStop'),
-    arc: require('./src/arc'),
-    arcTo: require('./src/arcTo'),
-    beginPath: require('./src/beginPath'),
-    bezierCurveTo: require('./src/bezierCurveTo'),
-    Canvas: require('./src/Canvas'),
-    clearRect: require('./src/clearRect'),
-    clip: require('./src/clip'),
-    clipPath: require('./src/clipPath'),
-    closePath: require('./src/closePath'),
-    createLinearGradient: require('./src/createLinearGradient'),
-    createRadialGradient: require('./src/createRadialGradient'),
-    drawCanvas: require('./src/drawCanvas'),
-    drawImage: require('./src/drawImage'),
-    ellipse: require('./src/ellipse'),
-    fill: require('./src/fill'),
-    fillArc: require('./src/fillArc'),
-    fillCanvas: require('./src/fillCanvas'),
-    fillImage: require('./src/fillImage'),
-    fillImagePattern: require('./src/fillImagePattern'),
-    fillRect: require('./src/fillRect'),
-    fillStyle: require('./src/fillStyle'),
-    globalAlpha: require('./src/globalAlpha'),
-    globalCompositeOperation: require('./src/globalCompositeOperation'),
-    Gradient: require('./src/Gradient'),
-    hitRect: require('./src/hitRect'),
-    hitRegion: require('./src/hitRegion'),
-    Img: require('./src/Img'),
-    Instruction: require('./src/Instruction'),
-    isDataUrl: require('./src/isDataUrl'),
-    isWorker: require('./src/isWorker'),
-    lineStyle: require('./src/lineStyle'),
-    lineTo: require('./src/lineTo'),
-    moveTo: require('./src/moveTo'),
-    path: require('./src/path'),
-    quadraticCurveTo: require('./src/quadraticCurveTo'),
-    rect: require('./src/rect'),
-    Renderer: require('./src/Renderer'),
-    rotate: require('./src/rotate'),
-    scale: require('./src/scale'),
-    shadowStyle: require('./src/shadowStyle'),
-    stroke: require('./src/stroke'),
-    strokeArc: require('./src/strokeArc'),
-    strokeRect: require('./src/strokeRect'),
-    strokeStyle: require('./src/strokeStyle'),
-    text: require('./src/text'),
-    textStyle: require('./src/textStyle'),
-    transform: require('./src/transform'),
-    transformPoints: require('./src/transformPoints'),
-    translate: require('./src/translate')
-};
-},{"./src/Canvas":10,"./src/Gradient":11,"./src/Img":12,"./src/Instruction":13,"./src/Renderer":14,"./src/addColorStop":15,"./src/arc":16,"./src/arcTo":17,"./src/beginPath":18,"./src/bezierCurveTo":19,"./src/clearRect":20,"./src/clip":21,"./src/clipPath":22,"./src/closePath":23,"./src/createLinearGradient":24,"./src/createRadialGradient":25,"./src/drawCanvas":26,"./src/drawImage":27,"./src/ellipse":28,"./src/fill":29,"./src/fillArc":30,"./src/fillCanvas":31,"./src/fillImage":32,"./src/fillImagePattern":33,"./src/fillRect":34,"./src/fillStyle":35,"./src/globalAlpha":36,"./src/globalCompositeOperation":37,"./src/hitRect":38,"./src/hitRegion":39,"./src/isDataUrl":41,"./src/isWorker":42,"./src/lineStyle":43,"./src/lineTo":44,"./src/moveTo":45,"./src/path":46,"./src/quadraticCurveTo":47,"./src/rect":48,"./src/rotate":49,"./src/scale":50,"./src/shadowStyle":51,"./src/stroke":52,"./src/strokeArc":53,"./src/strokeRect":54,"./src/strokeStyle":55,"./src/text":56,"./src/textStyle":57,"./src/transform":58,"./src/transformPoints":59,"./src/translate":60}],8:[function(require,module,exports){
+},{"./support/isBuffer":6,"_process":5,"inherits":3}],8:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -1478,8 +1478,6 @@ var isWorker = require('./isWorker'),
 
 function Canvas(width, height, id) {
   this.id = id || newid();
-  this.width = width;
-  this.height = height;
   var Renderer = require('./Renderer');
   if (!isWorker) {
     this.renderer = new Renderer(width, height, window.document.createElement('div'));
@@ -1487,7 +1485,8 @@ function Canvas(width, height, id) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: [] } });
     this.renderer = null;
   }
-
+  this.width = width;
+  this.height = height;
   this.fillPattern = null;
   Canvas.cache[this.id] = this;
   Object.seal(this);
@@ -1572,7 +1571,16 @@ Canvas.cleanUp = function cleanUp() {
 };
 
 Canvas.prototype.resize = function resize(width, height) {
-  return this.renderer.resize(width, height);
+  this.width = +width;
+  this.height = +height;
+  
+  if (isWorker) {
+    postMessage({ type: 'canvas-resize', value: { id: this.id, width: this.width, height: this.height }});
+  } else {
+    this.renderer.resize(width, height);
+  }
+  
+  return this;
 };
 
 Canvas.cache = {};
@@ -1581,6 +1589,7 @@ Canvas.cachable = [];
 Canvas.create = function create(width, height, id) {
   return new Canvas(width, height, id);
 };
+                        
 
 Object.seal(Canvas);
 Object.seal(Canvas.prototype);
@@ -1756,7 +1765,7 @@ Object.seal(Img);
 Object.seal(Img.prototype);
 
 module.exports = Img;
-},{"./id":40,"./isDataUrl":41,"./isWorker":42,"events":1,"path":3,"util":6}],13:[function(require,module,exports){
+},{"./id":40,"./isDataUrl":41,"./isWorker":42,"events":2,"path":4,"util":7}],13:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -1864,6 +1873,10 @@ function Renderer(width, height, parent, worker) {
   }
   
   this.canvas = window.document.createElement('canvas');
+  
+  //focusable canvas bugfix
+  this.canvas.tabIndex = 1;
+  
   this.ctx = this.canvas.getContext('2d');
   
   this.canvas.width = width;
@@ -2194,7 +2207,7 @@ Renderer.prototype.render = function render(args) {
     }
     
     if (type === 'drawImage') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy);
@@ -2202,7 +2215,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawImageSize') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
@@ -2211,7 +2224,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawImageSource') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
@@ -2220,7 +2233,7 @@ Renderer.prototype.render = function render(args) {
     }
     
     if (type === 'fillImagePattern') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       
@@ -2233,7 +2246,7 @@ Renderer.prototype.render = function render(args) {
     }
     
     if (type === 'fillImage') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
 
@@ -2248,7 +2261,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImageSize') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       
@@ -2264,15 +2277,14 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImageSource') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       
-      cache = Img.cache[props.img].imageElement;
       ctx.save();
       ctx.fillStyle = Img.cache[props.img].imagePattern;
       ctx.translate(props.dx, props.dy);
-      ctx.scale(cache.dWidth / props.sWidth, cache.dHeight / props.sHeight);
+      ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
       ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
       ctx.restore();
@@ -2282,7 +2294,7 @@ Renderer.prototype.render = function render(args) {
     
     
     if (type === 'fillCanvas') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
 
@@ -2297,7 +2309,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillCanvasSize') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       
@@ -2313,15 +2325,14 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillCanvasSource') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       
-      cache = Canvas.cache[props.img];
       ctx.save();
-      ctx.fillStyle = cache.fillPattern;
+      ctx.fillStyle = Canvas.cache[props.img].fillPattern;
       ctx.translate(props.dx, props.dy);
-      ctx.scale(cache.width / props.sWidth, cache.height / props.sHeight);
+      ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
       ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
       ctx.restore();
@@ -2330,7 +2341,7 @@ Renderer.prototype.render = function render(args) {
     }
     
     if (type === 'drawCanvas') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy);
@@ -2338,7 +2349,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawCanvasSize') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
@@ -2347,7 +2358,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawCanvasSource') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
@@ -2621,6 +2632,13 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     return this.resize(data.value.width, data.value.height);
   }
   
+  if (data.type === 'renderer-image') {
+    if (Canvas.cache.hasOwnProperty(data.value.id)) {
+      this.toImage(data.value.imageID);
+      return;
+    }
+  }
+  
   if (data.type === 'canvas') {
     if (!Canvas.cache.hasOwnProperty(data.value.id)) {
       Canvas.cache[data.value.id] = new Canvas(data.value.width, data.value.height, data.value.id);
@@ -2646,6 +2664,10 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   
   if (data.type === 'canvas-dispose' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
       return Canvas.cache[data.value.id].dispose();
+  }
+  
+  if (data.type === 'canvas-resize' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+      return Canvas.cache[data.value.id].resize(data.value.width, data.value.height);
   }
   
   if (data.type === 'linear-gradient') {
@@ -2704,6 +2726,21 @@ Renderer.prototype.resize = function(width, height) {
     this.canvas.height = height;
   }
 };
+
+Renderer.prototype.toImage = function toImage(imageID) {
+  
+  var img;
+  img = new Img(imageID || newid());
+  
+  if (isWorker) {
+    postMessage({ type: 'renderer-image', value: { imageID: imageID } });
+    return img;
+  } else {
+    img.src = this.canvas.toDataURL('image/png');
+    return img;
+  }
+};
+
 
 Renderer.prototype.hookRender = function hookRender() {
   
@@ -2824,7 +2861,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 Renderer.prototype.mouseDown = function mouseMove(evt) {
   //set the mouseState down
   this.mouseState = 'down';
-  
+  this.canvas.focus();
   //defer to mouseMove
   return this.mouseMove(evt);
 };
@@ -2849,7 +2886,7 @@ Renderer.prototype.hookKeyboardEvents = function hookMouseEvents() {
   this.canvas.addEventListener('keydown', this.keyDown.bind(this));
   
   //but keyup should be captured everywhere
-  return window.document.addEventListener('keyUp', this.keyUp.bind(this));
+  return window.document.addEventListener('keyup', this.keyUp.bind(this));
 };
 
 Renderer.prototype.keyChange = function keyChange(evt) {
@@ -2859,16 +2896,16 @@ Renderer.prototype.keyChange = function keyChange(evt) {
 };
 
 Renderer.prototype.keyDown = function keyDown(evt) {
-  this.keyData[keycode.code[evt.keyCode]] = "down";
+  this.keyData[keycode(evt.keyCode)] = "down";
   return this.keyChange(evt);
 };
 
 Renderer.prototype.keyUp = function keyUp(evt) {
-  this.keyData[keycode.code[evt.keyCode]] = "up";
+  this.keyData[keycode(evt.keyCode)] = "up";
   return this.keyChange(evt);
 };
 
-Renderer.prototype.browserCommand = function(e) {
+Renderer.prototype.browserCommand = function browserCommand(e) {
   if (e.data.type === 'image-load') {
     Img.cache[e.data.value.id].emit('load');
   }
@@ -2967,7 +3004,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./id":40,"./isWorker":42,"./transformPoints":59,"events":1,"keycode":8,"point-in-polygon":9,"util":6}],15:[function(require,module,exports){
+},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./id":40,"./isWorker":42,"./transformPoints":59,"events":2,"keycode":8,"point-in-polygon":9,"util":7}],15:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -4030,5 +4067,5 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":13}]},{},[7])(7)
+},{"./Instruction":13}]},{},[1])(1)
 });

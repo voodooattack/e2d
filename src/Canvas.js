@@ -7,8 +7,6 @@ var isWorker = require('./isWorker'),
 
 function Canvas(width, height, id) {
   this.id = id || newid();
-  this.width = width;
-  this.height = height;
   var Renderer = require('./Renderer');
   if (!isWorker) {
     this.renderer = new Renderer(width, height, window.document.createElement('div'));
@@ -16,7 +14,6 @@ function Canvas(width, height, id) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: [] } });
     this.renderer = null;
   }
-
   this.fillPattern = null;
   Canvas.cache[this.id] = this;
   Object.seal(this);
@@ -51,11 +48,19 @@ Canvas.prototype.render = function render(children) {
   }
 };
 
+Canvas.prototype.style = function style() {
+  var defs = [];
+  for (var i = 0; i < arguments.length; i++) {
+    defs.push(arguments[i]);
+  }
+  this.renderer.style.apply(this.renderer, defs);
+  return this;
+};
+
 Canvas.prototype.toImage = function toImage(imageID) {
-  
   var img;
   img = new Img(imageID || newid());
-  
+
   if (isWorker) {
     postMessage({ type: 'canvas-image', value: { id: this.id, imageID: imageID } });
     return img;
@@ -79,12 +84,9 @@ Canvas.prototype.dispose = function dispose() {
 
 Canvas.prototype.cache = function cache() {
   if (isWorker) {
-    return postMessage({ type: 'canvas-cache', value: { id: this.id }});
-  } else {
-    var index = Canvas.cachable.indexOf(this.id);
-    if (index === -1) {
+    postMessage({ type: 'canvas-cache', value: { id: this.id }});
+  } else if (Canvas.cachable.indexOf(this.id) === -1) {
       Canvas.cachable.push(this.id);
-    }
   }
   return this;
 };
@@ -96,13 +98,35 @@ Canvas.cleanUp = function cleanUp() {
     key = Canvas.cachable[i];
     index[key] = Canvas.cache[key];
   }
-  
+
   Canvas.cache = index;
 };
 
 Canvas.prototype.resize = function resize(width, height) {
-  return this.renderer.resize(width, height);
+
+  if (isWorker) {
+    postMessage({ type: 'canvas-resize', value: { id: this.id, width: +this.width, height: +this.height }});
+  } else {
+    this.renderer.resize(+width, +height);
+  }
+
+  return this;
 };
+
+Object.defineProperty('height', {
+  get: function() {
+    return this.renderer.canvas.width;
+  },
+  enumerable: true,
+  configurable: false
+});
+Object.defineProperty('width', {
+  get: function() {
+    return this.renderer.canvas.width;
+  },
+  enumerable: true,
+  configurable: false
+});
 
 Canvas.cache = {};
 Canvas.cachable = [];
@@ -110,6 +134,7 @@ Canvas.cachable = [];
 Canvas.create = function create(width, height, id) {
   return new Canvas(width, height, id);
 };
+
 
 Object.seal(Canvas);
 Object.seal(Canvas.prototype);

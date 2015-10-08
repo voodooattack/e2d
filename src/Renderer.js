@@ -12,7 +12,6 @@ var Canvas = null,
     keycode = require('keycode'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
-    pi2 = Math.PI * 2,
     identity = new Float64Array([1, 0, 0, 1, 0, 0]),
     newid = require('./id');
 
@@ -21,7 +20,8 @@ util.inherits(Renderer, events.EventEmitter);
 function Renderer(width, height, parent, worker) {
   //this needs to be done later because of cyclical dependencies
   events.EventEmitter.call(this);
-  
+  this.pi2 = Math.PI * 2;
+
   if (!Canvas) {
     Canvas = require('./Canvas');
   }
@@ -32,7 +32,7 @@ function Renderer(width, height, parent, worker) {
     Gradient = require('./Gradient');
   }
 
-  
+
   this.tree = null;
   this.isReady = false;
   this.mouseState = 'up';
@@ -47,13 +47,16 @@ function Renderer(width, height, parent, worker) {
   this.mouseRegions = [];
   this.activeRegions = [];
   this.styleQueue = [];
-  
+
   //this is the basic structure of the data sent to the web worker
   this.keyData = {};
-  
+
   if (isWorker) {
     this.worker = null;
-    this.canvas =  null;
+    this.canvas =  {
+      width: width,
+      height: height
+    };
     this.ctx = null;
     this.parent = null;
     addEventListener('message', this.browserCommand.bind(this));
@@ -61,7 +64,7 @@ function Renderer(width, height, parent, worker) {
     //nothing else to do
     return;
   }
-  
+
 
   //create the web worker and hook the workerCommand function
   if (worker) {
@@ -70,7 +73,7 @@ function Renderer(width, height, parent, worker) {
   } else {
     this.worker = null;
   }
-  
+
   //set parent
   if (parent && parent.nodeType === 1) {
     this.parent = parent;
@@ -81,27 +84,31 @@ function Renderer(width, height, parent, worker) {
     this.parent.style.height = height + 'px';
     window.document.body.appendChild(this.parent);
   }
-  
+
   //set width and height automatically
   if (!width || width <= 0) {
     width = window.innerWidth;
   }
-  
+
   if (!height || height <= 0) {
     height = window.innerHeight;
   }
-  
+
   this.canvas = window.document.createElement('canvas');
+
+  //focusable canvas bugfix
+  this.canvas.tabIndex = 1;
+
   this.ctx = this.canvas.getContext('2d');
-  
+
   this.canvas.width = width;
   this.canvas.height = height;
   this.parent.appendChild(this.canvas);
-  
+
   //hook mouse and keyboard events right away
   this.hookMouseEvents();
   this.hookKeyboardEvents();
-  
+
   Object.seal(this);
 }
 
@@ -121,23 +128,24 @@ Renderer.prototype.render = function render(args) {
       textStyleStack = [],
       shadowStyleStack = [],
       globalAlphaStack = [],
+      imageSmoothingEnabledStack = [],
       transformStack = [identity],
       globalCompositeOperationStack = [],
       ctx = this.ctx,
       children = [],
       concat = children.concat;
-  
+
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
   }
-  
+
   if (isWorker) {
     return this.sendBrowser('render', children);
   }
-  
+
   for(i = 0, len = children.length; i < len; i++) {
     child = children[i];
-    
+
     if (child && child.constructor === Array) {
       children = concat.apply([], children);
       child = children[i];
@@ -147,14 +155,14 @@ Renderer.prototype.render = function render(args) {
       }
       len = children.length;
     }
-    
+
     if (!child) {
       continue;
     }
-    
+
     props = child.props;
     type = child.type;
-    
+
     if (type === 'transform') {
       cache = transformStack[transformStack.length - 1];
       matrix = new Float64Array([
@@ -165,129 +173,128 @@ Renderer.prototype.render = function render(args) {
         cache[0] * props.e + cache[2] * props.f + cache[4],
         cache[1] * props.e + cache[3] * props.f + cache[5]
       ]);
-      
+
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-      
+
       continue;
     }
-    
+
     if (type === 'scale') {
       matrix = new Float64Array(transformStack[transformStack.length - 1]);
       matrix[0] *= props.x;
       matrix[1] *= props.x;
       matrix[2] *= props.y;
       matrix[3] *= props.y;
-      
+
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-      
+
       continue;
     }
-    
+
     if (type === 'translate') {
-      
       matrix = new Float64Array(transformStack[transformStack.length - 1]);
       matrix[4] += matrix[0] * props.x + matrix[2] * props.y;
       matrix[5] += matrix[1] * props.x + matrix[3] * props.y;
-      
+
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-      
+
       continue;
     }
-    
+
     if (type === 'rotate') {
       cosr = Math.cos(props.r);
       sinr = Math.sin(props.r);
-      
+
       cache = transformStack[transformStack.length - 1];
       matrix = new Float64Array(cache);
-      
+
       matrix[0] = cache[0] * cosr + cache[2] * sinr;
       matrix[1] = cache[1] * cosr + cache[3] * sinr;
       matrix[2] = cache[0] * -sinr + cache[2] * cosr;
       matrix[3] = cache[1] * -sinr + cache[3] * cosr;
-      
+
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-      
+
       continue;
     }
-    
+
     if (type === 'restore') {
       transformStack.pop();
       matrix = transformStack[transformStack.length - 1];
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-      
+
       continue;
     }
-    
+
     if (type === 'fillRect') {
       ctx.fillRect(props.x, props.y, props.width, props.height);
-      
+
       continue;
     }
-    
+
     if (type === 'strokeRect') {
       ctx.strokeRect(props.x, props.y, props.width, props.height);
-      
+
       continue;
     }
-    
+
     if (type === 'clearRect') {
       ctx.clearRect(props.x, props.y, props.width, props.height);
-      
+
       continue;
     }
-    
+
     if (type === 'rect') {
       ctx.rect(props.x, props.y, props.width, props.height);
-      
+
       continue;
     }
-    
+
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
-      
+
       continue;
     }
-    
+
     if (type == 'fillGradient') {
       fillStyleStack.push(ctx.fillStyle);
       if (Gradient.cache.hasOwnProperty(props.value.id)) {
         ctx.fillStyle = Gradient.cache[props.value.id].grd;
       }
-      
+
       continue;
     }
-    
+
     if (type === 'strokeStyle') {
       strokeStyleStack.push(ctx.strokeStyle);
       ctx.strokeStyle = props.value;
-      
+
       continue;
     }
-    
+
     if (type == 'strokeGradient') {
       strokeStyleStack.push(ctx.strokeStyle);
       if (Gradient.cache.hasOwnProperty(props.value.id)) {
         ctx.strokeStyle = Gradient.cache[props.value.id].grd;
       }
-      
+
       continue;
     }
-    
+
     if (type === 'endFillStyle') {
       ctx.fillStyle = fillStyleStack.pop();
-      
+
       continue;
     }
-    
+
     if (type === 'endStrokeStyle') {
       ctx.strokeStyle = strokeStyleStack.pop();
-      
+
       continue;
     }
     if (type === 'lineStyle') {
@@ -318,10 +325,10 @@ Renderer.prototype.render = function render(args) {
       if (props.lineDashOffset !== null) {
         ctx.lineDashOffset = props.lineDashOffset;
       }
-      
+
       continue;
     }
-    
+
     if (type === 'endLineStyle') {
       cache = lineStyleStack.pop();
       ctx.lineWidth = cache.lineWidth;
@@ -330,7 +337,7 @@ Renderer.prototype.render = function render(args) {
       ctx.miterLimit = cache.miterLimit;
       ctx.setLineDash(cache.lineDash);
       ctx.lineDashOffset = cache.lineDashOffset;
-      
+
       continue;
     }
 
@@ -353,20 +360,20 @@ Renderer.prototype.render = function render(args) {
       if (props.lineJoin !== null) {
         ctx.direction = props.direction;
       }
-      
+
       continue;
     }
-    
+
     if (type === 'endTextStyle') {
       cache = textStyleStack.pop();
       ctx.font = cache.font;
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
       ctx.direction = cache.direction;
-      
+
       continue;
     }
-    
+
     if (type === 'shadowStyle') {
       shadowStyleStack.push({
         shadowBlur: ctx.shadowBlur,
@@ -386,20 +393,20 @@ Renderer.prototype.render = function render(args) {
       if (props.shadowOffsetY !== null) {
         ctx.shadowOffsetY = props.shadowOffsetY;
       }
-      
+
       continue;
     }
-    
+
     if (type === 'endShadowStyle') {
       cache = shadowStyleStack.pop();
       ctx.shadowBlur = cache.shadowBlur;
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
       ctx.shadowOffsetY = cache.shadowOffsetY;
-      
+
       continue;
     }
-    
+
     if (type === 'text') {
       if (props.maxWidth !== 0) {
         if (props.fill) {
@@ -408,7 +415,7 @@ Renderer.prototype.render = function render(args) {
         if (props.stroke) {
           ctx.strokeText(props.text, props.x, props.y, props.maxWidth);
         }
-        
+
         continue;
       }
       if (props.fill) {
@@ -417,12 +424,12 @@ Renderer.prototype.render = function render(args) {
       if (props.stroke) {
         ctx.strokeText(props.text, props.x, props.y);
       }
-      
+
       continue;
     }
-    
+
     if (type === 'drawImage') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy);
@@ -430,38 +437,38 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawImageSize') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
-      
+
       continue;
     }
 
     if (type === 'drawImageSource') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
-      
+
       continue;
     }
-    
+
     if (type === 'fillImagePattern') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
-      
+
       ctx.fillStyle = Img.cache[props.img].imagePatternRepeat;
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, props.dWidth, props.dHeight);
       ctx.restore();
-      
+
       continue;
     }
-    
+
     if (type === 'fillImage') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
 
@@ -471,15 +478,15 @@ Renderer.prototype.render = function render(args) {
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, cache.width, cache.height);
       ctx.restore();
-      
+
       continue;
     }
 
     if (type === 'fillImageSize') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
-      
+
       cache = Img.cache[props.img].imageElement;
       ctx.save();
       ctx.fillStyle = Img.cache[props.img].imagePattern;
@@ -487,30 +494,29 @@ Renderer.prototype.render = function render(args) {
       ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
       ctx.fillRect(0, 0, cache.width, cache.height);
       ctx.restore();
-      
+
       continue;
     }
 
     if (type === 'fillImageSource') {
-      if (!Img.cache.hasOwnProperty(props.img)) {
+      if (!Img.cache[props.img]) {
         continue;
       }
-      
-      cache = Img.cache[props.img].imageElement;
+
       ctx.save();
       ctx.fillStyle = Img.cache[props.img].imagePattern;
       ctx.translate(props.dx, props.dy);
-      ctx.scale(cache.dWidth / props.sWidth, cache.dHeight / props.sHeight);
+      ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
       ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
       ctx.restore();
-      
+
       continue;
     }
-    
-    
+
+
     if (type === 'fillCanvas') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
 
@@ -520,15 +526,15 @@ Renderer.prototype.render = function render(args) {
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, cache.width, cache.height);
       ctx.restore();
-      
+
       continue;
     }
 
     if (type === 'fillCanvasSize') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
-      
+
       cache = Canvas.cache[props.img];
       ctx.save();
       ctx.fillStyle = cache.fillPattern;
@@ -536,29 +542,28 @@ Renderer.prototype.render = function render(args) {
       ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
       ctx.fillRect(0, 0, cache.width, cache.height);
       ctx.restore();
-      
+
       continue;
     }
 
     if (type === 'fillCanvasSource') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
-      
-      cache = Canvas.cache[props.img];
+
       ctx.save();
-      ctx.fillStyle = cache.fillPattern;
+      ctx.fillStyle = Canvas.cache[props.img].fillPattern;
       ctx.translate(props.dx, props.dy);
-      ctx.scale(cache.width / props.sWidth, cache.height / props.sHeight);
+      ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
       ctx.fillRect(props.sx, props.sy, props.sWidth, props.sHeight);
       ctx.restore();
-      
+
       continue;
     }
-    
+
     if (type === 'drawCanvas') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy);
@@ -566,113 +571,113 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawCanvasSize') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
-      
+
       continue;
     }
 
     if (type === 'drawCanvasSource') {
-      if (!Canvas.cache.hasOwnProperty(props.img)) {
+      if (!Canvas.cache[props.img]) {
         continue;
       }
       ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
-      
+
       continue;
     }
-    
+
     if (type === 'strokeArc') {
       ctx.beginPath();
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       ctx.closePath();
       ctx.stroke();
-      
+
       continue;
     }
-    
+
     if (type === 'strokeArc-counterclockwise') {
       ctx.beginPath();
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, true);
       ctx.closePath();
       ctx.stroke();
-      
+
       continue;
     }
-    
-    
+
+
     if (type === 'fillArc') {
       ctx.beginPath();
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       ctx.closePath();
       ctx.fill();
-      
+
       continue;
     }
-    
+
     if (type === 'fillArc-counterclockwise') {
       ctx.beginPath();
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       ctx.closePath();
       ctx.fill();
-      
+
       continue;
     }
-    
+
     if (type === 'moveTo') {
       ctx.moveTo(props.x, props.y);
-      
+
       continue;
     }
-    
+
     if (type === 'lineTo') {
       ctx.lineTo(props.x, props.y);
-      
+
       continue;
     }
-    
+
     if (type === 'bezierCurveTo') {
       ctx.bezierCurveTo(props.cp1x, props.cp1y, props.cp2x, props.cp2y, props.x, props.y);
-      
+
       continue;
     }
-    
+
     if (type === 'quadraticCurveTo') {
       ctx.quadraticCurveTo(props.cpx, props.cpy, props.x, props.y);
-      
+
       continue;
     }
-    
+
     if (type === 'anticlockwise-arc') {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, true);
-      
+
       continue;
     }
-    
+
     if (type === 'arc') {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
       continue;
     }
-    
+
     if (type === 'full-arc') {
-      ctx.arc(props.x, props.y, props.r, 0, pi2);
-      
+      ctx.arc(props.x, props.y, props.r, 0, this.pi2);
+
       continue;
     }
-    
+
     if (type === 'quick-arc') {
-      ctx.arc(0, 0, props.r, 0, pi2);
-      
+      ctx.arc(0, 0, props.r, 0, this.pi2);
+
       continue;
     }
-    
+
     if (type === 'arcTo') {
       ctx.arcTo(props.x1, props.y1, props.x2, props.y2, props.r);
-      
+
       continue;
     }
-    
+
     if (type === 'anticlockwise-ellipse') {
       this.save();
       this.translate(props.x, props.y);
@@ -680,7 +685,7 @@ Renderer.prototype.render = function render(args) {
       this.scale(props.radiusX, props.radiusY);
       this.arc(0, 0, 1, props.startAngle, props.endAngle, true);
       this.restore();
-      
+
       continue;
     }
 
@@ -691,95 +696,107 @@ Renderer.prototype.render = function render(args) {
       this.scale(props.radiusX, props.radiusY);
       this.arc(0, 0, 1, props.startAngle, props.endAngle);
       this.restore();
-      
+
       continue;
     }
-    
+
     if (type === 'full-ellipse') {
       this.save();
       this.translate(props.x, props.y);
       this.rotate(props.rotation);
       this.scale(props.radiusX, props.radiusY);
-      this.arc(0, 0, 1, 0, pi2);
+      this.arc(0, 0, 1, 0, this.pi2);
       this.restore();
-      
+
       continue;
     }
-    
+
     if (type === 'quick-ellipse') {
       this.save();
       this.translate(props.x, props.y);
       this.scale(props.radiusX, props.radiusY);
-      this.arc(0, 0, 1, 0, pi2);
+      this.arc(0, 0, 1, 0, this.pi2);
       this.restore();
-      
+
       continue;
     }
-    
+
     if (type === 'globalCompositeOperation') {
       globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
-      
+
       continue;
     }
-    
+
     if (type === 'endGlobalCompositeOperation') {
       ctx.globalCompositeOperation = globalCompositeOperationStack.pop();
-      
+
       continue;
     }
-    
+
     if (type === 'fill') {
       ctx.fill();
-      
+
       continue;
     }
-    
+
     if (type === 'stroke') {
       ctx.stroke();
       continue;
     }
     if (type === 'clipPath') {
       ctx.clip();
-      
+
       continue;
     }
-    
+
     if (type === 'beginPath') {
       ctx.beginPath();
-      
+
       continue;
     }
-    
+
     if (type === 'closePath') {
       ctx.closePath();
-      
+
       continue;
     }
-    
+
     if (type === 'globalAlpha') {
       globalAlphaStack.push(ctx.globalAlpha);
       ctx.globalAlpha *= props.value;
-      
+
       continue;
     }
-    
+
     if (type === 'endGlobalAlpha') {
       ctx.globalAlpha = globalAlphaStack.pop();
-      
+
       continue;
     }
-    
+
     if (type === 'hitRegion') {
       this.mouseRegions.push({
         id: props.id,
         points: transformPoints(props.points, transformStack[transformStack.length - 1])
       });
-      
+
+      continue;
+    }
+
+    if (type === 'imageSmoothingEnabled') {
+      imageSmoothingEnabledStack.push(ctx.imageSmoothingEnabled);
+      ctx.imageSmoothingEnabled = props.value;
+
+      continue;
+    }
+
+    if (type === 'endImageSmoothingEnabled') {
+      ctx.imageSmoothingEnabled = imageSmoothingEnabledStack.pop();
       continue;
     }
   }
-  
+
   return this.applyStyles();
 };
 
@@ -804,11 +821,11 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   if (!Gradient) {
     Gradient = require('./Gradient');
   }
-  
+
   if (data.type === 'ready') {
     return this.ready();
   }
-  
+
   if (data.type === 'image') {
     img = new Img(data.value.id);
     Img.cache[data.value.id] = img;
@@ -824,31 +841,38 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     }
     return;
   }
-  
+
   if (data.type === 'image-cache') {
     if (Img.cache.hasOwnProperty(data.value.id)) {
       Img.cache[data.value.id].cache();
     }
     return;
   }
-  
+
   if (data.type === 'image-dispose') {
     if (Img.cache.hasOwnProperty(data.value.id)) {
       Img.cache[data.value.id].dispose();
     }
     return;
   }
-  
-  if (data.type === 'render') {  
+
+  if (data.type === 'render') {
     //set the tree
     this.tree = data.value;
     return;
   }
-  
+
   if (data.type === 'renderer-resize') {
     return this.resize(data.value.width, data.value.height);
   }
-  
+
+  if (data.type === 'renderer-image') {
+    if (Canvas.cache.hasOwnProperty(data.value.id)) {
+      this.toImage(data.value.imageID);
+      return;
+    }
+  }
+
   if (data.type === 'canvas') {
     if (!Canvas.cache.hasOwnProperty(data.value.id)) {
       Canvas.cache[data.value.id] = new Canvas(data.value.width, data.value.height, data.value.id);
@@ -857,32 +881,36 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     img.resize(data.value.width, data.value.height);
     return Canvas.cache[data.value.id].render(data.value.children);
   }
-  
+
   if (data.type === 'canvas-image') {
     if (Canvas.cache.hasOwnProperty(data.value.id)) {
       Canvas.cache[data.value.id].toImage(data.value.imageID);
       return;
     }
   }
-  
+
   if (data.type === 'canvas-cache') {
     if (Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
       Canvas.cache[data.value.id].cache();
     }
     return;
   }
-  
+
   if (data.type === 'canvas-dispose' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
       return Canvas.cache[data.value.id].dispose();
   }
-  
+
+  if (data.type === 'canvas-resize' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+      return Canvas.cache[data.value.id].resize(data.value.width, data.value.height);
+  }
+
   if (data.type === 'linear-gradient') {
-    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0, 
-                                                         data.value.x1, data.value.y1, 
+    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0,
+                                                         data.value.x1, data.value.y1,
                                                          data.value.children, data.value.id);
     return;
   }
-  
+
   if (data.type === 'radial-gradient') {
     Gradient.cache[data.value.id] = createRadialGradient(
       data.value.x0, data.value.y0, data.value.r0,
@@ -891,39 +919,39 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
     );
     return;
   }
-  
+
   if (data.type === 'gradient-dispose') {
     if (Gradient.cache.hasOwnProperty(data.value.id)) {
       return Gradient.cache[data.value.id].dispose();
     }
     return;
   }
-  
+
   if (data.type === 'gradient-cache') {
     if (Gradient.cache.hasOwnProperty(data.value.id)) {
       return Gradient.cachable.push(data.value.id);
     }
     return;
   }
-  
+
   if (data.type === 'style') {
     return this.style(data.value);
   }
-  
+
   if (data.type === 'measureText') {
     return this.measureText(data.value.font, data.value.text, null, data.value.id);
   }
-  
+
   return this.emit(data.type, data.value);
 };
 
 Renderer.prototype.resize = function(width, height) {
-  
+
   //resize event can be called from browser or worker, so we need to tell the browser to resize itself
   if (isWorker) {
     return this.sendBrowser('renderer-resize', { width: width, height: height });
   }
-  
+
   //only resize if the sizes are different, because it clears the canvas
   if (this.canvas.width.toString() !== width.toString()) {
     this.canvas.width = width;
@@ -933,26 +961,41 @@ Renderer.prototype.resize = function(width, height) {
   }
 };
 
+Renderer.prototype.toImage = function toImage(imageID) {
+
+  var img;
+  img = new Img(imageID || newid());
+
+  if (isWorker) {
+    postMessage({ type: 'renderer-image', value: { imageID: imageID } });
+    return img;
+  } else {
+    img.src = this.canvas.toDataURL('image/png');
+    return img;
+  }
+};
+
+
 Renderer.prototype.hookRender = function hookRender() {
-  
+
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
-    
+
       //if the worker exists, we should check to see if the worker has sent back anything yet
       if (this.worker) {
         if (this.tree !== null) {
-          
+
           //fire the mouse event again if it wasn't run
           if (this.lastMouseEvent && !this.ranMouseEvent) {
             this.mouseMove(this.lastMouseEvent);
           }
-          
+
           //fire the frame right away
           this.fireFrame();
-          
+
           //render the current frame from the worker
           this.render(this.tree);
-          
+
           //reset the tree/frame
           this.tree = null;
         }
@@ -965,7 +1008,7 @@ Renderer.prototype.hookRender = function hookRender() {
         this.fireFrame();
       }
   }
-  
+
   return window.requestAnimationFrame(this.hookRender.bind(this));
 };
 
@@ -1008,10 +1051,10 @@ Renderer.prototype.sendAll = function sendAll(type, value) {
 Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
   //whenever the mouse moves, report the position
   window.document.addEventListener('mousemove', this.mouseMove.bind(this));
-  
+
   //only report mousedown on canvas
   this.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
-  
+
   //mouse up can happen anywhere
   return window.document.addEventListener('mouseup', this.mouseUp.bind(this));
 };
@@ -1023,10 +1066,10 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
       region;
   this.lastMouseEvent = evt;
   this.ranMouseEvent = true;
-  
+
   mousePoint[0] = evt.clientX - rect.left;
   mousePoint[1] = evt.clientY - rect.top;
-  
+
   for(var i = 0; i < this.mouseRegions.length; i++) {
     region = this.mouseRegions[i];
     if (pointInPolygon(mousePoint, region.points)) {
@@ -1035,7 +1078,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
       i -= 1;
     }
   }
-  
+
   this.mouseData.x = mousePoint[0];
   this.mouseData.y = mousePoint[1];
   this.mouseData.state = this.mouseState;
@@ -1043,7 +1086,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 
   //send the mouse event to the worker
   this.sendWorker('mouse', this.mouseData);
-  
+
   //default event stuff
   evt.preventDefault();
   return false;
@@ -1052,7 +1095,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 Renderer.prototype.mouseDown = function mouseMove(evt) {
   //set the mouseState down
   this.mouseState = 'down';
-  
+  this.canvas.focus();
   //defer to mouseMove
   return this.mouseMove(evt);
 };
@@ -1065,19 +1108,19 @@ Renderer.prototype.mouseUp = function mouseMove(evt) {
 };
 
 Renderer.prototype.hookKeyboardEvents = function hookMouseEvents() {
-  
+
   //every code in keycode.code needs to be on keyData
   for (var name in keycode.code) {
     if (keycode.code.hasOwnProperty(name)) {
       this.keyData[name] = "up";
     }
   }
-  
+
   //keydown should only happen ON the canvas
   this.canvas.addEventListener('keydown', this.keyDown.bind(this));
-  
+
   //but keyup should be captured everywhere
-  return window.document.addEventListener('keyUp', this.keyUp.bind(this));
+  return window.document.addEventListener('keyup', this.keyUp.bind(this));
 };
 
 Renderer.prototype.keyChange = function keyChange(evt) {
@@ -1087,20 +1130,20 @@ Renderer.prototype.keyChange = function keyChange(evt) {
 };
 
 Renderer.prototype.keyDown = function keyDown(evt) {
-  this.keyData[keycode.code[evt.keyCode]] = "down";
+  this.keyData[keycode(evt.keyCode)] = "down";
   return this.keyChange(evt);
 };
 
 Renderer.prototype.keyUp = function keyUp(evt) {
-  this.keyData[keycode.code[evt.keyCode]] = "up";
+  this.keyData[keycode(evt.keyCode)] = "up";
   return this.keyChange(evt);
 };
 
-Renderer.prototype.browserCommand = function(e) {
+Renderer.prototype.browserCommand = function browserCommand(e) {
   if (e.data.type === 'image-load') {
     Img.cache[e.data.value.id].emit('load');
   }
-  
+
   return this.emit(e.data.type, e.data.value);
 };
 
@@ -1123,7 +1166,7 @@ Renderer.prototype.style = function style() {
   for(i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
   }
-  
+
   for (i = 0, len = children.length; i < len; i++) {
     child = children[i];
     if (child && child.constructor === Array) {
@@ -1145,7 +1188,7 @@ Renderer.prototype.style = function style() {
     for (i = 0; i < styles.length; i++) {
       this.styleQueue.push(styles[i]);
     }
-    
+
   }
 };
 
@@ -1159,7 +1202,7 @@ Renderer.prototype.applyStyles = function applyStyles() {
       }
     }
   }
-  this.styleQueue.splice(0, this.styleQueue.length); 
+  this.styleQueue.splice(0, this.styleQueue.length);
 };
 
 Renderer.prototype.ready = function ready() {
@@ -1180,7 +1223,7 @@ Renderer.prototype.measureText = function measureText(font, text, cb, id) {
   }
   var oldFont = this.ctx.font,
       result;
-  
+
   this.ctx.font = font;
   result = this.ctx.measureText(text);
   this.ctx.font = oldFont;
@@ -1191,6 +1234,21 @@ Renderer.prototype.measureText = function measureText(font, text, cb, id) {
     return setTimeout(cb.bind(null, result), 0);
   }
 };
+
+Object.defineProperty(Renderer.prototype, 'height', {
+  get: function() {
+    return this.canvas.width;
+  },
+  enumerable: true,
+  configurable: false
+});
+Object.defineProperty(Renderer.prototype, 'width', {
+  get: function() {
+    return this.canvas.width;
+  },
+  enumerable: true,
+  configurable: false
+});
 Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
