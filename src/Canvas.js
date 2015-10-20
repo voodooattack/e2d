@@ -15,6 +15,7 @@ function Canvas(width, height, id) {
     this.renderer = null;
   }
   this.fillPattern = null;
+  this._skipPatternCreation = false;
   Canvas.cache[this.id] = this;
   Object.seal(this);
 }
@@ -44,7 +45,9 @@ Canvas.prototype.render = function render(children) {
     postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
   } else {
     this.renderer.render(result);
-    this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
+    if (!this._skipPatternCreation) {
+      this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
+    }
   }
 };
 
@@ -86,7 +89,7 @@ Canvas.prototype.cache = function cache() {
   if (isWorker) {
     postMessage({ type: 'canvas-cache', value: { id: this.id }});
   } else if (Canvas.cachable.indexOf(this.id) === -1) {
-      Canvas.cachable.push(this.id);
+    Canvas.cachable.push(this.id);
   }
   return this;
 };
@@ -113,14 +116,27 @@ Canvas.prototype.resize = function resize(width, height) {
   return this;
 };
 
-Object.defineProperty('height', {
+Object.defineProperty(Canvas.prototype, 'height', {
   get: function() {
     return this.renderer.canvas.width;
   },
   enumerable: true,
   configurable: false
 });
-Object.defineProperty('width', {
+
+Object.defineProperty(Canvas.prototype, 'skipPatternCreation', {
+  get: function() {
+    return this._skipPatternCreation;
+  },
+  set: function(value) {
+    this._skipPatternCreation = value;
+    if (isWorker) {
+      return postMessage({ type: 'canvas-skipPatternCreation', value: { id: this.id, value: value } });
+    }
+  }
+});
+
+Object.defineProperty(Canvas.prototype, 'width', {
   get: function() {
     return this.renderer.canvas.width;
   },

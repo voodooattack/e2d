@@ -1,15 +1,16 @@
 //jshint node: true
 'use strict';
 
-var beginPath = require('./beginPath'),
-    clipPath = require('./clipPath');
+var Instruction = require('./Instruction');
 
-function clip(children) {
-  var result = [beginPath()];
+function clip(path, children) {
+  var result = [new Instruction('beginClip'), path, new Instruction('clip')];
+
   for(var i = 0; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
-  result.push(clipPath());
+
+  result.push(new Instruction('endClip'));
   return result;
 }
 

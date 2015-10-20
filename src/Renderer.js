@@ -166,17 +166,24 @@ Renderer.prototype.render = function render(args) {
     if (type === 'transform') {
       cache = transformStack[transformStack.length - 1];
       matrix = new Float64Array([
-        cache[0] * props.a + cache[2] * props.b,
-        cache[1] * props.a + cache[3] * props.b,
-        cache[0] * props.c + cache[2] * props.d,
-        cache[1] * props.c + cache[3] * props.d,
-        cache[0] * props.e + cache[2] * props.f + cache[4],
-        cache[1] * props.e + cache[3] * props.f + cache[5]
+        cache[0] * props[0] + cache[2] * props[1],
+        cache[1] * props[0] + cache[3] * props[1],
+        cache[0] * props[2] + cache[2] * props[3],
+        cache[1] * props[2] + cache[3] * props[3],
+        cache[0] * props[4] + cache[2] * props[5] + cache[4],
+        cache[1] * props[4] + cache[3] * props[5] + cache[5]
       ]);
 
       transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
+      continue;
+    }
+
+    if (type === 'setTransform') {
+      matrix = new Float64Array(props);
+      transformStack.push(matrix);
+      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
 
@@ -407,6 +414,24 @@ Renderer.prototype.render = function render(args) {
       continue;
     }
 
+    if (type === 'strokeText') {
+      if (props.maxWidth) {
+        ctx.strokeText(props.text, props.x, props.y, props.maxWidth);
+        continue;
+      }
+      ctx.strokeText(props.text, props.x, props.y);
+      continue;
+    }
+
+    if (type === 'fillText') {
+      if (props.maxWidth) {
+        ctx.fillText(props.text, props.x, props.y, props.maxWidth);
+        continue;
+      }
+      ctx.fillText(props.text, props.x, props.y);
+      continue;
+    }
+
     if (type === 'text') {
       if (props.maxWidth !== 0) {
         if (props.fill) {
@@ -427,6 +452,8 @@ Renderer.prototype.render = function render(args) {
 
       continue;
     }
+
+
 
     if (type === 'drawImage') {
       if (!Img.cache[props.img]) {
@@ -742,10 +769,25 @@ Renderer.prototype.render = function render(args) {
 
     if (type === 'stroke') {
       ctx.stroke();
+
       continue;
     }
-    if (type === 'clipPath') {
+
+    if (type === 'beginClip') {
+      ctx.save();
+      ctx.beginPath();
+
+      continue;
+    }
+
+    if (type === 'clip') {
       ctx.clip();
+
+      continue;
+    }
+
+    if (type === 'endClip') {
+      ctx.restore();
 
       continue;
     }
@@ -890,20 +932,24 @@ Renderer.prototype.workerCommand = function workerCommand(e) {
   }
 
   if (data.type === 'canvas-cache') {
-    if (Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+    if (Canvas.cache[data.value.id]) {
       Canvas.cache[data.value.id].cache();
     }
     return;
   }
 
-  if (data.type === 'canvas-dispose' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+  if (data.type === 'canvas-dispose' && Canvas.cache[data.value.id]) {
       return Canvas.cache[data.value.id].dispose();
   }
 
-  if (data.type === 'canvas-resize' && Canvas.cache.hasOwnProperty(data.value.id) && Canvas.cache[data.value.id]) {
+  if (data.type === 'canvas-resize' && Canvas.cache[data.value.id]) {
       return Canvas.cache[data.value.id].resize(data.value.width, data.value.height);
   }
 
+  if (data.type === 'canvas-skipPatternCreation' && Canvas.cache[data.value.id]) {
+    Canvas.cache[data.value.id].skipPatternCreation = data.value.value;
+    return;
+  }
   if (data.type === 'linear-gradient') {
     Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0,
                                                          data.value.x1, data.value.y1,
@@ -949,6 +995,8 @@ Renderer.prototype.resize = function(width, height) {
 
   //resize event can be called from browser or worker, so we need to tell the browser to resize itself
   if (isWorker) {
+    this.canvas.width = +width;
+    this.canvas.height = +height;
     return this.sendBrowser('renderer-resize', { width: width, height: height });
   }
 

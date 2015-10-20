@@ -1,6 +1,6 @@
 # e2d.js
 
-A canvas rendering engine HEAVILY inspired by `react.js` to enable `WebWorker` rendering.
+A declarative web worker canvas renderer.
 
 # Introduction
 
@@ -12,11 +12,9 @@ The coolest part of this library is the ability to do your application logic _in
 
 That's right. In a web worker. The cost for doing application logic this way is at worst about `32ms` of input lag, which is by design. It causes rendering _and_ drawing to happen at the same time in the most efficient way possible.
 
-When using this library, you'll probably want to do something like this:
-
 # API Stability
 
-This API is basically under heavy rewrite to make some of the parts faster and more optimized. That means you should use the library with the intent of helping me make it better!  It's almost ready for production use, but I need your help.  Pull requests are encouraged and would seriously help me speed up the process of making this API a reality.
+This API is mostly stable now, but I need help with adding canvas testing and possibly an xml syntax would be amazing.
 
 ```javascript
 //This works in both browser AND worker.
@@ -35,10 +33,10 @@ r.on('mouse', function (data) {
 function frame() {
   r.render(
     e2d.fillRect(800, 600), //black fillStyle is default
-    
+
     //mouse debug stuff
-    e2d.globalAlpha(0.5, 
-      e2d.fillStyle(mouse.state === 'down' ? 'green' : 'red', 
+    e2d.globalAlpha(0.5,
+      e2d.fillStyle(mouse.state === 'down' ? 'green' : 'red',
         e2d.fillArc(mouse.x, mouse.y, 10)
       )
     )
@@ -76,7 +74,7 @@ var imageData = {
 var frame = 0;
 
 function gameLoop() {
-  
+
   //do something every frame
   frame += 1;
   if (frame > 60) {
@@ -88,11 +86,11 @@ function gameLoop() {
   while (imageData.frameCount >= spriteSheet.length) {
     imageData.frameCount -= spriteSheet.length;
   }
-  
+
   //render your tree
   r.render(
-    translate(imageData.x, imageData.y, 
-      //draw command is already made! 
+    translate(imageData.x, imageData.y,
+      //draw command is already made!
       spriteSheet[imageData.frameCount]
     )
   );
@@ -106,7 +104,7 @@ Also building classes is as easy as making a single function.
 
 ```javascript
 function customContainerItem(x, y, width, height, children) {
-  return translate(x, y, 
+  return translate(x, y,
     strokeRect(0, 0, width, height),
     translate(3, 3, //padding
       children
@@ -117,19 +115,11 @@ function customContainerItem(x, y, width, height, children) {
 
 ## Performance
 
-The majority of my tesing involved a lot of frame timing. I came to the stunning conclusion that browsers can actually handle calling a very large amount of functions in a very short period of time.
+The majority of my testing involved a lot of frame timing. I came to the stunning conclusion that browsers can actually handle calling a very large amount of functions in a very short period of time.
 
 The browser bottlenecks at "draw-time" because the `CanvasRenderingContext2D.prototype` is slow.
 
 Creating a render tree every frame has a very minimal performance impact.
-
-It is also possible to store tree structures for later use to speed up tree generation.
-
-```javascript
-var strokeRed = e2d.lineStyle({ strokeStyle: 'red' }, e2d.stroke());
-```
-
-Examples like the following are actually very performant.
 
 ```javascript
 var particles = [];
@@ -158,7 +148,13 @@ If the goal is to reduce execution time, don't do it pre-emptively.
 
 *The browser bottlenecks more on the drawing operations, and garbage collection, than it does on the code you execute!*
 
-Simply write your code in a declarative style, then cache static operations when you are done.  After static operations are cached, check your `.map`s, `filter`s, and `reduce`s performance. If they are truly bottlenecking your  rendering, they can easily be turned into `for` loops with a little bit of clever logic. 
+Simply write your code in a declarative style, then cache static operations when you are done.  After static operations are cached, check your `.map`s, `filter`s, and `reduce`s performance. If they are truly bottlenecking your  rendering, they can easily be turned into `for` loops with a little bit of clever logic.
+
+This is an example of a cached operation.
+
+```javascript
+var strokeRed = e2d.strokeStyle('red', e2d.stroke());
+```
 
 # Getting started
 
@@ -242,7 +238,7 @@ This fires once per frame after calling `r.ready()`.  Use this event to call `r.
 ```javascript
 r.on('frame', function() {
   //browser side, this is during requestAnimationFrame
-  
+
   //worker side, this is timed and sent before the requestAnimationFrame fires
 });
 ```
@@ -359,7 +355,7 @@ var radiusWithXY = arc(x, y, radius); //radius is set, x, y is [x], [y]
 var radiusWithXYandAngles = arc(x, y, radius, startAngle, endAngle);
 
 //see previous arc with anticlockwise direction
-var arcAntiClockwise = arc(x, y, radius, startAngle, endAngle, anticlockwise); 
+var arcAntiClockwise = arc(x, y, radius, startAngle, endAngle, anticlockwise);
 ```
 
 __arcTo.js__
@@ -414,46 +410,39 @@ var sizeAndPosition = clearRect(x, y, width, height);
 
 __clip.js__
 
-This will clip a path for filling/stroking.  See mdn for more information on how to use clips.
+This function is the only function that requires the use of save/restore on the canvas 2d context, so it operates differently.
 
 ```javascript
-var clip = e2d.clip;
+function moveToLineTo(point, index) {
+  return index === 0 ? e2d.moveTo(point.x, point.y) : e2d.lineTo(point.x, point.y);
+}
 
-//the only argument it takes MUST BE AN ARRAY of items
-var myClipPath = clip(//ctx.beginPath() implied
-  moveTo(0, 0),
-  lineTo(100, 100),
-  lineTo(0, 100)
-); //ctx.clip() implied
+var region = polygon.map(moveToLineTo);
+
+//this results in a polygonal cliped drawImage command
+var result = e2d.clip(
+  region, //must be the first argument
+  e2d.drawImage(img)
+);
+
 ```
 
-If you want to call `ctx.clip()` manually, use `e2d.clipPath()` which will let you control when clip gets called exactly.
-
-__closePath.js__
-
-Sometimes you want to close a path manually.
-
-```javascript
-var closePath = e2d.closePath;
-
-var pathEnder = closePath();//no parameters
-```
 
 __Img.js__
 
 In order to work with web workers, the concept of drawing an image must be abstracted to the web worker.  Therefore, create an image like this:
 
 ```javascript
-var texture = new e2d.Img().cache();
+var texture = new e2d.Img().cache(); //this signals the browser to cache the image
 texture.src = 'url'; //data urls are accepted
 texture.once('load', function() {
   //the texture is loaded
 });
 ```
 
-Image references must be stored on the main thread because images must be created on the main thread regardless of where they are instantiated. Please remember to call `.cache()`.  It signals the browser to store the image reference to be drawn more than once.
+Image references must be stored on the main thread because images must be created on the main thread regardless of where they are instantiated.  In the browser thread they are stored in `Img.cache`.
 
-Images are automatically disposed unless `.cache()`ed and will need to be `.disposed()` manually.
+Every frame, the images are automatically disposed unless `.cache()`ed and will need to be `.disposed()` manually.
 
 This helps prevent memory leaks inside the browser which needs memory to be free when it isn't being used.
 
@@ -481,7 +470,7 @@ var imgCommandSize = drawImage(img, x, y, width, height); //specify the size of 
 var imgSourceSize = drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
 ```
 
-Using `fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up your app.
+Using `fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up your drawing.
 
 
 __fillImagePattern.js__
@@ -496,7 +485,7 @@ var img = new e2d.Img();
 img.src = 'url';
 img.once('load', callback);
 
-var fillImagePatternCommand = fillImagePattern(img, width, height);
+var fillImagePatternCommand = fillImagePattern(img, width, height); //it accepts an image
 var fillImagePatternCommand2 = fillImagePattern(img, x, y, width, height);
 
 ```
@@ -506,19 +495,21 @@ __Canvas.js__
 This is a renderer that allows the developer to render to a temporary canvas.  It works worker side.
 
 ```javascript
-  var temp = Canvas.create(100, 100);
+  var temp = Canvas.create(100, 100).cache(); //Canvas instances must be stored in the same way images are
+  var temp = new Canvas(100, 100);
+  temp.cache();
   temp.render(
     //draw commands
   );
-  
+
   //can be drawn with drawCanvas(temp);
 ```
 
 This allows the developer to create images using a canvas as well.
 
 ```javascript
-var img = temp.toImage(); //uses 'image/png'
-
+var img = temp.toImage().cache(); //uses 'image/png'
+//it returns an Img object and assumes it isn't cached()
 //can be used to call drawImage(img)
 ```
 
@@ -602,9 +593,9 @@ Make sure the fill command is nested as a child of the fillStyle command, becaus
 Nested fill styles can occur:
 
 ```javascript
-var example = fillStyle('red', 
+var example = fillStyle('red',
   //fillStyle is red here
-  fillStyle('blue', 
+  fillStyle('blue',
     //fillStyle is blue here
   )
   //now it's red again
@@ -631,11 +622,11 @@ Make sure the stroke command is nested as a child of the strokeStyle command, be
 Nested stroke styles can occur:
 
 ```javascript
-var example = strokeStyle('red', 
+var example = strokeStyle('red',
   //strokeStyle is red here
-  strokeStyle('blue', [
+  strokeStyle('blue',
     //fillStyle is blue here
-  ])
+  )
   //now it's red again
 );
 ```
@@ -649,7 +640,7 @@ See [mdn: globalCompositeOperation](https://developer.mozilla.org/en-US/docs/Web
 ```javascript
 var globalCompositeOperation = e2d.globalCompositeOperation;
 
-var operation = globalCompositeOperation('multiply', 
+var operation = globalCompositeOperation('multiply',
   //do some fill operations
 );
 ```
@@ -661,12 +652,11 @@ To control the global alpha, use the `globalAlpha(alpha, children)` function.
 ```javascript
 var globalAlpha = e2d.globalAlpha;
 
-globalAlpha(0.5, 
+globalAlpha(0.5,
   //children are now drawn at 0.5 alpha
-  
-  globalAlpha(0.5, 
-    //children are now drawn at 0.25 alpha because 0.5 * 0.5 is 0.25
-    //float math applies
+
+  globalAlpha(0.5,
+    //children are now drawn at 0.25 alpha because 0.5 * 0.5 is 0.25  (barring floating point math)
   )
 )
 
@@ -727,7 +717,7 @@ To make a square simply use `hitRect(id, x, y, width, height)` or `hitRect(id, w
 
 __lineStyle.js__
 
-This is a composite property abstraction that contains `lineWidth` and other useful properties. See [mdn: lineCap](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap), [mdn: lineWidth](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth), [mdn: lineJoin](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin), [mdn: miterLimit](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit), and [mdn: setLineDash](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash) 
+This is a composite property abstraction that contains `lineWidth` and other useful properties. See [mdn: lineCap](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap), [mdn: lineWidth](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth), [mdn: lineJoin](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin), [mdn: miterLimit](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit), and [mdn: setLineDash](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash)
 
 ```javascript
 var style = {
@@ -745,7 +735,7 @@ This is saved while the child operations are rendering and then reverted back to
 ```javascript
 var lineStyle = e2d.lineStyle;
 
-var example = lineStyle(style, 
+var example = lineStyle(style,
   //do some line stroke() operations here
 );
 ```
@@ -786,7 +776,7 @@ Browser side:
   //domParent defaults to document.body when not provided
   //workerUrl is the path to the worker that will control this particular renderer
   var r = new Renderer(width, height, [domParent, workerUrl]);
-  
+
   //alternatively use node.js style create syntax
   var r = Renderer.create(width, height, [domParent, workerUrl]);
 ```
@@ -829,7 +819,7 @@ var img = cvs.toImage().cache();
 r.render(
   e2d.drawImage(img)
 );
-  
+
 //or use
 
 r.render(
@@ -846,14 +836,24 @@ var translate = e2d.translate,
   scale = e2d.scale,
   rotate = e2d.rotate,
   drawImage = e2d.drawImage;
+//every transform operation accepts unlimited children
 
+//scaling operations are like this:
+var scaleChildren = e2d.scale(size, children); //if sizeY is not provided, it will assume the scale is in both directions
+var scaleChildren = e2d.scale(sizeX, sizeY, children);
+
+//translate like this:
+var translateChildren = e2d.translate(x, y, children);
+
+//rotate like this:
+var rotateChildren = e2d.rotate(radians, children);
 
 function drawSprite(img, x, y, rotation, scaleX, scaleY, centerX, centerY) {
-  return translate(x, y, 
-    scale(scaleX, scaleY, 
-      rotate(rotation, 
-        translate(-centerX, -centerY, 
-          drawImage(img)
+  return translate(x, y, //position
+    scale(scaleX, scaleY, //scaling operation
+      rotate(rotation, //rotate the sprite
+        translate(-centerX, -centerY, //centering operation
+          drawImage(img) //draw the image
         )
       )
     )
@@ -868,39 +868,25 @@ r.render(
 
 __transform.js__
 
-This is a transform function that will actually calculate out a transform matrix for you.
+This function used to perform matrix calculation, now it simply operates as a canvas transform operation.
 
 ```javascript
-var transform = e2d.transform,
-  drawImage = e2d.drawImage;
-  
-//same example from above
-function drawSprite(img, x, y, rotation, scaleX, scaleY, centerX, centerY) {
-  return transform([ //this must be an array!
-      // Apply one layer of transforms
-      { translate: { x: x, y: y }, scale: { x: scaleX, y: scaleY }, rotate: rotation },
-      // center the sprite
-      { translate: { x: -centerX, y: -centerY } }
-    ], 
-    drawImage(img)
-  );
-}
+var transformOperation = e2d.transform(
+  [A, B, C, D, E, F], //{ a: d11, b: d12, c: d21, d: d22, e: d31, f: d32 } for reference
+  children
+);
 ```
 
-If you know the matrix values already, you can use the following syntax:
+__resetTransform.js__ and __setTransform__
 
-```javascript
-transform([
-  { transform: { a: d11, b: d12, c: d21, d: d22, e: d31, f: d32 }}
-  //[d11, d21, d31]  ---- [a, c, e]
-  //[d12, d22, d32]  ---- [b, d, f]
-  //[  0,   0,   1]  ---- [0, 0, 1]
-], children);
-```
+Simply sets the transform
+
 
 __shadowStyle.js__
 
 Much like __lineStyle.js__ this is a compound property that can be nested.
+
+See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Shadows) for more details.
 
 ```javascript
 var shadowStyleDefinition = {
@@ -918,7 +904,7 @@ Example:
 ```javascript
 var shadowStyle = e2d.shadowStyle;
 
-var shadowCommand = shadowStyle(shadowStyleDefinition, 
+var shadowCommand = shadowStyle(shadowStyleDefinition,
   //stuff with a shadow
 );
 ```
@@ -949,9 +935,11 @@ var rect = strokeRect(width, height); //at 0, 0
 var rect2 = strokeRect(x, y, width, height);
 ```
 
-__text.js__ and __textStyle.js__
+__textStyle.js__, __fillText.js__, and __strokeText__
 
-These functions help you draw text to the screen using Canvas's really poorly implemented API.  Please see mdn for more information about the font properties.
+These functions help you draw text to the screen using Canvas's really poorly implemented text API.  Please see mdn for more information about the font properties.
+
+Note: the `text` function is deprecated.
 
 ```javascript
 var textStyle = e2d.textStyle,
@@ -962,17 +950,25 @@ var textStyle = e2d.textStyle,
     textBaseline: 'top', // base alignment
     direction: 'ltr' // ltr: left to right, rtl: right to left, and inherit
   };
-  
-var textCommand = textStyle(style, 
-  text('hello world!'), //at 0, 0
-  text('other text', x, y) //at x, y
-  
+
+var textCommand = textStyle(style,
+  fillText('hello world!'), //at 0, 0
+  strokeText('other text', x, y), //at x, y
+
   //text, x, y, fill, stroke
-  text('some other text too', x, y, true, true) //fill first, then stroke
-  
+  fillText('some other text too', x, y, maxWidth),
+
   //and maxWidth
-  text('the final example', x, y, true, true, maxWidth) //fill first, then stroke
+  strokeText('the final example', x, y, maxWidth)
 );
+```
+
+__text.js__
+
+This method is deprecated. It was poorly implemented was unclear.
+
+```javascript
+var textCommand = e2d.text('hello world', x, y, fill, stroke, maxWidth); //fill and stroke are booleans
 ```
 
 __createLinearGradient.js__ and __createRadialGradient.js__
@@ -981,8 +977,8 @@ __createLinearGradient.js__ and __createRadialGradient.js__
 
 ```javascript
 var grd = createLinearGradient(x0, y0, x1, y1, [ //this must be an array!
-  addColorStop(0, 'color'),
-  addColorStop(1, 'color')
+  e2d.addColorStop(0, 'color'),
+  e2d.addColorStop(1, 'color')
 ]).cache(); // will cache the gradient for later reuse
 ```
 
@@ -990,11 +986,11 @@ This paradigm exists because the gradient needs to be stored for later use on th
 
 ```javascript
 r.render(
-  fillStyle(
-    createLinearGradient(x0, y0, x1, y1, [ //this one will be auto-disposed
+  e2d.fillStyle(
+    e2d.createLinearGradient(x0, y0, x1, y1, [ //this one will be auto-disposed
       addColorStop(...),
       addColorStop(...)
-    ]),
+    ]), //this creates a linear gradient every frame, it may be slow
     //children
   )
 )
@@ -1027,5 +1023,43 @@ var newPoints = transformPoints(points, matrix);
 
 It returns an array of `[x, y]` points with the coordinates transformed.
 
+# Examples
+
+```javascript
+var polygon = [
+  [x, y],
+  [x, y],
+  ...
+  [x, y]
+];
+function moveToLineTo(point, index) {
+  return index === 0 ? e2d.moveTo(point[0], point[1]) : e2d.lineTo(point[0], point[1]);
+}
+
+var app = {
+
+  r: e2d.Renderer.create(800, 600),
+  polygonShape: e2d.path(polygon.map(moveToLineTo)),
+  polygonHitRegion: e2d.hitRegion('polyogon-region', polygon),
+  fillRed: e2d.fillStyle('red', e2d.fill()), //storing fillStyles is easy
+  rectPath: e2d.path(e2d.rect(100, 100, 100, 100)), //storing paths is easy
+  tick: function() {
+    //if the cursor is over the polygon region, change the pointer
+    r.style({ cursor: this.r.mouseData.activeRegions.length > 0 ? 'pointer' : null });
+
+    return this.r.render(
+      this.rectPath, this.fillRed, //red rectangle
+      e2d.translate(100, 100, //move to 100, 100,
+        this.polygonShape, this.fillRed, this.polygonHitRegion //draw a polygon and apply a mouse region to it
+      )
+    );
+  }
+};
+
+app.r.ready();
+app.r.on('frame', function() {
+  app.tick();
+});
+```
 
 This project is released under the MIT license (c) Joshua Tenner 2015.
