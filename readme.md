@@ -226,6 +226,7 @@ This object is the main renderer of the application.
 ```javascript
 var r = new Renderer(width, height, parent[document.body], workerUrl);
 ```
+You must provide the workerUrl if you are running a renderer using a web worker.
 
 ### Events
 
@@ -275,8 +276,6 @@ r.on('key', function(keyEventData) {
 });
 
 ### Prototype
-
-You must provide the workerUrl if you are running a renderer using a web worker.
 
 To render a set of commands, use the following syntax:
 
@@ -1045,7 +1044,7 @@ var app = {
   rectPath: e2d.path(e2d.rect(100, 100, 100, 100)), //storing paths is easy
   tick: function() {
     //if the cursor is over the polygon region, change the pointer
-    r.style({ cursor: this.r.mouseData.activeRegions.length > 0 ? 'pointer' : null });
+    this.r.style({ cursor: this.r.mouseData.activeRegions.length > 0 ? 'pointer' : null });
 
     return this.r.render(
       this.rectPath, this.fillRed, //red rectangle
