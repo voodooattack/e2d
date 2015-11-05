@@ -3,7 +3,6 @@
 
 var path = require('path'),
     isWorker = require('./isWorker'),
-    isDataUrl = require('./isDataUrl'),
     events = require('events'),
     util = require('util'),
     newid = require('./id');
@@ -13,7 +12,6 @@ util.inherits(Img, events.EventEmitter);
 function Img(id) {
   events.EventEmitter.call(this);
   this._src = "";
-  this.isDataUrl = false;
   this.id = id || newid();
   this.buffer = new ArrayBuffer();
   this.onload = function() {};
@@ -32,7 +30,7 @@ Img.cache = {};
 Img.cachable = [];
 Object.defineProperty(Img.prototype, 'src', {
   set: function(val) {
-    this.isDataUrl = isDataUrl(val);
+
     if (isWorker) {
       Img.cache[this.id] = this;
       postMessage({ type: 'image-source', value: { id: this.id, src: val } });
@@ -41,7 +39,12 @@ Object.defineProperty(Img.prototype, 'src', {
     var element = new window.Image();
     this.imageElement = element;
     element.src = val;
-    element.onload = this.imageLoad.bind(this);
+
+    if (element.complete) {
+      this.imageLoad();
+    } else {
+      element.onload = this.imageLoad.bind(this);
+    }
   },
   get: function() {
     return this._src;
@@ -107,7 +110,7 @@ Img.cleanUp = function cleanUp() {
     key = Img.cachable[i];
     index[key] = Img.cache[key];
   }
-  
+
   Img.cache = index;
 };
 

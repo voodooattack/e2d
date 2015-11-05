@@ -143,13 +143,13 @@ Renderer.prototype.render = function render(args) {
     return this.sendBrowser('render', children);
   }
 
-  for(i = 0, len = children.length; i < len; i++) {
+  for (i = 0, len = children.length; i < len; i++) {
     child = children[i];
 
     if (child && child.constructor === Array) {
       children = concat.apply([], children);
       child = children[i];
-      while(child && child.constructor === Array) {
+      while (child && child.constructor === Array) {
         children = concat.apply([], children);
         child = children[i];
       }
@@ -645,7 +645,7 @@ Renderer.prototype.render = function render(args) {
 
     if (type === 'fillArc-counterclockwise') {
       ctx.beginPath();
-      ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle);
+      ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, true);
       ctx.closePath();
       ctx.fill();
 

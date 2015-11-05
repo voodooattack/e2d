@@ -1,6 +1,6 @@
 # e2d.js
 
-A declarative web worker canvas renderer.
+An es5 declarative web worker canvas renderer.
 
 # Introduction
 
@@ -12,44 +12,15 @@ The coolest part of this library is the ability to do your application logic _in
 
 That's right. In a web worker. The cost for doing application logic this way is at worst about `32ms` of input lag, which is by design. It causes rendering _and_ drawing to happen at the same time in the most efficient way possible.
 
+# Behavior Testing
+
+Starting up `server.js` and going to localhost:8080/test.html brings up the test suite.
+
+I am still working on the tests and I haven't had time to write more, but they are coming.  Any help would be appreciated.
+
 # API Stability
 
 This API is mostly stable now, but I need help with adding canvas testing and possibly an xml syntax would be amazing.
-
-```javascript
-//This works in both browser AND worker.
-//  importScripts('e2d.min.js');
-//or
-//  var e2d = require('e2d');
-
-
-var r = e2d.Renderer.create(800, 600);
-
-var mouse = { x: 0, y: 0, state: 'up' };
-
-r.on('mouse', function (data) {
-  mouse = data;
-});
-function frame() {
-  r.render(
-    e2d.fillRect(800, 600), //black fillStyle is default
-
-    //mouse debug stuff
-    e2d.globalAlpha(0.5,
-      e2d.fillStyle(mouse.state === 'down' ? 'green' : 'red',
-        e2d.fillArc(mouse.x, mouse.y, 10)
-      )
-    )
-  );
-}
-//browser side, this is called durring requestAnimationFrame
-r.on('frame', frame);
-
-//if you want the library to control when you render use this function
-r.ready();
-```
-
-Use `r.ready()` to active the requestAnimationFrame loop.  All render commands are ignored until `.ready()` is called.
 
 ### Instruction trees
 
@@ -209,13 +180,47 @@ In your `public/index.html` file:
 <script src="bundle.js" type="text/javascript"></script>
 ```
 
-There is no active support for automatically importing `e2d` inside a web worker using the `browserify` method. For now, make a standalone build for your worker and use that.
+There is no easy way of automatically having e2d imported into a web worker, that must be done via a `require` call or `importScripts('path/to/e2d.min.js')`.
 
 Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
 
 ### Webpack
 
-WebWorker work is possible but I'm not sure how to set up a project that uses webpack using a web worker.  Please submit a pull request to help provide an example!
+WebWorker work is possible with webpack, but I'm not sure how to set up a project that uses webpack using a web worker.  Please submit a pull request to help provide an example!
+
+```javascript
+//This works in both browser AND worker.
+//  importScripts('e2d.min.js');
+//or
+//  var e2d = require('e2d');
+
+var r = e2d.Renderer.create(800, 600);
+
+var mouse = { x: 0, y: 0, state: 'up' };
+
+r.on('mouse', function (data) {
+  mouse = data;
+});
+function frame() {
+  r.render(
+    e2d.fillRect(800, 600), //black fillStyle is default
+
+    //mouse debug stuff
+    e2d.globalAlpha(0.5,
+      e2d.fillStyle(mouse.state === 'down' ? 'green' : 'red',
+        e2d.fillArc(mouse.x, mouse.y, 10)
+      )
+    )
+  );
+}
+//browser side, this is called durring requestAnimationFrame
+r.on('frame', frame);
+
+//if you want the library to control when you render use this function
+r.ready();
+```
+
+Use `r.ready()` to active the requestAnimationFrame loop.  All render commands are ignored until `.ready()` is called.
 
 # API
 
@@ -247,7 +252,6 @@ r.on('frame', function() {
 __mouse__
 
 This fires once per mouse event. This includes `mousedown`, `mouseup`, and `mousemove`.  Touch events are not supported yet and are targeted for the next release.
-
 
 ```javascript
 r.on('mouse', function(mouseEventData) {
@@ -445,6 +449,18 @@ Every frame, the images are automatically disposed unless `.cache()`ed and will 
 
 This helps prevent memory leaks inside the browser which needs memory to be free when it isn't being used.
 
+__imageSmoothingEnabled.js__
+
+This function set imageSmoothingEnabled. _(default is true)_
+
+```javascript
+r.render(
+  e2d.imageSmoothingEnabled(false,
+    ...children
+  )
+);
+```
+
 __drawImage.js__, __fillImage.js__
 
 Drawing an image is as easy as `drawImage(img)` or `fillImage(img)`. Both functions have the same parameters, and can be useful in different situations. It has four forms.
@@ -453,7 +469,8 @@ See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContex
 ```javascript
 var drawImage = e2d.drawImage;
 
-var img = new e2d.Img().cache();
+var img = new e2d.Img();
+img.cache(); //cache all images unless you use them for a single render
 
 img.src = 'url';
 img.once('load', callback);
@@ -1039,7 +1056,7 @@ var app = {
 
   r: e2d.Renderer.create(800, 600),
   polygonShape: e2d.path(polygon.map(moveToLineTo)),
-  polygonHitRegion: e2d.hitRegion('polyogon-region', polygon),
+  polygonHitRegion: e2d.hitRegion('polygon-region', polygon),
   fillRed: e2d.fillStyle('red', e2d.fill()), //storing fillStyles is easy
   rectPath: e2d.path(e2d.rect(100, 100, 100, 100)), //storing paths is easy
   tick: function() {
