@@ -32,6 +32,7 @@ module.exports = {
     Gradient: require('./src/Gradient'),
     hitRect: require('./src/hitRect'),
     hitRegion: require('./src/hitRegion'),
+    imageSmoothingEnabled: require('./src/imageSmoothingEnabled'),
     Img: require('./src/Img'),
     Instruction: require('./src/Instruction'),
     isWorker: require('./src/isWorker'),
@@ -60,7 +61,7 @@ module.exports = {
     translate: require('./src/translate')
 };
 
-},{"./src/Canvas":10,"./src/Gradient":11,"./src/Img":12,"./src/Instruction":13,"./src/Renderer":14,"./src/addColorStop":15,"./src/arc":16,"./src/arcTo":17,"./src/beginPath":18,"./src/bezierCurveTo":19,"./src/clearRect":20,"./src/clip":21,"./src/clipPath":22,"./src/closePath":23,"./src/createLinearGradient":24,"./src/createRadialGradient":25,"./src/createRegularPolygon":26,"./src/drawCanvas":27,"./src/drawImage":28,"./src/ellipse":29,"./src/fill":30,"./src/fillArc":31,"./src/fillCanvas":32,"./src/fillImage":33,"./src/fillImagePattern":34,"./src/fillRect":35,"./src/fillStyle":36,"./src/fillText":37,"./src/globalAlpha":38,"./src/globalCompositeOperation":39,"./src/hitRect":40,"./src/hitRegion":41,"./src/isWorker":43,"./src/lineStyle":44,"./src/lineTo":45,"./src/moveTo":46,"./src/moveToLineTo":47,"./src/path":48,"./src/quadraticCurveTo":49,"./src/rect":50,"./src/resetTransform":51,"./src/rotate":52,"./src/scale":53,"./src/setTransform":54,"./src/shadowStyle":55,"./src/stroke":56,"./src/strokeArc":57,"./src/strokeRect":58,"./src/strokeStyle":59,"./src/strokeText":60,"./src/text":61,"./src/textStyle":62,"./src/transform":63,"./src/transformPoints":64,"./src/translate":65}],2:[function(require,module,exports){
+},{"./src/Canvas":10,"./src/Gradient":11,"./src/Img":12,"./src/Instruction":13,"./src/Renderer":14,"./src/addColorStop":15,"./src/arc":16,"./src/arcTo":17,"./src/beginPath":18,"./src/bezierCurveTo":19,"./src/clearRect":20,"./src/clip":21,"./src/clipPath":22,"./src/closePath":23,"./src/createLinearGradient":24,"./src/createRadialGradient":25,"./src/createRegularPolygon":26,"./src/drawCanvas":27,"./src/drawImage":28,"./src/ellipse":29,"./src/fill":30,"./src/fillArc":31,"./src/fillCanvas":32,"./src/fillImage":33,"./src/fillImagePattern":34,"./src/fillRect":35,"./src/fillStyle":36,"./src/fillText":37,"./src/globalAlpha":38,"./src/globalCompositeOperation":39,"./src/hitRect":40,"./src/hitRegion":41,"./src/imageSmoothingEnabled":43,"./src/isWorker":44,"./src/lineStyle":45,"./src/lineTo":46,"./src/moveTo":47,"./src/moveToLineTo":48,"./src/path":49,"./src/quadraticCurveTo":50,"./src/rect":51,"./src/resetTransform":52,"./src/rotate":53,"./src/scale":54,"./src/setTransform":55,"./src/shadowStyle":56,"./src/stroke":57,"./src/strokeArc":58,"./src/strokeRect":59,"./src/strokeStyle":60,"./src/strokeText":61,"./src/text":62,"./src/textStyle":63,"./src/transform":64,"./src/transformPoints":65,"./src/translate":66}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1633,7 +1634,7 @@ Object.seal(Canvas);
 Object.seal(Canvas.prototype);
 module.exports = Canvas;
 
-},{"./Img":12,"./Renderer":14,"./id":42,"./isWorker":43}],11:[function(require,module,exports){
+},{"./Img":12,"./Renderer":14,"./id":42,"./isWorker":44}],11:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker');
@@ -1683,7 +1684,7 @@ Object.seal(Gradient);
 Object.seal(Gradient.prototype);
 
 module.exports = Gradient;
-},{"./isWorker":43}],12:[function(require,module,exports){
+},{"./isWorker":44}],12:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 
@@ -1807,7 +1808,7 @@ Object.seal(Img.prototype);
 
 module.exports = Img;
 
-},{"./id":42,"./isWorker":43,"events":2,"path":4,"util":7}],13:[function(require,module,exports){
+},{"./id":42,"./isWorker":44,"events":2,"path":4,"util":7}],13:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -3124,7 +3125,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./id":42,"./isWorker":43,"./transformPoints":64,"events":2,"keycode":8,"point-in-polygon":9,"util":7}],15:[function(require,module,exports){
+},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":24,"./createRadialGradient":25,"./id":42,"./isWorker":44,"./transformPoints":65,"events":2,"keycode":8,"point-in-polygon":9,"util":7}],15:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3274,7 +3275,7 @@ function createLinearGradient(x0, y0, x1, y1, children, id) {
 
 
 module.exports = createLinearGradient;
-},{"./Gradient":11,"./id":42,"./isWorker":43}],25:[function(require,module,exports){
+},{"./Gradient":11,"./id":42,"./isWorker":44}],25:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 var isWorker = require('./isWorker'),
@@ -3304,7 +3305,7 @@ function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
 
 
 module.exports = createRadialGradient;
-},{"./Gradient":11,"./id":42,"./isWorker":43}],26:[function(require,module,exports){
+},{"./Gradient":11,"./id":42,"./isWorker":44}],26:[function(require,module,exports){
 'use strict';
 
 function createRegularPolygon(radius, position, sides) {
@@ -3740,11 +3741,23 @@ function id() {
 
 module.exports = id;
 },{}],43:[function(require,module,exports){
+'use strict';
+var Instruction = require('./Instruction');
+
+module.exports = function imageSmoothingEnabled(val, children) {
+  children = [];
+  for(var i = 1; i < arguments.length; i++) {
+    children.push(arguments[i]);
+  }
+  return [new Instruction('imageSmoothingEnabled', { value: Boolean(val) })].concat(children).concat(new Instruction('endImageSmoothingEnabled'));
+};
+
+},{"./Instruction":13}],44:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
 module.exports = typeof window === 'undefined';
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3788,7 +3801,7 @@ function lineStyle(value, children) {
 }
 
 module.exports = lineStyle;
-},{"./Instruction":13}],45:[function(require,module,exports){
+},{"./Instruction":13}],46:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3801,7 +3814,7 @@ function lineTo(x, y) {
 }
 
 module.exports = lineTo;
-},{"./Instruction":13}],46:[function(require,module,exports){
+},{"./Instruction":13}],47:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3814,7 +3827,7 @@ function moveTo(x, y) {
 }
 
 module.exports = moveTo;
-},{"./Instruction":13}],47:[function(require,module,exports){
+},{"./Instruction":13}],48:[function(require,module,exports){
 'use strict';
 var moveTo = require('./moveTo'), lineTo = require('./lineTo');
 function moveToLineTo(point, index) {
@@ -3823,7 +3836,7 @@ function moveToLineTo(point, index) {
 
 module.exports = moveToLineTo;
 
-},{"./lineTo":45,"./moveTo":46}],48:[function(require,module,exports){
+},{"./lineTo":46,"./moveTo":47}],49:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3840,7 +3853,7 @@ function path(children) {
 }
 
 module.exports = path;
-},{"./beginPath":18,"./closePath":23}],49:[function(require,module,exports){
+},{"./beginPath":18,"./closePath":23}],50:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3855,7 +3868,7 @@ function quadraticCurveTo(cpx, cpy, x, y) {
 }
 
 module.exports = quadraticCurveTo;
-},{"./Instruction":13}],50:[function(require,module,exports){
+},{"./Instruction":13}],51:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3869,7 +3882,7 @@ function rect(x, y, width, height) {
 }
 
 module.exports = rect;
-},{"./Instruction":13}],51:[function(require,module,exports){
+},{"./Instruction":13}],52:[function(require,module,exports){
 'use strict';
 var setTransform = require('./setTransform');
 
@@ -3881,7 +3894,7 @@ module.exports = function resetTransform() {
   return setTransform([1, 0, 0, 1, 0, 0], args);
 };
 
-},{"./setTransform":54}],52:[function(require,module,exports){
+},{"./setTransform":55}],53:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3897,7 +3910,7 @@ function rotate(r, children) {
 }
 
 module.exports = rotate;
-},{"./Instruction":13}],53:[function(require,module,exports){
+},{"./Instruction":13}],54:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3920,7 +3933,7 @@ function scale(x, y, children) {
 }
 
 module.exports = scale;
-},{"./Instruction":13}],54:[function(require,module,exports){
+},{"./Instruction":13}],55:[function(require,module,exports){
 'use strict';
 var Instruction = require('./Instruction');
 
@@ -3933,7 +3946,7 @@ module.exports = function(matrix, children) {
   return result;
 };
 
-},{"./Instruction":13}],55:[function(require,module,exports){
+},{"./Instruction":13}],56:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3970,7 +3983,7 @@ function shadowStyle(value, children) {
 }
 
 module.exports = shadowStyle;
-},{"./Instruction":13}],56:[function(require,module,exports){
+},{"./Instruction":13}],57:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3980,7 +3993,7 @@ function stroke() {
 }
 
 module.exports = stroke;
-},{"./Instruction":13}],57:[function(require,module,exports){
+},{"./Instruction":13}],58:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4000,7 +4013,7 @@ function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = strokeArc;
-},{"./Instruction":13}],58:[function(require,module,exports){
+},{"./Instruction":13}],59:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4014,7 +4027,7 @@ function strokeRect(x, y, width, height) {
 }
 
 module.exports = strokeRect;
-},{"./Instruction":13}],59:[function(require,module,exports){
+},{"./Instruction":13}],60:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4038,7 +4051,7 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":11,"./Instruction":13}],60:[function(require,module,exports){
+},{"./Gradient":11,"./Instruction":13}],61:[function(require,module,exports){
 var Instruction = require('./Instruction');
 
 module.exports = function strokeText(text, x, y, maxWidth) {
@@ -4057,7 +4070,7 @@ module.exports = function strokeText(text, x, y, maxWidth) {
   });
 };
 
-},{"./Instruction":13}],61:[function(require,module,exports){
+},{"./Instruction":13}],62:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4116,7 +4129,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
 }
 
 module.exports = text;
-},{"./Instruction":13}],62:[function(require,module,exports){
+},{"./Instruction":13}],63:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4151,7 +4164,7 @@ function textStyle(value, children) {
 }
 
 module.exports = textStyle;
-},{"./Instruction":13}],63:[function(require,module,exports){
+},{"./Instruction":13}],64:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4170,7 +4183,7 @@ function transform(values, children) {
 
 module.exports = transform;
 
-},{"./Instruction":13}],64:[function(require,module,exports){
+},{"./Instruction":13}],65:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4190,7 +4203,7 @@ function transformPoints(points, matrix) {
 }
 
 module.exports = transformPoints;
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');

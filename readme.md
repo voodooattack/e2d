@@ -1039,26 +1039,59 @@ var newPoints = transformPoints(points, matrix);
 
 It returns an array of `[x, y]` points with the coordinates transformed.
 
+__createRegularPolygon.js__
+
+Creates a regular polygon shape: an array of arrays.
+
+```javascript
+var radius = 10;
+var position = [x, y];
+var sides = 6;
+var hexagon = e2d.createRegularPolygon(radius, position, sides);
+
+console.log(hexagon);
+[
+  [10, 0],
+  [5.000000000000001, 8.660254037844386],
+  [-4.999999999999998, 8.660254037844387],
+  [-10, 1.2246467991473533e-15],
+  [-5.000000000000004, -8.660254037844384],
+  [5.000000000000001, -8.660254037844386]
+]
+```
+
+__moveToLineTo.js__
+
+This is a convenience function that takes shapes and makes them drawable polygons.
+
+```javascript
+var hexagonShape = e2d.createRegularPolygon(10, [0, 0], 6);
+var hexagonPath = e2d.path( //automatically close the path
+  hexagonShape.map(e2d.moveToLineTo) //map each point to an instruction
+);
+
+r.render(
+  hexagonPath
+);
+
+```
+
 # Examples
 
 ```javascript
-var polygon = [
-  [x, y],
-  [x, y],
-  ...
-  [x, y]
-];
-function moveToLineTo(point, index) {
-  return index === 0 ? e2d.moveTo(point[0], point[1]) : e2d.lineTo(point[0], point[1]);
-}
 
 var app = {
 
   r: e2d.Renderer.create(800, 600),
-  polygonShape: e2d.path(polygon.map(moveToLineTo)),
-  polygonHitRegion: e2d.hitRegion('polygon-region', polygon),
+  polygonShape: e2d.createRegularPolygon(30, [0, 0], 10),
+  polygonPath: null,
+  polygonHitRegion: null,
   fillRed: e2d.fillStyle('red', e2d.fill()), //storing fillStyles is easy
   rectPath: e2d.path(e2d.rect(100, 100, 100, 100)), //storing paths is easy
+  init: function() {
+    this.polygonPath = e2d.path(this.polygonShape.map(e2d.moveToLineTo));
+    this.polygonHitRegion = e2d.hitRegion('polygon-region', this.polygonShape);
+  },
   tick: function() {
     //if the cursor is over the polygon region, change the pointer
     this.r.style({ cursor: this.r.mouseData.activeRegions.length > 0 ? 'pointer' : null });
@@ -1066,11 +1099,12 @@ var app = {
     return this.r.render(
       this.rectPath, this.fillRed, //red rectangle
       e2d.translate(100, 100, //move to 100, 100,
-        this.polygonShape, this.fillRed, this.polygonHitRegion //draw a polygon and apply a mouse region to it
+        this.polygonPath, this.fillRed, this.polygonHitRegion //draw a polygon and apply a mouse region to it
       )
     );
   }
 };
+app.init();
 
 app.r.ready();
 app.r.on('frame', function() {

@@ -31,6 +31,7 @@ module.exports = {
     Gradient: require('./src/Gradient'),
     hitRect: require('./src/hitRect'),
     hitRegion: require('./src/hitRegion'),
+    imageSmoothingEnabled: require('./src/imageSmoothingEnabled'),
     Img: require('./src/Img'),
     Instruction: require('./src/Instruction'),
     isWorker: require('./src/isWorker'),
