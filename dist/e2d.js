@@ -1728,7 +1728,7 @@ Object.defineProperty(Img.prototype, 'src', {
     element.src = val;
 
     if (element.complete) {
-      this.imageLoad();
+      setTimeout(this.imageLoad.bind(this), 0);
     } else {
       element.onload = this.imageLoad.bind(this);
     }
