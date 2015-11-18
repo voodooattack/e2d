@@ -3219,7 +3219,7 @@ var Instruction = require('./Instruction');
 function clip(path, children) {
   var result = [new Instruction('beginClip'), path, new Instruction('clip')];
 
-  for(var i = 0; i < arguments.length; i++) {
+  for(var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
 
