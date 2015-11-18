@@ -1,6 +1,6 @@
 {
   "name": "e2d",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A declarative web worker canvas renderer.",
   "main": "index.js",
   "scripts": {
