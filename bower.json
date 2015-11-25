@@ -1,12 +1,12 @@
 {
   "name": "e2d",
   "main": "dist/e2d.min.js",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "homepage": "https://github.com/jtenner/e2d",
   "authors": [
     "jtenner <tenner.joshua@gmail.com>"
   ],
-  "description": "A declarative web worker canvas renderer.",
+  "description": "A declarative canvas renderer.",
   "moduleType": [
     "amd",
     "globals",
@@ -15,7 +15,6 @@
   "keywords": [
     "canvas",
     "2d",
-    "WebWorker",
     "graphics",
     "browser"
   ],

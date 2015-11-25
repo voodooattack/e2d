@@ -1,18 +1,9 @@
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-    Gradient = require('./Gradient');
+var Instruction = require('./Instruction');
 
 function fillStyle(value, children) {
-  var instruction;
-  if (value instanceof Gradient) {
-    instruction = new Instruction('strokeGradient', { value: { id: value.id } });
-  }
-  
-  if (!instruction) {
-    instruction = new Instruction('strokeStyle', { value: value });
-  }
-  var result = [instruction];
+  var result = [ new Instruction('strokeStyle', { value: value }) ];
   for(var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }

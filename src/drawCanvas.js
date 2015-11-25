@@ -5,7 +5,7 @@ var Instruction = require('./Instruction');
 function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('drawCanvasSource', {
-      img: canvas.id,
+      img: canvas,
       sx: sx,
       sy: sy,
       sWidth: sWidth,
@@ -16,27 +16,27 @@ function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 5) {
     return new Instruction('drawCanvasSize', {
-      img: canvas.id,
+      img: canvas,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
       dHeight: sHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('drawCanvas', {
-      img: canvas.id,
+      img: canvas,
       dx: sx,
       dy: sy
     });
-  }  
+  }
 
   return new Instruction('drawCanvas', {
-    img: canvas.id,
+    img: canvas,
     dx: 0,
     dy: 0
   });

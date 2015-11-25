@@ -30,13 +30,11 @@ module.exports = {
     fillText: require('./src/fillText'),
     globalAlpha: require('./src/globalAlpha'),
     globalCompositeOperation: require('./src/globalCompositeOperation'),
-    Gradient: require('./src/Gradient'),
     hitRect: require('./src/hitRect'),
     hitRegion: require('./src/hitRegion'),
     imageSmoothingEnabled: require('./src/imageSmoothingEnabled'),
     Img: require('./src/Img'),
     Instruction: require('./src/Instruction'),
-    isWorker: require('./src/isWorker'),
     lineStyle: require('./src/lineStyle'),
     lineTo: require('./src/lineTo'),
     moveTo: require('./src/moveTo'),
@@ -63,7 +61,7 @@ module.exports = {
     translate: require('./src/translate')
 };
 
-},{"./src/Canvas":10,"./src/Gradient":11,"./src/Img":12,"./src/Instruction":13,"./src/Renderer":14,"./src/addColorStop":15,"./src/arc":16,"./src/arcTo":17,"./src/beginPath":18,"./src/bezierCurveTo":19,"./src/clearRect":20,"./src/clip":21,"./src/clipPath":22,"./src/closePath":23,"./src/createClass":24,"./src/createLinearGradient":25,"./src/createRadialGradient":26,"./src/createRegularPolygon":27,"./src/drawCanvas":28,"./src/drawImage":29,"./src/ellipse":30,"./src/fill":31,"./src/fillArc":32,"./src/fillCanvas":33,"./src/fillImage":34,"./src/fillImagePattern":35,"./src/fillRect":36,"./src/fillStyle":37,"./src/fillText":38,"./src/globalAlpha":39,"./src/globalCompositeOperation":40,"./src/hitRect":41,"./src/hitRegion":42,"./src/imageSmoothingEnabled":44,"./src/isWorker":45,"./src/lineStyle":46,"./src/lineTo":47,"./src/moveTo":48,"./src/moveToLineTo":49,"./src/path":50,"./src/placeHolder":51,"./src/quadraticCurveTo":52,"./src/rect":53,"./src/resetTransform":54,"./src/rotate":55,"./src/scale":56,"./src/setTransform":57,"./src/shadowStyle":58,"./src/stroke":59,"./src/strokeArc":60,"./src/strokeRect":61,"./src/strokeStyle":62,"./src/strokeText":63,"./src/text":64,"./src/textStyle":65,"./src/transform":66,"./src/transformPoints":67,"./src/translate":68}],2:[function(require,module,exports){
+},{"./src/Canvas":10,"./src/Img":11,"./src/Instruction":12,"./src/Renderer":13,"./src/addColorStop":14,"./src/arc":15,"./src/arcTo":16,"./src/beginPath":17,"./src/bezierCurveTo":18,"./src/clearRect":19,"./src/clip":20,"./src/clipPath":21,"./src/closePath":22,"./src/createClass":23,"./src/createLinearGradient":24,"./src/createRadialGradient":25,"./src/createRegularPolygon":26,"./src/drawCanvas":27,"./src/drawImage":28,"./src/ellipse":29,"./src/fill":30,"./src/fillArc":31,"./src/fillCanvas":32,"./src/fillImage":33,"./src/fillImagePattern":34,"./src/fillRect":35,"./src/fillStyle":36,"./src/fillText":37,"./src/globalAlpha":38,"./src/globalCompositeOperation":39,"./src/hitRect":40,"./src/hitRegion":41,"./src/imageSmoothingEnabled":42,"./src/lineStyle":43,"./src/lineTo":44,"./src/moveTo":45,"./src/moveToLineTo":46,"./src/path":47,"./src/placeHolder":48,"./src/quadraticCurveTo":49,"./src/rect":50,"./src/resetTransform":51,"./src/rotate":52,"./src/scale":53,"./src/setTransform":54,"./src/shadowStyle":55,"./src/stroke":56,"./src/strokeArc":57,"./src/strokeRect":58,"./src/strokeStyle":59,"./src/strokeText":60,"./src/text":61,"./src/textStyle":62,"./src/transform":63,"./src/transformPoints":64,"./src/translate":65}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1481,54 +1479,29 @@ module.exports = function (point, vs) {
 //jshint worker: true, browser: true, node: true
 'use strict';
 
-var isWorker = require('./isWorker'),
-    Img = require('./Img'),
-    newid = require('./id');
+function Canvas(width, height) {
 
-function Canvas(width, height, id) {
-  this.id = id || newid();
   var Renderer = require('./Renderer');
-  if (!isWorker) {
-    this.renderer = new Renderer(width, height, window.document.createElement('div'));
-  } else {
-    postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: [] } });
-    this.renderer = null;
-  }
+  this.renderer = new Renderer(width, height, window.document.createElement('div'));
   this.fillPattern = null;
   this._skipPatternCreation = false;
-  Canvas.cache[this.id] = this;
+
   Object.seal(this);
 }
 
 Canvas.prototype.render = function render(children) {
   var result = [],
-      i,
-      len,
-      child,
-      concat = result.concat;
+      i;
   for (i = 0; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
-  for(i = 0, len = result.length; i < len; i++) {
-    child = result[i];
-    if (child && child.constructor === Array) {
-      result = concat.apply([], result);
-      child = result[i];
-      while(child && child.constructor === Array) {
-        result = concat.apply([], result);
-        child = result[i];
-      }
-      len = result.length;
-    }
+
+
+  this.renderer.render(result);
+  if (!this._skipPatternCreation) {
+    this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
   }
-  if (isWorker) {
-    postMessage({ type: 'canvas', value: { id: this.id, width: this.width, height: this.height, children: result } });
-  } else {
-    this.renderer.render(result);
-    if (!this._skipPatternCreation) {
-      this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
-    }
-  }
+
 };
 
 Canvas.prototype.style = function style() {
@@ -1541,58 +1514,11 @@ Canvas.prototype.style = function style() {
 };
 
 Canvas.prototype.toImage = function toImage(imageID) {
-  var img;
-  img = new Img(imageID || newid());
-
-  if (isWorker) {
-    postMessage({ type: 'canvas-image', value: { id: this.id, imageID: imageID } });
-    return img;
-  } else {
-    img.src = this.renderer.canvas.toDataURL('image/png');
-    return img;
-  }
-};
-
-Canvas.prototype.dispose = function dispose() {
-  if (isWorker) {
-    return postMessage({ type: 'canvas-dispose', value: { id: this.id }});
-  } else {
-    Canvas.cache[this.id] = null;
-    var index = Canvas.cachable.indexOf(this.id);
-    if (index > -1) {
-      Canvas.cachable.splice(index, 1);
-    }
-  }
-};
-
-Canvas.prototype.cache = function cache() {
-  if (isWorker) {
-    postMessage({ type: 'canvas-cache', value: { id: this.id }});
-  } else if (Canvas.cachable.indexOf(this.id) === -1) {
-    Canvas.cachable.push(this.id);
-  }
-  return this;
-};
-
-Canvas.cleanUp = function cleanUp() {
-  var index = {},
-      key;
-  for(var i = 0; i < Canvas.cachable.length; i++) {
-    key = Canvas.cachable[i];
-    index[key] = Canvas.cache[key];
-  }
-
-  Canvas.cache = index;
+  return this.renderer.toImage();
 };
 
 Canvas.prototype.resize = function resize(width, height) {
-
-  if (isWorker) {
-    postMessage({ type: 'canvas-resize', value: { id: this.id, width: +this.width, height: +this.height }});
-  } else {
-    this.renderer.resize(+width, +height);
-  }
-
+  this.renderer.resize(+width, +height);
   return this;
 };
 
@@ -1610,9 +1536,6 @@ Object.defineProperty(Canvas.prototype, 'skipPatternCreation', {
   },
   set: function(value) {
     this._skipPatternCreation = value;
-    if (isWorker) {
-      return postMessage({ type: 'canvas-skipPatternCreation', value: { id: this.id, value: value } });
-    }
   }
 });
 
@@ -1636,139 +1559,49 @@ Object.seal(Canvas);
 Object.seal(Canvas.prototype);
 module.exports = Canvas;
 
-},{"./Img":12,"./Renderer":14,"./id":43,"./isWorker":45}],11:[function(require,module,exports){
-//jshint node: true, browser: true, worker: true
-'use strict';
-var isWorker = require('./isWorker');
-
-function Gradient(id, grd) {
-  this.id = id;
-  this.grd = grd;
-  Gradient.cache[id] = this;
-  Object.seal(this);
-}
-
-Gradient.cache = {};
-Gradient.cachable = [];
-Gradient.prototype.cache = function cache() {
-  if (isWorker) {
-    postMessage({ type: 'gradient-cache', value: { id: this.id }});
-  } else {
-    Gradient.cachable.push(this.id);
-  }
-  return this;
-};
-
-Gradient.prototype.dispose = function dispose() {
-  if(isWorker) {
-    return postMessage({ type: 'gradient-dispose', value: { id: this.id } });
-  } else {
-    Gradient.cache[this.id] = null;
-    var index = Gradient.cachable.indexOf(this.id);
-    if (index !== -1) {
-      Gradient.cachable.splice(index, 1);
-    }
-  }
-};
-
-Gradient.cleanUp = function cleanUp() {
-  var index = {},
-      key;
-  for(var i = 0; i < Gradient.cachable.length; i++) {
-    key = Gradient.cachable[i];
-    index[key] = Gradient.cache[key];
-  }
-  
-  Gradient.cache = index;
-};
-
-Object.seal(Gradient);
-Object.seal(Gradient.prototype);
-
-module.exports = Gradient;
-},{"./isWorker":45}],12:[function(require,module,exports){
+},{"./Renderer":13}],11:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
 
 var path = require('path'),
-    isWorker = require('./isWorker'),
     events = require('events'),
-    util = require('util'),
-    newid = require('./id');
+    util = require('util');
 
 util.inherits(Img, events.EventEmitter);
 
-function Img(id) {
+function Img() {
   events.EventEmitter.call(this);
-  this._src = "";
-  this.id = id || newid();
-  this.buffer = new ArrayBuffer();
-  this.onload = function() {};
-  this.texture = null;
-  this.type = 'image';
-  this.blobOptions = {};
   this.imageElement = null;
   this.imagePattern = null;
   this.imagePatternRepeat = null;
-  if (isWorker) {
-    postMessage({ type: 'image', value: { id: this.id, src: '' } });
-  }
   Object.seal(this);
 }
-Img.cache = {};
-Img.cachable = [];
+
 Object.defineProperty(Img.prototype, 'src', {
   set: function(val) {
 
-    if (isWorker) {
-      Img.cache[this.id] = this;
-      postMessage({ type: 'image-source', value: { id: this.id, src: val } });
-      return;
-    }
-    var element = new window.Image();
+    var element = new Image();
     this.imageElement = element;
     element.src = val;
 
-    if (element.complete) {
+    if (element.complete) { //firefox compatibility code
       setTimeout(this.imageLoad.bind(this), 0);
     } else {
       element.onload = this.imageLoad.bind(this);
     }
   },
   get: function() {
-    return this._src;
+    return this.imageElement.src;
   }
 });
 
 Img.prototype.imageLoad = function imageLoad() {
-  if (!isWorker) {
-    var ctx = window.document.createElement('canvas').getContext('2d');
-    this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
-    this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
-  }
-  Img.cache[this.id] = this;
+
+  var ctx = window.document.createElement('canvas').getContext('2d');
+  this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
+  this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
+
   return this.emit('load', this);
-};
-
-Img.prototype.cache = function dispose() {
-  if (isWorker) {
-    postMessage({ type: 'image-cache', value: { id: this.id }});
-  } else {
-    Img.cachable.push(this.id);
-  }
-  return this;
-};
-
-Img.prototype.dispose = function dispose() {
-  if (isWorker) {
-    return postMessage({ type: 'image-dispose', value: { id: this.id }});
-  } else {
-    Img.cache[this.id] = null;
-    var index = Img.cachable.indexOf(this.id);
-    if (index !== -1) {
-      Img.cachable.splice(index, 1);
-    }
-  }
 };
 
 Object.defineProperty(Img.prototype, 'width', {
@@ -1781,7 +1614,6 @@ Object.defineProperty(Img.prototype, 'width', {
   }
 });
 
-
 Object.defineProperty(Img.prototype, 'height', {
   enumerable: true,
   get: function() {
@@ -1792,25 +1624,12 @@ Object.defineProperty(Img.prototype, 'height', {
   }
 });
 
-Img.cleanUp = function cleanUp() {
-  var index = {},
-      key;
-  for(var i = 0; i < Img.cachable.length; i++) {
-    key = Img.cachable[i];
-    index[key] = Img.cache[key];
-  }
-
-  Img.cache = index;
-};
-
-
-
 Object.seal(Img);
 Object.seal(Img.prototype);
 
 module.exports = Img;
 
-},{"./id":43,"./isWorker":45,"events":2,"path":4,"util":7}],13:[function(require,module,exports){
+},{"events":2,"path":4,"util":7}],12:[function(require,module,exports){
 //jshint node: true
 'use strict';
 function Instruction(type, props) {
@@ -1823,43 +1642,41 @@ Object.seal(Instruction);
 Object.seal(Instruction.prototype);
 
 module.exports = Instruction;
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 
 'use strict';
-var Canvas = null,
-    Gradient = null,
-    isWorker = require('./isWorker'),
-    createLinearGradient = require('./createLinearGradient'),
+var createLinearGradient = require('./createLinearGradient'),
     createRadialGradient = require('./createRadialGradient'),
     events = require('events'),
     util = require('util'),
-    Img = require('./Img'),
     keycode = require('keycode'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
-    identity = new Float64Array([1, 0, 0, 1, 0, 0]),
-    newid = require('./id');
+    identity = new Float64Array([1, 0, 0, 1, 0, 0]);
 
 util.inherits(Renderer, events.EventEmitter);
 
 function Renderer(width, height, parent, worker) {
   //this needs to be done later because of cyclical dependencies
   events.EventEmitter.call(this);
+
+  //virtual stack
+  this.transformStack = [identity];
+  this.fillStyleStack = [];
+  this.strokeStyleStack = [];
+  this.lineStyleStack = [];
+  this.textStyleStack = [];
+  this.shadowStyleStack = [];
+  this.globalAlphaStack = [];
+  this.imageSmoothingEnabledStack = [];
+  this.globalCompositeOperationStack = [];
+
+
+
+
   this.pi2 = Math.PI * 2;
 
-  if (!Canvas) {
-    Canvas = require('./Canvas');
-  }
-  if (!Gradient) {
-    Gradient = require('./Gradient');
-  }
-  if (!Img) {
-    Gradient = require('./Gradient');
-  }
-
-
-  this.tree = null;
   this.isReady = false;
   this.mouseState = 'up';
   this.mouseData = {
@@ -1876,29 +1693,6 @@ function Renderer(width, height, parent, worker) {
 
   //this is the basic structure of the data sent to the web worker
   this.keyData = {};
-
-  if (isWorker) {
-    this.worker = null;
-    this.canvas =  {
-      width: width,
-      height: height
-    };
-    this.ctx = null;
-    this.parent = null;
-    addEventListener('message', this.browserCommand.bind(this));
-    Object.seal(this);
-    //nothing else to do
-    return;
-  }
-
-
-  //create the web worker and hook the workerCommand function
-  if (worker) {
-    this.worker = worker instanceof Worker ? worker : new Worker(worker);
-    this.worker.onmessage = this.workerCommand.bind(this);
-  } else {
-    this.worker = null;
-  }
 
   //set parent
   if (parent && parent.nodeType === 1) {
@@ -1935,6 +1729,7 @@ function Renderer(width, height, parent, worker) {
   this.hookMouseEvents();
   this.hookKeyboardEvents();
 
+  this.boundHookRenderFunction = this.hookRender.bind(this);
   Object.seal(this);
 }
 
@@ -1948,25 +1743,23 @@ Renderer.prototype.render = function render(args) {
       matrix,
       sinr,
       cosr,
-      fillStyleStack = [],
-      strokeStyleStack = [],
-      lineStyleStack = [],
-      textStyleStack = [],
-      shadowStyleStack = [],
-      globalAlphaStack = [],
-      imageSmoothingEnabledStack = [],
-      transformStack = [identity],
-      globalCompositeOperationStack = [],
       ctx = this.ctx,
       children = [],
       concat = children.concat;
 
+  //flush the virtual stack
+  this.transformStack.splice(0, this.transformStack.length, identity);
+  this.fillStyleStack.splice(0, this.fillStyleStack.length);
+  this.strokeStyleStack.splice(0, this.strokeStyleStack.length);
+  this.lineStyleStack.splice(0, this.lineStyleStack.length);
+  this.textStyleStack.splice(0, this.textStyleStack.length);
+  this.shadowStyleStack.splice(0, this.shadowStyleStack.length);
+  this.globalCompositeOperationStack.splice(0, this.globalCompositeOperationStack.length);
+  this.globalAlphaStack.splice(0, this.globalAlphaStack.length);
+  this.imageSmoothingEnabledStack.splice(0, this.imageSmoothingEnabledStack.length);
+
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
-  }
-
-  if (isWorker) {
-    return this.sendBrowser('render', children);
   }
 
   for (i = 0, len = children.length; i < len; i++) {
@@ -1990,7 +1783,7 @@ Renderer.prototype.render = function render(args) {
     type = child.type;
 
     if (type === 'transform') {
-      cache = transformStack[transformStack.length - 1];
+      cache = this.transformStack[this.transformStack.length - 1];
       matrix = new Float64Array([
         cache[0] * props[0] + cache[2] * props[1],
         cache[1] * props[0] + cache[3] * props[1],
@@ -2000,7 +1793,7 @@ Renderer.prototype.render = function render(args) {
         cache[1] * props[4] + cache[3] * props[5] + cache[5]
       ]);
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -2008,30 +1801,30 @@ Renderer.prototype.render = function render(args) {
 
     if (type === 'setTransform') {
       matrix = new Float64Array(props);
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
 
     if (type === 'scale') {
-      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
       matrix[0] *= props.x;
       matrix[1] *= props.x;
       matrix[2] *= props.y;
       matrix[3] *= props.y;
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
     }
 
     if (type === 'translate') {
-      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
       matrix[4] += matrix[0] * props.x + matrix[2] * props.y;
       matrix[5] += matrix[1] * props.x + matrix[3] * props.y;
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -2041,7 +1834,7 @@ Renderer.prototype.render = function render(args) {
       cosr = Math.cos(props.r);
       sinr = Math.sin(props.r);
 
-      cache = transformStack[transformStack.length - 1];
+      cache = this.transformStack[this.transformStack.length - 1];
       matrix = new Float64Array(cache);
 
       matrix[0] = cache[0] * cosr + cache[2] * sinr;
@@ -2049,15 +1842,15 @@ Renderer.prototype.render = function render(args) {
       matrix[2] = cache[0] * -sinr + cache[2] * cosr;
       matrix[3] = cache[1] * -sinr + cache[3] * cosr;
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
     }
 
     if (type === 'restore') {
-      transformStack.pop();
-      matrix = transformStack[transformStack.length - 1];
+      this.transformStack.pop();
+      matrix = this.transformStack[this.transformStack.length - 1];
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -2088,50 +1881,32 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillStyle') {
-      fillStyleStack.push(ctx.fillStyle);
+      this.fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
 
       continue;
     }
 
-    if (type == 'fillGradient') {
-      fillStyleStack.push(ctx.fillStyle);
-      if (Gradient.cache.hasOwnProperty(props.value.id)) {
-        ctx.fillStyle = Gradient.cache[props.value.id].grd;
-      }
-
-      continue;
-    }
-
     if (type === 'strokeStyle') {
-      strokeStyleStack.push(ctx.strokeStyle);
+      this.strokeStyleStack.push(ctx.strokeStyle);
       ctx.strokeStyle = props.value;
 
       continue;
     }
 
-    if (type == 'strokeGradient') {
-      strokeStyleStack.push(ctx.strokeStyle);
-      if (Gradient.cache.hasOwnProperty(props.value.id)) {
-        ctx.strokeStyle = Gradient.cache[props.value.id].grd;
-      }
-
-      continue;
-    }
-
     if (type === 'endFillStyle') {
-      ctx.fillStyle = fillStyleStack.pop();
+      ctx.fillStyle = this.fillStyleStack.pop();
 
       continue;
     }
 
     if (type === 'endStrokeStyle') {
-      ctx.strokeStyle = strokeStyleStack.pop();
+      ctx.strokeStyle = this.strokeStyleStack.pop();
 
       continue;
     }
     if (type === 'lineStyle') {
-      lineStyleStack.push({
+      this.lineStyleStack.push({
         lineWidth: ctx.lineWidth,
         lineCap: ctx.lineCap,
         lineJoin: ctx.lineJoin,
@@ -2163,7 +1938,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'endLineStyle') {
-      cache = lineStyleStack.pop();
+      cache = this.lineStyleStack.pop();
       ctx.lineWidth = cache.lineWidth;
       ctx.lineCap = cache.lineCap;
       ctx.lineJoin = cache.lineJoin;
@@ -2175,7 +1950,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'textStyle') {
-      textStyleStack.push({
+      this.textStyleStack.push({
         font: ctx.font,
         textAlign: ctx.textAlign,
         textBaseline: ctx.textBaseline,
@@ -2198,7 +1973,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'endTextStyle') {
-      cache = textStyleStack.pop();
+      cache = this.textStyleStack.pop();
       ctx.font = cache.font;
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
@@ -2208,7 +1983,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'shadowStyle') {
-      shadowStyleStack.push({
+      this.shadowStyleStack.push({
         shadowBlur: ctx.shadowBlur,
         shadowColor: ctx.shadowColor,
         shadowOffsetX: ctx.shadowOffsetX,
@@ -2231,7 +2006,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'endShadowStyle') {
-      cache = shadowStyleStack.pop();
+      cache = this.shadowStyleStack.pop();
       ctx.shadowBlur = cache.shadowBlur;
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
@@ -2282,37 +2057,34 @@ Renderer.prototype.render = function render(args) {
 
 
     if (type === 'drawImage') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy);
+      ctx.drawImage(props.img.imageElement || new Image(), props.dx, props.dy);
       continue;
     }
 
     if (type === 'drawImageSize') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
-
+      ctx.drawImage(props.img.imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
     if (type === 'drawImageSource') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
-
+      ctx.drawImage(props.img.imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
     if (type === 'fillImagePattern') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      ctx.fillStyle = Img.cache[props.img].imagePatternRepeat;
+      ctx.fillStyle = props.img.imagePatternRepeat;
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, props.dWidth, props.dHeight);
       ctx.restore();
@@ -2321,13 +2093,12 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImage') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Img.cache[props.img].imageElement;
+      cache = props.img.imageElement;
       ctx.save();
-      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.fillStyle = props.img.imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, cache.width, cache.height);
       ctx.restore();
@@ -2336,13 +2107,12 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImageSize') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Img.cache[props.img].imageElement;
+      cache = props.img.imageElement;
       ctx.save();
-      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.fillStyle = props.img.imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
       ctx.fillRect(0, 0, cache.width, cache.height);
@@ -2352,12 +2122,11 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImageSource') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
       ctx.save();
-      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.fillStyle = props.img.imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
@@ -2369,11 +2138,10 @@ Renderer.prototype.render = function render(args) {
 
 
     if (type === 'fillCanvas') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Canvas.cache[props.img];
+      cache = props.img;
       ctx.save();
       ctx.fillStyle = cache.fillPattern;
       ctx.translate(props.dx, props.dy);
@@ -2384,11 +2152,10 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillCanvasSize') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Canvas.cache[props.img];
+      cache = props.img;
       ctx.save();
       ctx.fillStyle = cache.fillPattern;
       ctx.translate(props.dx, props.dy);
@@ -2400,12 +2167,11 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillCanvasSource') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
       ctx.save();
-      ctx.fillStyle = Canvas.cache[props.img].fillPattern;
+      ctx.fillStyle = props.img.fillPattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
@@ -2416,27 +2182,27 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawCanvas') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy);
+      ctx.drawImage(props.img.renderer.canvas, props.dx, props.dy);
       continue;
     }
 
     if (type === 'drawCanvasSize') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(props.img.renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
 
       continue;
     }
 
     if (type === 'drawCanvasSource') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(props.img.renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
 
       continue;
     }
@@ -2575,14 +2341,14 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'globalCompositeOperation') {
-      globalCompositeOperationStack.push(ctx.globalCompositeOperation);
+      this.globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
 
       continue;
     }
 
     if (type === 'endGlobalCompositeOperation') {
-      ctx.globalCompositeOperation = globalCompositeOperationStack.pop();
+      ctx.globalCompositeOperation = this.globalCompositeOperationStack.pop();
 
       continue;
     }
@@ -2631,14 +2397,14 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'globalAlpha') {
-      globalAlphaStack.push(ctx.globalAlpha);
+      this.globalAlphaStack.push(ctx.globalAlpha);
       ctx.globalAlpha *= props.value;
 
       continue;
     }
 
     if (type === 'endGlobalAlpha') {
-      ctx.globalAlpha = globalAlphaStack.pop();
+      ctx.globalAlpha = this.globalAlphaStack.pop();
 
       continue;
     }
@@ -2646,21 +2412,21 @@ Renderer.prototype.render = function render(args) {
     if (type === 'hitRegion') {
       this.mouseRegions.push({
         id: props.id,
-        points: transformPoints(props.points, transformStack[transformStack.length - 1])
+        points: transformPoints(props.points, this.transformStack[this.transformStack.length - 1])
       });
 
       continue;
     }
 
     if (type === 'imageSmoothingEnabled') {
-      imageSmoothingEnabledStack.push(ctx.imageSmoothingEnabled);
+      this.imageSmoothingEnabledStack.push(ctx.imageSmoothingEnabled);
       ctx.imageSmoothingEnabled = props.value;
 
       continue;
     }
 
     if (type === 'endImageSmoothingEnabled') {
-      ctx.imageSmoothingEnabled = imageSmoothingEnabledStack.pop();
+      ctx.imageSmoothingEnabled = this.imageSmoothingEnabledStack.pop();
       continue;
     }
   }
@@ -2678,154 +2444,8 @@ Renderer.create = function create(width, height, parent, worker) {
   return new Renderer();
 };
 
-Renderer.prototype.workerCommand = function workerCommand(e) {
-  var tree,
-      img,
-      data = e.data;
-  //import the canvas object when we need it because Canvas depends on Renderer
-  if (!Canvas) {
-    Canvas = require('./Canvas');
-  }
-  if (!Gradient) {
-    Gradient = require('./Gradient');
-  }
-
-  if (data.type === 'ready') {
-    return this.ready();
-  }
-
-  if (data.type === 'image') {
-    img = new Img(data.value.id);
-    Img.cache[data.value.id] = img;
-    return;
-  }
-  if (data.type === 'image-source') {
-    if (Img.cache.hasOwnProperty(data.value.id)) {
-      img = Img.cache[data.value.id];
-      img.src = data.value.src;
-      img.once('load', function() {
-        this.sendWorker('image-load', data.value);
-      }.bind(this));
-    }
-    return;
-  }
-
-  if (data.type === 'image-cache') {
-    if (Img.cache.hasOwnProperty(data.value.id)) {
-      Img.cache[data.value.id].cache();
-    }
-    return;
-  }
-
-  if (data.type === 'image-dispose') {
-    if (Img.cache.hasOwnProperty(data.value.id)) {
-      Img.cache[data.value.id].dispose();
-    }
-    return;
-  }
-
-  if (data.type === 'render') {
-    //set the tree
-    this.tree = data.value;
-    return;
-  }
-
-  if (data.type === 'renderer-resize') {
-    return this.resize(data.value.width, data.value.height);
-  }
-
-  if (data.type === 'renderer-image') {
-    if (Canvas.cache.hasOwnProperty(data.value.id)) {
-      this.toImage(data.value.imageID);
-      return;
-    }
-  }
-
-  if (data.type === 'canvas') {
-    if (!Canvas.cache.hasOwnProperty(data.value.id)) {
-      Canvas.cache[data.value.id] = new Canvas(data.value.width, data.value.height, data.value.id);
-    }
-    img = Canvas.cache[data.value.id];
-    img.resize(data.value.width, data.value.height);
-    return Canvas.cache[data.value.id].render(data.value.children);
-  }
-
-  if (data.type === 'canvas-image') {
-    if (Canvas.cache.hasOwnProperty(data.value.id)) {
-      Canvas.cache[data.value.id].toImage(data.value.imageID);
-      return;
-    }
-  }
-
-  if (data.type === 'canvas-cache') {
-    if (Canvas.cache[data.value.id]) {
-      Canvas.cache[data.value.id].cache();
-    }
-    return;
-  }
-
-  if (data.type === 'canvas-dispose' && Canvas.cache[data.value.id]) {
-      return Canvas.cache[data.value.id].dispose();
-  }
-
-  if (data.type === 'canvas-resize' && Canvas.cache[data.value.id]) {
-      return Canvas.cache[data.value.id].resize(data.value.width, data.value.height);
-  }
-
-  if (data.type === 'canvas-skipPatternCreation' && Canvas.cache[data.value.id]) {
-    Canvas.cache[data.value.id].skipPatternCreation = data.value.value;
-    return;
-  }
-  if (data.type === 'linear-gradient') {
-    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0,
-                                                         data.value.x1, data.value.y1,
-                                                         data.value.children, data.value.id);
-    return;
-  }
-
-  if (data.type === 'radial-gradient') {
-    Gradient.cache[data.value.id] = createRadialGradient(
-      data.value.x0, data.value.y0, data.value.r0,
-      data.value.x1, data.value.y1, data.value.r1,
-      data.value.children, data.value.id
-    );
-    return;
-  }
-
-  if (data.type === 'gradient-dispose') {
-    if (Gradient.cache.hasOwnProperty(data.value.id)) {
-      return Gradient.cache[data.value.id].dispose();
-    }
-    return;
-  }
-
-  if (data.type === 'gradient-cache') {
-    if (Gradient.cache.hasOwnProperty(data.value.id)) {
-      return Gradient.cachable.push(data.value.id);
-    }
-    return;
-  }
-
-  if (data.type === 'style') {
-    return this.style(data.value);
-  }
-
-  if (data.type === 'measureText') {
-    return this.measureText(data.value.font, data.value.text, null, data.value.id);
-  }
-
-  return this.emit(data.type, data.value);
-};
 
 Renderer.prototype.resize = function(width, height) {
-
-  //resize event can be called from browser or worker, so we need to tell the browser to resize itself
-  if (isWorker) {
-    this.canvas.width = +width;
-    this.canvas.height = +height;
-    return this.sendBrowser('renderer-resize', { width: width, height: height });
-  }
-
   //only resize if the sizes are different, because it clears the canvas
   if (this.canvas.width.toString() !== width.toString()) {
     this.canvas.width = width;
@@ -2835,18 +2455,11 @@ Renderer.prototype.resize = function(width, height) {
   }
 };
 
-Renderer.prototype.toImage = function toImage(imageID) {
-
-  var img;
-  img = new Img(imageID || newid());
-
-  if (isWorker) {
-    postMessage({ type: 'renderer-image', value: { imageID: imageID } });
-    return img;
-  } else {
-    img.src = this.canvas.toDataURL('image/png');
-    return img;
-  }
+Renderer.prototype.toImage = function toImage() {
+  var Img = require('./Img');
+  var img = new Img();
+  img.src = this.canvas.toDataURL('image/png');
+  return img;
 };
 
 
@@ -2854,73 +2467,17 @@ Renderer.prototype.hookRender = function hookRender() {
 
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
+    //fire the mouse event again if it wasn't run
+    if (this.lastMouseEvent && !this.ranMouseEvent) {
+      this.mouseMove(this.lastMouseEvent);
+    }
+    //we are browser side, so this should fire the frame synchronously
+    this.fireFrame();
 
-      //if the worker exists, we should check to see if the worker has sent back anything yet
-      if (this.worker) {
-        if (this.tree !== null) {
-
-          //fire the mouse event again if it wasn't run
-          if (this.lastMouseEvent && !this.ranMouseEvent) {
-            this.mouseMove(this.lastMouseEvent);
-          }
-
-          //fire the frame right away
-          this.fireFrame();
-
-          //render the current frame from the worker
-          this.render(this.tree);
-
-          //reset the tree/frame
-          this.tree = null;
-        }
-      } else {
-        //fire the mouse event again if it wasn't run
-        if (this.lastMouseEvent && !this.ranMouseEvent) {
-          this.mouseMove(this.lastMouseEvent);
-        }
-        //we are browser side, so this should fire the frame synchronously
-        this.fireFrame();
-      }
   }
 
-  return window.requestAnimationFrame(this.hookRender.bind(this));
+  return window.requestAnimationFrame(this.boundHookRenderFunction);
 };
-
-Renderer.prototype.cleanUpCache = function cleanUpCache() {
-  Img.cleanUp();
-  Canvas.cleanUp();
-  return Gradient.cleanUp();
-};
-
-Renderer.prototype.sendWorker = function sendWorker(type, value) {
-  //if there is no worker, the event needs to happen browser side
-  if (!this.worker) {
-    //fire the event anyway
-    return this.emit(type, value);
-  }
-  //otherwise, post the message
-  return this.worker.postMessage({ type: type, value: value });
-};
-
-Renderer.prototype.sendBrowser = function sendBrowser(type, value) {
-  //there is definitely a browser on the other end
-  return postMessage({ type: type, value: value });
-};
-
-
-Renderer.prototype.sendAll = function sendAll(type, value) {
-  if (!isWorker) {
-    this.sendWorker(type, value);
-  } else {
-    this.sendBrowser(type, value);
-  }
-  return this.emit(type, value);
-};
-/*
- * Mouse move events simply increment the down and up values every time the event is fired.
- * This allows games that are lagging record the click counts. It gets reset to 0 every time
- * it is sent.
- */
 
 Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
   //whenever the mouse moves, report the position
@@ -2957,9 +2514,6 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
   this.mouseData.y = mousePoint[1];
   this.mouseData.state = this.mouseState;
   this.mouseData.activeRegions = this.activeRegions;
-
-  //send the mouse event to the worker
-  this.sendWorker('mouse', this.mouseData);
 
   //default event stuff
   evt.preventDefault();
@@ -3013,20 +2567,12 @@ Renderer.prototype.keyUp = function keyUp(evt) {
   return this.keyChange(evt);
 };
 
-Renderer.prototype.browserCommand = function browserCommand(e) {
-  if (e.data.type === 'image-load') {
-    Img.cache[e.data.value.id].emit('load');
-  }
-
-  return this.emit(e.data.type, e.data.value);
-};
-
 Renderer.prototype.fireFrame = function() {
   this.mouseRegions.splice(0, this.mouseRegions.length);
-  this.sendWorker('frame', {});
+  this.emit('frame', {});
   this.activeRegions.splice(0, this.activeRegions.length);
   this.ranMouseEvent = false;
-  return setTimeout(this.cleanUpCache.bind(this), 0);
+  return this;
 };
 
 Renderer.prototype.style = function style() {
@@ -3056,13 +2602,8 @@ Renderer.prototype.style = function style() {
       styles.push(child);
     }
   }
-  if (isWorker) {
-    this.sendBrowser('style', styles);
-  } else {
-    for (i = 0; i < styles.length; i++) {
-      this.styleQueue.push(styles[i]);
-    }
-
+  for (i = 0; i < styles.length; i++) {
+    this.styleQueue.push(styles[i]);
   }
 };
 
@@ -3080,33 +2621,19 @@ Renderer.prototype.applyStyles = function applyStyles() {
 };
 
 Renderer.prototype.ready = function ready() {
-  if (isWorker) {
-    this.sendBrowser('ready');
-  } else {
-    this.isReady = true;
-    this.fireFrame();
-    return window.requestAnimationFrame(this.hookRender.bind(this));
-  }
+  this.isReady = true;
+  this.fireFrame();
+  return window.requestAnimationFrame(this.hookRender.bind(this));
 };
 
-Renderer.prototype.measureText = function measureText(font, text, cb, id) {
-  id = id || newid();
-  if (isWorker) {
-    this.sendBrowser('measureText', { font: font, text: text, id: id });
-    return this.once('measureText-' + id, cb);
-  }
+Renderer.prototype.measureText = function measureText(font, text) {
   var oldFont = this.ctx.font,
       result;
 
   this.ctx.font = font;
   result = this.ctx.measureText(text);
   this.ctx.font = oldFont;
-  if (this.worker) {
-    this.sendWorker('measureText-' + id, result);
-  }
-  if (cb && typeof cb === 'function') {
-    return setTimeout(cb.bind(null, result), 0);
-  }
+  return result;
 };
 
 Object.defineProperty(Renderer.prototype, 'height', {
@@ -3127,7 +2654,7 @@ Object.seal(Renderer);
 Object.seal(Renderer.prototype);
 module.exports = Renderer;
 
-},{"./Canvas":10,"./Gradient":11,"./Img":12,"./createLinearGradient":25,"./createRadialGradient":26,"./id":43,"./isWorker":45,"./transformPoints":67,"events":2,"keycode":8,"point-in-polygon":9,"util":7}],15:[function(require,module,exports){
+},{"./Img":11,"./createLinearGradient":24,"./createRadialGradient":25,"./transformPoints":64,"events":2,"keycode":8,"point-in-polygon":9,"util":7}],14:[function(require,module,exports){
 //jshint node: true
 
 'use strict';
@@ -3138,7 +2665,7 @@ function addColorStop(offset, color) {
 }
 
 module.exports = addColorStop;
-},{"./Instruction":13}],16:[function(require,module,exports){
+},{"./Instruction":12}],15:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3161,7 +2688,7 @@ function arc(x, y, r, startAngle, endAngle, anticlockwise) {
 }
 
 module.exports = arc;
-},{"./Instruction":13}],17:[function(require,module,exports){
+},{"./Instruction":12}],16:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3172,7 +2699,7 @@ function arcTo(x1, y1, x2, y2, r) {
 
 module.exports = arcTo;
 
-},{"./Instruction":13}],18:[function(require,module,exports){
+},{"./Instruction":12}],17:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3181,7 +2708,7 @@ function beginPath() {
   return new Instruction('beginPath');
 }
 module.exports = beginPath;
-},{"./Instruction":13}],19:[function(require,module,exports){
+},{"./Instruction":12}],18:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3198,7 +2725,7 @@ function bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
 }
 
 module.exports = bezierCurveTo;
-},{"./Instruction":13}],20:[function(require,module,exports){
+},{"./Instruction":12}],19:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3212,7 +2739,7 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":13}],21:[function(require,module,exports){
+},{"./Instruction":12}],20:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3231,7 +2758,7 @@ function clip(path, children) {
 
 module.exports = clip;
 
-},{"./Instruction":13}],22:[function(require,module,exports){
+},{"./Instruction":12}],21:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3240,7 +2767,7 @@ function clipPath() {
   return new Instruction('clipPath');
 }
 module.exports = clipPath;
-},{"./Instruction":13}],23:[function(require,module,exports){
+},{"./Instruction":12}],22:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3249,7 +2776,7 @@ function closePath() {
   return new Instruction('closePath');
 }
 module.exports = closePath;
-},{"./Instruction":13}],24:[function(require,module,exports){
+},{"./Instruction":12}],23:[function(require,module,exports){
 'use strict';
 var concat = [].concat;
 
@@ -3285,65 +2812,40 @@ function createClass() {
 
 module.exports = createClass;
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
-var isWorker = require('./isWorker'),
-    Gradient = require('./Gradient'),
-    newid = require('./id');
 
-function createLinearGradient(x0, y0, x1, y1, children, id) {
-  id = id || newid();
-  if (isWorker) {
-    postMessage({ type: 'linear-gradient', value: { id: id, x0: x0, y0: y0, x1: x1, y1: y1, children: children } });
-    return new Gradient(id, null);
-  } else {
-    var ctx = window.document.createElement('canvas').getContext('2d'),
-      grd = ctx.createLinearGradient(x0, y0, x1, y1),
-      colorStop,
-      result = new Gradient(id, grd);
-    for(var i = 0; i < children.length; i++) {
-      colorStop = children[i];
-      grd.addColorStop(colorStop.props.offset, colorStop.props.color);
-    }
-    
-    return result; 
+function createLinearGradient(x0, y0, x1, y1, children) {
+  var ctx = window.document.createElement('canvas').getContext('2d'),
+    grd = ctx.createLinearGradient(x0, y0, x1, y1);
+  for(var i = 4; i < arguments.length; i++) {
+    var colorStop = children[i];
+    grd.addColorStop(colorStop.props.offset, colorStop.props.color);
   }
+  return grd;
 }
 
 
 module.exports = createLinearGradient;
-},{"./Gradient":11,"./id":43,"./isWorker":45}],26:[function(require,module,exports){
+
+},{}],25:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
 'use strict';
-var isWorker = require('./isWorker'),
-    Gradient = require('./Gradient'),
-    newid = require('./id');
 
-function createRadialGradient(x0, y0, r0, x1, y1, r1, children, id) {
-  id = id || newid();
-  if (isWorker) {
-    postMessage({ 
-      type: 'radial-gradient', 
-      value: { id: id, x0: x0, r0: r0, y0: y0, x1: x1, y1: y1, r1: r1, children: children } 
-    });
-    return new Gradient(id, null);
-  } else {
-    var ctx = document.createElement('canvas').getContext('2d'),
-      grd = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1),
-      colorStop,
-      result = new Gradient(id, grd);
-    for(var i = 0; i < children.length; i++) {
-      colorStop = children[i];
-      grd.addColorStop(colorStop.props.offset, colorStop.props.color);
-    }
-    return result;
+function createRadialGradient(x0, y0, r0, x1, y1, r1, children) {
+  var ctx = window.document.createElement('canvas').getContext('2d'),
+    grd = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
+  for(var i = 4; i < arguments.length; i++) {
+    var colorStop = children[i];
+    grd.addColorStop(colorStop.props.offset, colorStop.props.color);
   }
+  return grd;
 }
 
-
 module.exports = createRadialGradient;
-},{"./Gradient":11,"./id":43,"./isWorker":45}],27:[function(require,module,exports){
+
+},{}],26:[function(require,module,exports){
 'use strict';
 
 function createRegularPolygon(radius, position, sides) {
@@ -3363,7 +2865,7 @@ function createRegularPolygon(radius, position, sides) {
 
 module.exports = createRegularPolygon;
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3371,7 +2873,7 @@ var Instruction = require('./Instruction');
 function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('drawCanvasSource', {
-      img: canvas.id,
+      img: canvas,
       sx: sx,
       sy: sy,
       sWidth: sWidth,
@@ -3382,34 +2884,35 @@ function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 5) {
     return new Instruction('drawCanvasSize', {
-      img: canvas.id,
+      img: canvas,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
       dHeight: sHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('drawCanvas', {
-      img: canvas.id,
+      img: canvas,
       dx: sx,
       dy: sy
     });
-  }  
+  }
 
   return new Instruction('drawCanvas', {
-    img: canvas.id,
+    img: canvas,
     dx: 0,
     dy: 0
   });
 }
 
 module.exports = drawCanvas;
-},{"./Instruction":13}],29:[function(require,module,exports){
+
+},{"./Instruction":12}],28:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3417,7 +2920,7 @@ var Instruction = require('./Instruction');
 function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('drawImageSource', {
-      img: img.id,
+      img: img,
       sx: sx,
       sy: sy,
       sWidth: sWidth,
@@ -3428,34 +2931,35 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 5) {
     return new Instruction('drawImageSize', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
       dHeight: sHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('drawImage', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy
     });
-  }  
+  }
 
   return new Instruction('drawImage', {
-    img: img.id,
+    img: img,
     dx: 0,
     dy: 0
   });
 }
 
 module.exports = drawImage;
-},{"./Instruction":13}],30:[function(require,module,exports){
+
+},{"./Instruction":12}],29:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3478,7 +2982,7 @@ function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlo
 }
 
 module.exports = ellipse;
-},{"./Instruction":13}],31:[function(require,module,exports){
+},{"./Instruction":12}],30:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3488,7 +2992,7 @@ function fill() {
 }
 
 module.exports = fill;
-},{"./Instruction":13}],32:[function(require,module,exports){
+},{"./Instruction":12}],31:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3509,7 +3013,7 @@ function fillArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = fillArc;
-},{"./Instruction":13}],33:[function(require,module,exports){
+},{"./Instruction":12}],32:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3517,7 +3021,7 @@ var Instruction = require('./Instruction');
 function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('fillCanvasSource', {
-      img: img.id,
+      img: img,
       sx: sx,
       sy: sy,
       sWidth: sWidth,
@@ -3528,34 +3032,35 @@ function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 5) {
     return new Instruction('fillCanvasSize', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
       dHeight: sHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('fillCanvas', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy
     });
-  }  
+  }
 
   return new Instruction('fillCanvas', {
-    img: img.id,
+    img: img,
     dx: 0,
     dy: 0
   });
 }
 
 module.exports = fillImage;
-},{"./Instruction":13}],34:[function(require,module,exports){
+
+},{"./Instruction":12}],33:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3563,7 +3068,7 @@ var Instruction = require('./Instruction');
 function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('fillImageSource', {
-      img: img.id,
+      img: img,
       sx: sx,
       sy: sy,
       sWidth: sWidth,
@@ -3574,62 +3079,62 @@ function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 5) {
     return new Instruction('fillImageSize', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
       dHeight: sHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('fillImage', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy
     });
-  }  
+  }
 
   return new Instruction('fillImage', {
-    img: img.id,
+    img: img,
     dx: 0,
     dy: 0
   });
 }
 
 module.exports = fillImage;
-},{"./Instruction":13}],35:[function(require,module,exports){
+
+},{"./Instruction":12}],34:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
 
 function fillImagePattern(img, dx, dy, dWidth, dHeight) {
-  
   if (arguments.length >= 5) {
     return new Instruction('fillImagePattern', {
-      img: img.id,
+      img: img,
       dx: dx,
       dy: dy,
       dWidth: dWidth,
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('fillImagePattern', {
-      img: img.id,
+      img: img,
       dx: 0,
       dy: 0,
       dWidth: dx,
       dHeight: dy
     });
-  }  
+  }
 
   return new Instruction('fillImagePattern', {
-    img: img.id,
+    img: img,
     dx: 0,
     dy: 0,
     dWidth: 0,
@@ -3638,7 +3143,8 @@ function fillImagePattern(img, dx, dy, dWidth, dHeight) {
 }
 
 module.exports = fillImagePattern;
-},{"./Instruction":13}],36:[function(require,module,exports){
+
+},{"./Instruction":12}],35:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3652,22 +3158,14 @@ function fillRect(x, y, width, height) {
 }
 
 module.exports = fillRect;
-},{"./Instruction":13}],37:[function(require,module,exports){
+},{"./Instruction":12}],36:[function(require,module,exports){
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-    Gradient = require('./Gradient');
+var Instruction = require('./Instruction');
 
 function fillStyle(value, children) {
-  var instruction;
-  if (value instanceof Gradient) {
-    instruction = new Instruction('fillGradient', { value: { id: value.id } });
-  }
-  
-  if (!instruction) {
-    instruction = new Instruction('fillStyle', { value: value });
-  }
-  var result = [instruction];
+  var result = [new Instruction('fillStyle', { value: value })];
+
   for(var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
@@ -3676,7 +3174,8 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":11,"./Instruction":13}],38:[function(require,module,exports){
+
+},{"./Instruction":12}],37:[function(require,module,exports){
 var Instruction = require('./Instruction');
 
 module.exports = function fillText(text, x, y, maxWidth) {
@@ -3695,7 +3194,7 @@ module.exports = function fillText(text, x, y, maxWidth) {
   });
 };
 
-},{"./Instruction":13}],39:[function(require,module,exports){
+},{"./Instruction":12}],38:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3710,7 +3209,7 @@ function globalAlpha(alpha, children) {
 }
 
 module.exports = globalAlpha;
-},{"./Instruction":13}],40:[function(require,module,exports){
+},{"./Instruction":12}],39:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3729,7 +3228,7 @@ function globalCompositeOperation(operationType, children) {
 }
 
 module.exports = globalCompositeOperation;
-},{"./Instruction":13}],41:[function(require,module,exports){
+},{"./Instruction":12}],40:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -3755,7 +3254,7 @@ function hitRect(id, x, y, width, height) {
 }
 
 module.exports = hitRect;
-},{"./Instruction":13,"./hitRegion":42}],42:[function(require,module,exports){
+},{"./Instruction":12,"./hitRegion":41}],41:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3769,16 +3268,7 @@ function hitRegion(id, points) {
 }
 
 module.exports = hitRegion;
-},{"./Instruction":13}],43:[function(require,module,exports){
-//jshint node: true
-'use strict';
-
-function id() {
-  return Date.now() + '-' + Math.random();
-}
-
-module.exports = id;
-},{}],44:[function(require,module,exports){
+},{"./Instruction":12}],42:[function(require,module,exports){
 'use strict';
 var Instruction = require('./Instruction');
 
@@ -3790,12 +3280,7 @@ module.exports = function imageSmoothingEnabled(val, children) {
   return [new Instruction('imageSmoothingEnabled', { value: Boolean(val) })].concat(children).concat(new Instruction('endImageSmoothingEnabled'));
 };
 
-},{"./Instruction":13}],45:[function(require,module,exports){
-//jshint node: true
-'use strict';
-
-module.exports = typeof window === 'undefined';
-},{}],46:[function(require,module,exports){
+},{"./Instruction":12}],43:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3839,7 +3324,7 @@ function lineStyle(value, children) {
 }
 
 module.exports = lineStyle;
-},{"./Instruction":13}],47:[function(require,module,exports){
+},{"./Instruction":12}],44:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3852,7 +3337,7 @@ function lineTo(x, y) {
 }
 
 module.exports = lineTo;
-},{"./Instruction":13}],48:[function(require,module,exports){
+},{"./Instruction":12}],45:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3865,7 +3350,7 @@ function moveTo(x, y) {
 }
 
 module.exports = moveTo;
-},{"./Instruction":13}],49:[function(require,module,exports){
+},{"./Instruction":12}],46:[function(require,module,exports){
 'use strict';
 var moveTo = require('./moveTo'), lineTo = require('./lineTo');
 function moveToLineTo(point, index) {
@@ -3874,7 +3359,7 @@ function moveToLineTo(point, index) {
 
 module.exports = moveToLineTo;
 
-},{"./lineTo":47,"./moveTo":48}],50:[function(require,module,exports){
+},{"./lineTo":44,"./moveTo":45}],47:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -3891,14 +3376,14 @@ function path(children) {
 }
 
 module.exports = path;
-},{"./beginPath":18,"./closePath":23}],51:[function(require,module,exports){
+},{"./beginPath":17,"./closePath":22}],48:[function(require,module,exports){
 'use strict';
 var Instruction = require('./Instruction');
 module.exports = function placeHolder() {
   return new Instruction('placeholder');
 };
 
-},{"./Instruction":13}],52:[function(require,module,exports){
+},{"./Instruction":12}],49:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3913,7 +3398,7 @@ function quadraticCurveTo(cpx, cpy, x, y) {
 }
 
 module.exports = quadraticCurveTo;
-},{"./Instruction":13}],53:[function(require,module,exports){
+},{"./Instruction":12}],50:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3927,7 +3412,7 @@ function rect(x, y, width, height) {
 }
 
 module.exports = rect;
-},{"./Instruction":13}],54:[function(require,module,exports){
+},{"./Instruction":12}],51:[function(require,module,exports){
 'use strict';
 var setTransform = require('./setTransform');
 
@@ -3939,7 +3424,7 @@ module.exports = function resetTransform() {
   return setTransform([1, 0, 0, 1, 0, 0], args);
 };
 
-},{"./setTransform":57}],55:[function(require,module,exports){
+},{"./setTransform":54}],52:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3955,7 +3440,7 @@ function rotate(r, children) {
 }
 
 module.exports = rotate;
-},{"./Instruction":13}],56:[function(require,module,exports){
+},{"./Instruction":12}],53:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -3978,7 +3463,7 @@ function scale(x, y, children) {
 }
 
 module.exports = scale;
-},{"./Instruction":13}],57:[function(require,module,exports){
+},{"./Instruction":12}],54:[function(require,module,exports){
 'use strict';
 var Instruction = require('./Instruction');
 
@@ -3991,7 +3476,7 @@ module.exports = function(matrix, children) {
   return result;
 };
 
-},{"./Instruction":13}],58:[function(require,module,exports){
+},{"./Instruction":12}],55:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4028,7 +3513,7 @@ function shadowStyle(value, children) {
 }
 
 module.exports = shadowStyle;
-},{"./Instruction":13}],59:[function(require,module,exports){
+},{"./Instruction":12}],56:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4038,7 +3523,7 @@ function stroke() {
 }
 
 module.exports = stroke;
-},{"./Instruction":13}],60:[function(require,module,exports){
+},{"./Instruction":12}],57:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction'),
@@ -4058,7 +3543,7 @@ function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
 }
 
 module.exports = strokeArc;
-},{"./Instruction":13}],61:[function(require,module,exports){
+},{"./Instruction":12}],58:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4072,22 +3557,13 @@ function strokeRect(x, y, width, height) {
 }
 
 module.exports = strokeRect;
-},{"./Instruction":13}],62:[function(require,module,exports){
+},{"./Instruction":12}],59:[function(require,module,exports){
 //jshint node: true
 'use strict';
-var Instruction = require('./Instruction'),
-    Gradient = require('./Gradient');
+var Instruction = require('./Instruction');
 
 function fillStyle(value, children) {
-  var instruction;
-  if (value instanceof Gradient) {
-    instruction = new Instruction('strokeGradient', { value: { id: value.id } });
-  }
-  
-  if (!instruction) {
-    instruction = new Instruction('strokeStyle', { value: value });
-  }
-  var result = [instruction];
+  var result = [ new Instruction('strokeStyle', { value: value }) ];
   for(var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
@@ -4096,7 +3572,8 @@ function fillStyle(value, children) {
 }
 
 module.exports = fillStyle;
-},{"./Gradient":11,"./Instruction":13}],63:[function(require,module,exports){
+
+},{"./Instruction":12}],60:[function(require,module,exports){
 var Instruction = require('./Instruction');
 
 module.exports = function strokeText(text, x, y, maxWidth) {
@@ -4115,7 +3592,7 @@ module.exports = function strokeText(text, x, y, maxWidth) {
   });
 };
 
-},{"./Instruction":13}],64:[function(require,module,exports){
+},{"./Instruction":12}],61:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4174,7 +3651,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
 }
 
 module.exports = text;
-},{"./Instruction":13}],65:[function(require,module,exports){
+},{"./Instruction":12}],62:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4209,7 +3686,7 @@ function textStyle(value, children) {
 }
 
 module.exports = textStyle;
-},{"./Instruction":13}],66:[function(require,module,exports){
+},{"./Instruction":12}],63:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4228,7 +3705,7 @@ function transform(values, children) {
 
 module.exports = transform;
 
-},{"./Instruction":13}],67:[function(require,module,exports){
+},{"./Instruction":12}],64:[function(require,module,exports){
 //jshint node: true
 'use strict';
 
@@ -4248,7 +3725,7 @@ function transformPoints(points, matrix) {
 }
 
 module.exports = transformPoints;
-},{}],68:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 //jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
@@ -4271,5 +3748,5 @@ function translate(x, y, children) {
 }
 
 module.exports = translate;
-},{"./Instruction":13}]},{},[1])(1)
+},{"./Instruction":12}]},{},[1])(1)
 });

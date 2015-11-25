@@ -12,8 +12,6 @@ app.use(express.static('public'));
 
 app.get('/bundle.js', browserify('./app.js', { cache: false }));
 
-app.get('/worker.js', browserify('./worker.js', { cache: false }));
-
 app.get('/test.js', browserify('./test.js', { cache: false }));
 
 app.listen(8080);

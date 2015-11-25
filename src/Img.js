@@ -2,84 +2,44 @@
 'use strict';
 
 var path = require('path'),
-    isWorker = require('./isWorker'),
     events = require('events'),
-    util = require('util'),
-    newid = require('./id');
+    util = require('util');
 
 util.inherits(Img, events.EventEmitter);
 
-function Img(id) {
+function Img() {
   events.EventEmitter.call(this);
-  this._src = "";
-  this.id = id || newid();
-  this.buffer = new ArrayBuffer();
-  this.onload = function() {};
-  this.texture = null;
-  this.type = 'image';
-  this.blobOptions = {};
   this.imageElement = null;
   this.imagePattern = null;
   this.imagePatternRepeat = null;
-  if (isWorker) {
-    postMessage({ type: 'image', value: { id: this.id, src: '' } });
-  }
   Object.seal(this);
 }
-Img.cache = {};
-Img.cachable = [];
+
 Object.defineProperty(Img.prototype, 'src', {
   set: function(val) {
 
-    if (isWorker) {
-      Img.cache[this.id] = this;
-      postMessage({ type: 'image-source', value: { id: this.id, src: val } });
-      return;
-    }
-    var element = new window.Image();
+    var element = new Image();
     this.imageElement = element;
     element.src = val;
 
-    if (element.complete) {
+    if (element.complete) { //firefox compatibility code
       setTimeout(this.imageLoad.bind(this), 0);
     } else {
       element.onload = this.imageLoad.bind(this);
     }
   },
   get: function() {
-    return this._src;
+    return this.imageElement.src;
   }
 });
 
 Img.prototype.imageLoad = function imageLoad() {
-  if (!isWorker) {
-    var ctx = window.document.createElement('canvas').getContext('2d');
-    this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
-    this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
-  }
-  Img.cache[this.id] = this;
+
+  var ctx = window.document.createElement('canvas').getContext('2d');
+  this.imagePattern = ctx.createPattern(this.imageElement, 'no-repeat');
+  this.imagePatternRepeat = ctx.createPattern(this.imageElement, 'repeat');
+
   return this.emit('load', this);
-};
-
-Img.prototype.cache = function dispose() {
-  if (isWorker) {
-    postMessage({ type: 'image-cache', value: { id: this.id }});
-  } else {
-    Img.cachable.push(this.id);
-  }
-  return this;
-};
-
-Img.prototype.dispose = function dispose() {
-  if (isWorker) {
-    return postMessage({ type: 'image-dispose', value: { id: this.id }});
-  } else {
-    Img.cache[this.id] = null;
-    var index = Img.cachable.indexOf(this.id);
-    if (index !== -1) {
-      Img.cachable.splice(index, 1);
-    }
-  }
 };
 
 Object.defineProperty(Img.prototype, 'width', {
@@ -92,7 +52,6 @@ Object.defineProperty(Img.prototype, 'width', {
   }
 });
 
-
 Object.defineProperty(Img.prototype, 'height', {
   enumerable: true,
   get: function() {
@@ -102,19 +61,6 @@ Object.defineProperty(Img.prototype, 'height', {
     this.imageElement.height = value;
   }
 });
-
-Img.cleanUp = function cleanUp() {
-  var index = {},
-      key;
-  for(var i = 0; i < Img.cachable.length; i++) {
-    key = Img.cachable[i];
-    index[key] = Img.cache[key];
-  }
-
-  Img.cache = index;
-};
-
-
 
 Object.seal(Img);
 Object.seal(Img.prototype);

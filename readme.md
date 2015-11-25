@@ -1,6 +1,6 @@
 # e2d.js
 
-An es5 declarative web worker canvas renderer.
+An es5 declarative canvas renderer.
 
 # Introduction
 
@@ -8,19 +8,19 @@ Most canvas libraries abstract away different aspect of canvas to make you faste
 
 Some of the functions fill in parts of the language that aren't implemented yet, like `CanvasRenderingContext2D.prototype.ellipse` and `CanvasRenderingContext2D.prototype.addHitRegion`.
 
-The coolest part of this library is the ability to do your application logic _inside a web worker_.
-
-That's right. In a web worker. The cost for doing application logic this way is at worst about `32ms` of input lag, which is by design. It causes rendering _and_ drawing to happen at the same time in the most efficient way possible.
-
 # Behavior Testing
 
 Starting up `server.js` and going to localhost:8080/test.html brings up the test suite.
 
 I am still working on the tests and I haven't had time to write more, but they are coming.  Any help would be appreciated.
 
+The Img API changed and currently breaks the `fillImage` test because the tests are not async. This will be fixed at a later time after I put e2d through some serious testing.
+
 # API Stability
 
-This API is mostly stable now, but I need help with adding canvas testing and possibly an xml syntax would be amazing.
+As of 3.0 WebWorker support is completely gutted and removed because it didn't work as intended.  Frame times were too high to make structured cloning of 2000 instructions viable.
+
+The API might be unstable, but I need testers and dedicated people who want to see this project grow submit pull requests!  Please message me at tenner.joshua@gmail.com or open a "discussion" issue.
 
 ### Instruction trees
 
@@ -110,7 +110,7 @@ function particleMap(particle) {
 }
 r.on('frame', function() {
   return r.render(
-    particles.map(particleMap);
+    particles.map(particleMap) //don't use a map in production
   );
 });
 ```
@@ -137,13 +137,6 @@ I highly recommend using `browserify` or `webpack` in `node.js` to modularize yo
 <script src="e2d.min.js" type="text/javascript"></script>
 ```
 
-Inside a worker, use:
-
-```javascript
-importScripts('e2d.min.js');
-//your app code here
-```
-
 That's it.
 
 ### Browserify method
@@ -165,12 +158,6 @@ var express = require('express'),
 
 app.use(express.static('public'));
 app.get('/bundle.js', browserify('./app.js'));
-//create the renderer here, or inside a webworker
-
-
-//Uncomment the following line to add worker.js to your project
-//app.get('/worker.js', browserify('./worker.js', { standalone: 'worker' }));
-//browser side, use: var r = new Renderer(width, height, null, 'worker.js');
 
 app.listen(8080);
 ```
@@ -180,47 +167,13 @@ In your `public/index.html` file:
 <script src="bundle.js" type="text/javascript"></script>
 ```
 
-There is no easy way of automatically having e2d imported into a web worker, that must be done via a `require` call or `importScripts('path/to/e2d.min.js')`.
-
 Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
 
 ### Webpack
 
-WebWorker work is possible with webpack, but I'm not sure how to set up a project that uses webpack using a web worker.  Please submit a pull request to help provide an example!
-
 ```javascript
-//This works in both browser AND worker.
-//  importScripts('e2d.min.js');
-//or
-//  var e2d = require('e2d');
-
-var r = e2d.Renderer.create(800, 600);
-
-var mouse = { x: 0, y: 0, state: 'up' };
-
-r.on('mouse', function (data) {
-  mouse = data;
-});
-function frame() {
-  r.render(
-    e2d.fillRect(800, 600), //black fillStyle is default
-
-    //mouse debug stuff
-    e2d.globalAlpha(0.5,
-      e2d.fillStyle(mouse.state === 'down' ? 'green' : 'red',
-        e2d.fillArc(mouse.x, mouse.y, 10)
-      )
-    )
-  );
-}
-//browser side, this is called durring requestAnimationFrame
-r.on('frame', frame);
-
-//if you want the library to control when you render use this function
-r.ready();
+var e2d = require('e2d');
 ```
-
-Use `r.ready()` to active the requestAnimationFrame loop.  All render commands are ignored until `.ready()` is called.
 
 # API
 
@@ -229,13 +182,13 @@ Use `r.ready()` to active the requestAnimationFrame loop.  All render commands a
 This object is the main renderer of the application.
 
 ```javascript
-var r = new Renderer(width, height, parent[document.body], workerUrl);
+var r = new Renderer(width, height, parent); //parent is a document node
+
 ```
-You must provide the workerUrl if you are running a renderer using a web worker.
+
+Use `r.ready()` to active the requestAnimationFrame loop.  All render commands are ignored until `.ready()` is called.
 
 ### Events
-
-All events are supported browser and worker side.
 
 __frame__
 
@@ -243,9 +196,7 @@ This fires once per frame after calling `r.ready()`.  Use this event to call `r.
 
 ```javascript
 r.on('frame', function() {
-  //browser side, this is during requestAnimationFrame
-
-  //worker side, this is timed and sent before the requestAnimationFrame fires
+  //render stuff here
 });
 ```
 
@@ -292,24 +243,9 @@ r.render(
 );
 ```
 
-To send an event to the worker or to the browser use the `r.sendBrowser`, `r.sendWorker`, or `r.sendAll` methods.
-
-__Renderer.prototype.send*__
-
-```javascript
-//this uses structured cloning or whatever is supported in the browser.
-r.sendWorker(type, value);
-
-//this will send a command/event to the browser
-r.sendBrowser(type, value);
-
-//this will send a command/event to both sides
-r.sendAll(type, value);
-```
-
 __Renderer.prototype.resize__
 
-To resize the renderer (supported from both worker and browser side).
+To resize the renderer.
 
 ```javascript
 r.resize(width, height);
@@ -317,7 +253,7 @@ r.resize(width, height);
 
 __Renderer.prototype.ready__
 
-This function sets up the requestAnimationFrame loop and allows the developer to hook into the `frame` event on both the worker AND the browser side.
+This function sets up the requestAnimationFrame loop and allows the developer to hook into the `frame` event.
 
 ```javascript
 r.ready();
@@ -339,6 +275,15 @@ Also supports:
 1. Unlimited arguments, it will apply every style manually to the canvas
 2. `null` values will remove style attributes `(value === null)`
 3. Arrays of style objects
+
+__Renderer.prototype.measureText__
+
+See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics) for information on what a `TextMetrics` object looks like.
+
+```javascript
+var textMetricsResult = r.measureText(font, text);
+//font is size + font
+```
 
 # Render Commands
 
@@ -433,21 +378,15 @@ var result = e2d.clip(
 
 __Img.js__
 
-In order to work with web workers, the concept of drawing an image must be abstracted to the web worker.  Therefore, create an image like this:
+The custom `Img` object wraps some functionality that speeds up image drawing in Chrome/Webkit browsers.
 
 ```javascript
-var texture = new e2d.Img().cache(); //this signals the browser to cache the image
+var texture = new e2d.Img(); //this signals the browser to cache the image
 texture.src = 'url'; //data urls are accepted
 texture.once('load', function() {
   //the texture is loaded
 });
 ```
-
-Image references must be stored on the main thread because images must be created on the main thread regardless of where they are instantiated.  In the browser thread they are stored in `Img.cache`.
-
-Every frame, the images are automatically disposed unless `.cache()`ed and will need to be `.disposed()` manually.
-
-This helps prevent memory leaks inside the browser which needs memory to be free when it isn't being used.
 
 __imageSmoothingEnabled.js__
 
@@ -508,12 +447,11 @@ var fillImagePatternCommand2 = fillImagePattern(img, x, y, width, height);
 
 __Canvas.js__
 
-This is a renderer that allows the developer to render to a temporary canvas.  It works worker side.
+This is a renderer that allows the developer to render to a temporary canvas.
 
 ```javascript
-  var temp = Canvas.create(100, 100).cache(); //Canvas instances must be stored in the same way images are
+  var temp = Canvas.create(100, 100); //Canvas instances must be stored in the same way images are
   var temp = new Canvas(100, 100);
-  temp.cache();
   temp.render(
     //draw commands
   );
@@ -524,7 +462,7 @@ This is a renderer that allows the developer to render to a temporary canvas.  I
 This allows the developer to create images using a canvas as well.
 
 ```javascript
-var img = temp.toImage().cache(); //uses 'image/png'
+var img = temp.toImage(); //uses 'image/png'
 //it returns an Img object and assumes it isn't cached()
 //can be used to call drawImage(img)
 ```
@@ -787,33 +725,14 @@ __Renderer.js__ and __Canvas.js__
 
 The `Renderer` class is used to display things attached to the DOM and `Canvas` is used for off screen rendering and takes 4 parameters.
 
-Browser side:
 ```javascript
-  //domParent defaults to document.body when not provided
-  //workerUrl is the path to the worker that will control this particular renderer
-  var r = new Renderer(width, height, [domParent, workerUrl]);
+  //parent defaults to document.body when not provided
+
+  var r = new Renderer(width, height, parent);
 
   //alternatively use node.js style create syntax
-  var r = Renderer.create(width, height, [domParent, workerUrl]);
+  var r = Renderer.create(width, height, parent);
 ```
-
-WebWorker side:
-```javascript
-var r = e2d.Renderer.create(width, height);
-
-r.on('frame', function() {
-  return r.render(
-    //send command here
-  );
-});
-
-//this is required by the engine to start the requestAnimationFrame loop and works both worker/browser side
-r.ready();
-
-//the browser side renderer will ignore calls to r.render unless this line of javascript is called.
-```
-
-Use multiple calls to `r.render` inside the web worker to concatenate draw commands. This is supported, but can be slow if `r.render` is called multiple times per frame.  Use with caution.
 
 Using `Canvas` is similar.
 
@@ -824,13 +743,13 @@ Examples:
 var r = e2d.Renderer.create(800, 600);
 
 //create an offscreen canvas and cache it for later use
-var cvs = new e2d.Canvas(100, 100).cache();
+var cvs = new e2d.Canvas(100, 100);
 
 cvs.render(
   e2d.fillRect(25, 25, 50, 50) //draw a square
 );
 
-var img = cvs.toImage().cache();
+var img = cvs.toImage();
 
 r.render(
   e2d.drawImage(img)

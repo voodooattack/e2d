@@ -1,39 +1,37 @@
 //jshint node: true, browser: true, worker: true
 
 'use strict';
-var Canvas = null,
-    Gradient = null,
-    isWorker = require('./isWorker'),
-    createLinearGradient = require('./createLinearGradient'),
+var createLinearGradient = require('./createLinearGradient'),
     createRadialGradient = require('./createRadialGradient'),
     events = require('events'),
     util = require('util'),
-    Img = require('./Img'),
     keycode = require('keycode'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
-    identity = new Float64Array([1, 0, 0, 1, 0, 0]),
-    newid = require('./id');
+    identity = new Float64Array([1, 0, 0, 1, 0, 0]);
 
 util.inherits(Renderer, events.EventEmitter);
 
 function Renderer(width, height, parent, worker) {
   //this needs to be done later because of cyclical dependencies
   events.EventEmitter.call(this);
+
+  //virtual stack
+  this.transformStack = [identity];
+  this.fillStyleStack = [];
+  this.strokeStyleStack = [];
+  this.lineStyleStack = [];
+  this.textStyleStack = [];
+  this.shadowStyleStack = [];
+  this.globalAlphaStack = [];
+  this.imageSmoothingEnabledStack = [];
+  this.globalCompositeOperationStack = [];
+
+
+
+
   this.pi2 = Math.PI * 2;
 
-  if (!Canvas) {
-    Canvas = require('./Canvas');
-  }
-  if (!Gradient) {
-    Gradient = require('./Gradient');
-  }
-  if (!Img) {
-    Gradient = require('./Gradient');
-  }
-
-
-  this.tree = null;
   this.isReady = false;
   this.mouseState = 'up';
   this.mouseData = {
@@ -50,29 +48,6 @@ function Renderer(width, height, parent, worker) {
 
   //this is the basic structure of the data sent to the web worker
   this.keyData = {};
-
-  if (isWorker) {
-    this.worker = null;
-    this.canvas =  {
-      width: width,
-      height: height
-    };
-    this.ctx = null;
-    this.parent = null;
-    addEventListener('message', this.browserCommand.bind(this));
-    Object.seal(this);
-    //nothing else to do
-    return;
-  }
-
-
-  //create the web worker and hook the workerCommand function
-  if (worker) {
-    this.worker = worker instanceof Worker ? worker : new Worker(worker);
-    this.worker.onmessage = this.workerCommand.bind(this);
-  } else {
-    this.worker = null;
-  }
 
   //set parent
   if (parent && parent.nodeType === 1) {
@@ -109,6 +84,7 @@ function Renderer(width, height, parent, worker) {
   this.hookMouseEvents();
   this.hookKeyboardEvents();
 
+  this.boundHookRenderFunction = this.hookRender.bind(this);
   Object.seal(this);
 }
 
@@ -122,25 +98,23 @@ Renderer.prototype.render = function render(args) {
       matrix,
       sinr,
       cosr,
-      fillStyleStack = [],
-      strokeStyleStack = [],
-      lineStyleStack = [],
-      textStyleStack = [],
-      shadowStyleStack = [],
-      globalAlphaStack = [],
-      imageSmoothingEnabledStack = [],
-      transformStack = [identity],
-      globalCompositeOperationStack = [],
       ctx = this.ctx,
       children = [],
       concat = children.concat;
 
+  //flush the virtual stack
+  this.transformStack.splice(0, this.transformStack.length, identity);
+  this.fillStyleStack.splice(0, this.fillStyleStack.length);
+  this.strokeStyleStack.splice(0, this.strokeStyleStack.length);
+  this.lineStyleStack.splice(0, this.lineStyleStack.length);
+  this.textStyleStack.splice(0, this.textStyleStack.length);
+  this.shadowStyleStack.splice(0, this.shadowStyleStack.length);
+  this.globalCompositeOperationStack.splice(0, this.globalCompositeOperationStack.length);
+  this.globalAlphaStack.splice(0, this.globalAlphaStack.length);
+  this.imageSmoothingEnabledStack.splice(0, this.imageSmoothingEnabledStack.length);
+
   for (i = 0, len = arguments.length; i < len; i++) {
     children.push(arguments[i]);
-  }
-
-  if (isWorker) {
-    return this.sendBrowser('render', children);
   }
 
   for (i = 0, len = children.length; i < len; i++) {
@@ -164,7 +138,7 @@ Renderer.prototype.render = function render(args) {
     type = child.type;
 
     if (type === 'transform') {
-      cache = transformStack[transformStack.length - 1];
+      cache = this.transformStack[this.transformStack.length - 1];
       matrix = new Float64Array([
         cache[0] * props[0] + cache[2] * props[1],
         cache[1] * props[0] + cache[3] * props[1],
@@ -174,7 +148,7 @@ Renderer.prototype.render = function render(args) {
         cache[1] * props[4] + cache[3] * props[5] + cache[5]
       ]);
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -182,30 +156,30 @@ Renderer.prototype.render = function render(args) {
 
     if (type === 'setTransform') {
       matrix = new Float64Array(props);
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
       continue;
     }
 
     if (type === 'scale') {
-      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
       matrix[0] *= props.x;
       matrix[1] *= props.x;
       matrix[2] *= props.y;
       matrix[3] *= props.y;
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
     }
 
     if (type === 'translate') {
-      matrix = new Float64Array(transformStack[transformStack.length - 1]);
+      matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
       matrix[4] += matrix[0] * props.x + matrix[2] * props.y;
       matrix[5] += matrix[1] * props.x + matrix[3] * props.y;
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -215,7 +189,7 @@ Renderer.prototype.render = function render(args) {
       cosr = Math.cos(props.r);
       sinr = Math.sin(props.r);
 
-      cache = transformStack[transformStack.length - 1];
+      cache = this.transformStack[this.transformStack.length - 1];
       matrix = new Float64Array(cache);
 
       matrix[0] = cache[0] * cosr + cache[2] * sinr;
@@ -223,15 +197,15 @@ Renderer.prototype.render = function render(args) {
       matrix[2] = cache[0] * -sinr + cache[2] * cosr;
       matrix[3] = cache[1] * -sinr + cache[3] * cosr;
 
-      transformStack.push(matrix);
+      this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
     }
 
     if (type === 'restore') {
-      transformStack.pop();
-      matrix = transformStack[transformStack.length - 1];
+      this.transformStack.pop();
+      matrix = this.transformStack[this.transformStack.length - 1];
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -262,50 +236,32 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillStyle') {
-      fillStyleStack.push(ctx.fillStyle);
+      this.fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
 
       continue;
     }
 
-    if (type == 'fillGradient') {
-      fillStyleStack.push(ctx.fillStyle);
-      if (Gradient.cache.hasOwnProperty(props.value.id)) {
-        ctx.fillStyle = Gradient.cache[props.value.id].grd;
-      }
-
-      continue;
-    }
-
     if (type === 'strokeStyle') {
-      strokeStyleStack.push(ctx.strokeStyle);
+      this.strokeStyleStack.push(ctx.strokeStyle);
       ctx.strokeStyle = props.value;
 
       continue;
     }
 
-    if (type == 'strokeGradient') {
-      strokeStyleStack.push(ctx.strokeStyle);
-      if (Gradient.cache.hasOwnProperty(props.value.id)) {
-        ctx.strokeStyle = Gradient.cache[props.value.id].grd;
-      }
-
-      continue;
-    }
-
     if (type === 'endFillStyle') {
-      ctx.fillStyle = fillStyleStack.pop();
+      ctx.fillStyle = this.fillStyleStack.pop();
 
       continue;
     }
 
     if (type === 'endStrokeStyle') {
-      ctx.strokeStyle = strokeStyleStack.pop();
+      ctx.strokeStyle = this.strokeStyleStack.pop();
 
       continue;
     }
     if (type === 'lineStyle') {
-      lineStyleStack.push({
+      this.lineStyleStack.push({
         lineWidth: ctx.lineWidth,
         lineCap: ctx.lineCap,
         lineJoin: ctx.lineJoin,
@@ -337,7 +293,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'endLineStyle') {
-      cache = lineStyleStack.pop();
+      cache = this.lineStyleStack.pop();
       ctx.lineWidth = cache.lineWidth;
       ctx.lineCap = cache.lineCap;
       ctx.lineJoin = cache.lineJoin;
@@ -349,7 +305,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'textStyle') {
-      textStyleStack.push({
+      this.textStyleStack.push({
         font: ctx.font,
         textAlign: ctx.textAlign,
         textBaseline: ctx.textBaseline,
@@ -372,7 +328,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'endTextStyle') {
-      cache = textStyleStack.pop();
+      cache = this.textStyleStack.pop();
       ctx.font = cache.font;
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
@@ -382,7 +338,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'shadowStyle') {
-      shadowStyleStack.push({
+      this.shadowStyleStack.push({
         shadowBlur: ctx.shadowBlur,
         shadowColor: ctx.shadowColor,
         shadowOffsetX: ctx.shadowOffsetX,
@@ -405,7 +361,7 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'endShadowStyle') {
-      cache = shadowStyleStack.pop();
+      cache = this.shadowStyleStack.pop();
       ctx.shadowBlur = cache.shadowBlur;
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
@@ -456,37 +412,34 @@ Renderer.prototype.render = function render(args) {
 
 
     if (type === 'drawImage') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy);
+      ctx.drawImage(props.img.imageElement || new Image(), props.dx, props.dy);
       continue;
     }
 
     if (type === 'drawImageSize') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
-
+      ctx.drawImage(props.img.imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
     if (type === 'drawImageSource') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Img.cache[props.img].imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
-
+      ctx.drawImage(props.img.imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
     if (type === 'fillImagePattern') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      ctx.fillStyle = Img.cache[props.img].imagePatternRepeat;
+      ctx.fillStyle = props.img.imagePatternRepeat;
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, props.dWidth, props.dHeight);
       ctx.restore();
@@ -495,13 +448,12 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImage') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Img.cache[props.img].imageElement;
+      cache = props.img.imageElement;
       ctx.save();
-      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.fillStyle = props.img.imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.fillRect(0, 0, cache.width, cache.height);
       ctx.restore();
@@ -510,13 +462,12 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImageSize') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Img.cache[props.img].imageElement;
+      cache = props.img.imageElement;
       ctx.save();
-      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.fillStyle = props.img.imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(props.dWidth / cache.width, props.dHeight / cache.height);
       ctx.fillRect(0, 0, cache.width, cache.height);
@@ -526,12 +477,11 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillImageSource') {
-      if (!Img.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
       ctx.save();
-      ctx.fillStyle = Img.cache[props.img].imagePattern;
+      ctx.fillStyle = props.img.imagePattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
@@ -543,11 +493,10 @@ Renderer.prototype.render = function render(args) {
 
 
     if (type === 'fillCanvas') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Canvas.cache[props.img];
+      cache = props.img;
       ctx.save();
       ctx.fillStyle = cache.fillPattern;
       ctx.translate(props.dx, props.dy);
@@ -558,11 +507,10 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillCanvasSize') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
-      cache = Canvas.cache[props.img];
+      cache = props.img;
       ctx.save();
       ctx.fillStyle = cache.fillPattern;
       ctx.translate(props.dx, props.dy);
@@ -574,12 +522,11 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'fillCanvasSource') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-
       ctx.save();
-      ctx.fillStyle = Canvas.cache[props.img].fillPattern;
+      ctx.fillStyle = props.img.fillPattern;
       ctx.translate(props.dx, props.dy);
       ctx.scale(props.dWidth / props.sWidth, props.dHeight / props.sHeight);
       ctx.translate(-props.sx, -props.sy);
@@ -590,27 +537,27 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'drawCanvas') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy);
+      ctx.drawImage(props.img.renderer.canvas, props.dx, props.dy);
       continue;
     }
 
     if (type === 'drawCanvasSize') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(props.img.renderer.canvas, props.dx, props.dy, props.dWidth, props.dHeight);
 
       continue;
     }
 
     if (type === 'drawCanvasSource') {
-      if (!Canvas.cache[props.img]) {
+      if (!props.img) {
         continue;
       }
-      ctx.drawImage(Canvas.cache[props.img].renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      ctx.drawImage(props.img.renderer.canvas, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
 
       continue;
     }
@@ -749,14 +696,14 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'globalCompositeOperation') {
-      globalCompositeOperationStack.push(ctx.globalCompositeOperation);
+      this.globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
 
       continue;
     }
 
     if (type === 'endGlobalCompositeOperation') {
-      ctx.globalCompositeOperation = globalCompositeOperationStack.pop();
+      ctx.globalCompositeOperation = this.globalCompositeOperationStack.pop();
 
       continue;
     }
@@ -805,14 +752,14 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'globalAlpha') {
-      globalAlphaStack.push(ctx.globalAlpha);
+      this.globalAlphaStack.push(ctx.globalAlpha);
       ctx.globalAlpha *= props.value;
 
       continue;
     }
 
     if (type === 'endGlobalAlpha') {
-      ctx.globalAlpha = globalAlphaStack.pop();
+      ctx.globalAlpha = this.globalAlphaStack.pop();
 
       continue;
     }
@@ -820,21 +767,21 @@ Renderer.prototype.render = function render(args) {
     if (type === 'hitRegion') {
       this.mouseRegions.push({
         id: props.id,
-        points: transformPoints(props.points, transformStack[transformStack.length - 1])
+        points: transformPoints(props.points, this.transformStack[this.transformStack.length - 1])
       });
 
       continue;
     }
 
     if (type === 'imageSmoothingEnabled') {
-      imageSmoothingEnabledStack.push(ctx.imageSmoothingEnabled);
+      this.imageSmoothingEnabledStack.push(ctx.imageSmoothingEnabled);
       ctx.imageSmoothingEnabled = props.value;
 
       continue;
     }
 
     if (type === 'endImageSmoothingEnabled') {
-      ctx.imageSmoothingEnabled = imageSmoothingEnabledStack.pop();
+      ctx.imageSmoothingEnabled = this.imageSmoothingEnabledStack.pop();
       continue;
     }
   }
@@ -852,154 +799,8 @@ Renderer.create = function create(width, height, parent, worker) {
   return new Renderer();
 };
 
-Renderer.prototype.workerCommand = function workerCommand(e) {
-  var tree,
-      img,
-      data = e.data;
-  //import the canvas object when we need it because Canvas depends on Renderer
-  if (!Canvas) {
-    Canvas = require('./Canvas');
-  }
-  if (!Gradient) {
-    Gradient = require('./Gradient');
-  }
-
-  if (data.type === 'ready') {
-    return this.ready();
-  }
-
-  if (data.type === 'image') {
-    img = new Img(data.value.id);
-    Img.cache[data.value.id] = img;
-    return;
-  }
-  if (data.type === 'image-source') {
-    if (Img.cache.hasOwnProperty(data.value.id)) {
-      img = Img.cache[data.value.id];
-      img.src = data.value.src;
-      img.once('load', function() {
-        this.sendWorker('image-load', data.value);
-      }.bind(this));
-    }
-    return;
-  }
-
-  if (data.type === 'image-cache') {
-    if (Img.cache.hasOwnProperty(data.value.id)) {
-      Img.cache[data.value.id].cache();
-    }
-    return;
-  }
-
-  if (data.type === 'image-dispose') {
-    if (Img.cache.hasOwnProperty(data.value.id)) {
-      Img.cache[data.value.id].dispose();
-    }
-    return;
-  }
-
-  if (data.type === 'render') {
-    //set the tree
-    this.tree = data.value;
-    return;
-  }
-
-  if (data.type === 'renderer-resize') {
-    return this.resize(data.value.width, data.value.height);
-  }
-
-  if (data.type === 'renderer-image') {
-    if (Canvas.cache.hasOwnProperty(data.value.id)) {
-      this.toImage(data.value.imageID);
-      return;
-    }
-  }
-
-  if (data.type === 'canvas') {
-    if (!Canvas.cache.hasOwnProperty(data.value.id)) {
-      Canvas.cache[data.value.id] = new Canvas(data.value.width, data.value.height, data.value.id);
-    }
-    img = Canvas.cache[data.value.id];
-    img.resize(data.value.width, data.value.height);
-    return Canvas.cache[data.value.id].render(data.value.children);
-  }
-
-  if (data.type === 'canvas-image') {
-    if (Canvas.cache.hasOwnProperty(data.value.id)) {
-      Canvas.cache[data.value.id].toImage(data.value.imageID);
-      return;
-    }
-  }
-
-  if (data.type === 'canvas-cache') {
-    if (Canvas.cache[data.value.id]) {
-      Canvas.cache[data.value.id].cache();
-    }
-    return;
-  }
-
-  if (data.type === 'canvas-dispose' && Canvas.cache[data.value.id]) {
-      return Canvas.cache[data.value.id].dispose();
-  }
-
-  if (data.type === 'canvas-resize' && Canvas.cache[data.value.id]) {
-      return Canvas.cache[data.value.id].resize(data.value.width, data.value.height);
-  }
-
-  if (data.type === 'canvas-skipPatternCreation' && Canvas.cache[data.value.id]) {
-    Canvas.cache[data.value.id].skipPatternCreation = data.value.value;
-    return;
-  }
-  if (data.type === 'linear-gradient') {
-    Gradient.cache[data.value.id] = createLinearGradient(data.value.x0, data.value.y0,
-                                                         data.value.x1, data.value.y1,
-                                                         data.value.children, data.value.id);
-    return;
-  }
-
-  if (data.type === 'radial-gradient') {
-    Gradient.cache[data.value.id] = createRadialGradient(
-      data.value.x0, data.value.y0, data.value.r0,
-      data.value.x1, data.value.y1, data.value.r1,
-      data.value.children, data.value.id
-    );
-    return;
-  }
-
-  if (data.type === 'gradient-dispose') {
-    if (Gradient.cache.hasOwnProperty(data.value.id)) {
-      return Gradient.cache[data.value.id].dispose();
-    }
-    return;
-  }
-
-  if (data.type === 'gradient-cache') {
-    if (Gradient.cache.hasOwnProperty(data.value.id)) {
-      return Gradient.cachable.push(data.value.id);
-    }
-    return;
-  }
-
-  if (data.type === 'style') {
-    return this.style(data.value);
-  }
-
-  if (data.type === 'measureText') {
-    return this.measureText(data.value.font, data.value.text, null, data.value.id);
-  }
-
-  return this.emit(data.type, data.value);
-};
 
 Renderer.prototype.resize = function(width, height) {
-
-  //resize event can be called from browser or worker, so we need to tell the browser to resize itself
-  if (isWorker) {
-    this.canvas.width = +width;
-    this.canvas.height = +height;
-    return this.sendBrowser('renderer-resize', { width: width, height: height });
-  }
-
   //only resize if the sizes are different, because it clears the canvas
   if (this.canvas.width.toString() !== width.toString()) {
     this.canvas.width = width;
@@ -1009,18 +810,11 @@ Renderer.prototype.resize = function(width, height) {
   }
 };
 
-Renderer.prototype.toImage = function toImage(imageID) {
-
-  var img;
-  img = new Img(imageID || newid());
-
-  if (isWorker) {
-    postMessage({ type: 'renderer-image', value: { imageID: imageID } });
-    return img;
-  } else {
-    img.src = this.canvas.toDataURL('image/png');
-    return img;
-  }
+Renderer.prototype.toImage = function toImage() {
+  var Img = require('./Img');
+  var img = new Img();
+  img.src = this.canvas.toDataURL('image/png');
+  return img;
 };
 
 
@@ -1028,73 +822,17 @@ Renderer.prototype.hookRender = function hookRender() {
 
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
+    //fire the mouse event again if it wasn't run
+    if (this.lastMouseEvent && !this.ranMouseEvent) {
+      this.mouseMove(this.lastMouseEvent);
+    }
+    //we are browser side, so this should fire the frame synchronously
+    this.fireFrame();
 
-      //if the worker exists, we should check to see if the worker has sent back anything yet
-      if (this.worker) {
-        if (this.tree !== null) {
-
-          //fire the mouse event again if it wasn't run
-          if (this.lastMouseEvent && !this.ranMouseEvent) {
-            this.mouseMove(this.lastMouseEvent);
-          }
-
-          //fire the frame right away
-          this.fireFrame();
-
-          //render the current frame from the worker
-          this.render(this.tree);
-
-          //reset the tree/frame
-          this.tree = null;
-        }
-      } else {
-        //fire the mouse event again if it wasn't run
-        if (this.lastMouseEvent && !this.ranMouseEvent) {
-          this.mouseMove(this.lastMouseEvent);
-        }
-        //we are browser side, so this should fire the frame synchronously
-        this.fireFrame();
-      }
   }
 
-  return window.requestAnimationFrame(this.hookRender.bind(this));
+  return window.requestAnimationFrame(this.boundHookRenderFunction);
 };
-
-Renderer.prototype.cleanUpCache = function cleanUpCache() {
-  Img.cleanUp();
-  Canvas.cleanUp();
-  return Gradient.cleanUp();
-};
-
-Renderer.prototype.sendWorker = function sendWorker(type, value) {
-  //if there is no worker, the event needs to happen browser side
-  if (!this.worker) {
-    //fire the event anyway
-    return this.emit(type, value);
-  }
-  //otherwise, post the message
-  return this.worker.postMessage({ type: type, value: value });
-};
-
-Renderer.prototype.sendBrowser = function sendBrowser(type, value) {
-  //there is definitely a browser on the other end
-  return postMessage({ type: type, value: value });
-};
-
-
-Renderer.prototype.sendAll = function sendAll(type, value) {
-  if (!isWorker) {
-    this.sendWorker(type, value);
-  } else {
-    this.sendBrowser(type, value);
-  }
-  return this.emit(type, value);
-};
-/*
- * Mouse move events simply increment the down and up values every time the event is fired.
- * This allows games that are lagging record the click counts. It gets reset to 0 every time
- * it is sent.
- */
 
 Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
   //whenever the mouse moves, report the position
@@ -1131,9 +869,6 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
   this.mouseData.y = mousePoint[1];
   this.mouseData.state = this.mouseState;
   this.mouseData.activeRegions = this.activeRegions;
-
-  //send the mouse event to the worker
-  this.sendWorker('mouse', this.mouseData);
 
   //default event stuff
   evt.preventDefault();
@@ -1187,20 +922,12 @@ Renderer.prototype.keyUp = function keyUp(evt) {
   return this.keyChange(evt);
 };
 
-Renderer.prototype.browserCommand = function browserCommand(e) {
-  if (e.data.type === 'image-load') {
-    Img.cache[e.data.value.id].emit('load');
-  }
-
-  return this.emit(e.data.type, e.data.value);
-};
-
 Renderer.prototype.fireFrame = function() {
   this.mouseRegions.splice(0, this.mouseRegions.length);
-  this.sendWorker('frame', {});
+  this.emit('frame', {});
   this.activeRegions.splice(0, this.activeRegions.length);
   this.ranMouseEvent = false;
-  return setTimeout(this.cleanUpCache.bind(this), 0);
+  return this;
 };
 
 Renderer.prototype.style = function style() {
@@ -1230,13 +957,8 @@ Renderer.prototype.style = function style() {
       styles.push(child);
     }
   }
-  if (isWorker) {
-    this.sendBrowser('style', styles);
-  } else {
-    for (i = 0; i < styles.length; i++) {
-      this.styleQueue.push(styles[i]);
-    }
-
+  for (i = 0; i < styles.length; i++) {
+    this.styleQueue.push(styles[i]);
   }
 };
 
@@ -1254,33 +976,19 @@ Renderer.prototype.applyStyles = function applyStyles() {
 };
 
 Renderer.prototype.ready = function ready() {
-  if (isWorker) {
-    this.sendBrowser('ready');
-  } else {
-    this.isReady = true;
-    this.fireFrame();
-    return window.requestAnimationFrame(this.hookRender.bind(this));
-  }
+  this.isReady = true;
+  this.fireFrame();
+  return window.requestAnimationFrame(this.hookRender.bind(this));
 };
 
-Renderer.prototype.measureText = function measureText(font, text, cb, id) {
-  id = id || newid();
-  if (isWorker) {
-    this.sendBrowser('measureText', { font: font, text: text, id: id });
-    return this.once('measureText-' + id, cb);
-  }
+Renderer.prototype.measureText = function measureText(font, text) {
   var oldFont = this.ctx.font,
       result;
 
   this.ctx.font = font;
   result = this.ctx.measureText(text);
   this.ctx.font = oldFont;
-  if (this.worker) {
-    this.sendWorker('measureText-' + id, result);
-  }
-  if (cb && typeof cb === 'function') {
-    return setTimeout(cb.bind(null, result), 0);
-  }
+  return result;
 };
 
 Object.defineProperty(Renderer.prototype, 'height', {

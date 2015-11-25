@@ -5,7 +5,7 @@ var Instruction = require('./Instruction');
 function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('fillCanvasSource', {
-      img: img.id,
+      img: img,
       sx: sx,
       sy: sy,
       sWidth: sWidth,
@@ -16,27 +16,27 @@ function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
       dHeight: dHeight
     });
   }
-  
+
   if (arguments.length >= 5) {
     return new Instruction('fillCanvasSize', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
       dHeight: sHeight
     });
   }
-  
+
   if (arguments.length >= 3) {
     return new Instruction('fillCanvas', {
-      img: img.id,
+      img: img,
       dx: sx,
       dy: sy
     });
-  }  
+  }
 
   return new Instruction('fillCanvas', {
-    img: img.id,
+    img: img,
     dx: 0,
     dy: 0
   });
