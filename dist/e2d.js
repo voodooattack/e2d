@@ -2552,7 +2552,6 @@ Renderer.prototype.hookKeyboardEvents = function hookMouseEvents() {
 };
 
 Renderer.prototype.keyChange = function keyChange(evt) {
-  this.sendWorker('key', this.keyData);
   evt.preventDefault();
   return false;
 };
