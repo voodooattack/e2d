@@ -1496,7 +1496,6 @@ Canvas.prototype.render = function render(children) {
     result.push(arguments[i]);
   }
 
-
   this.renderer.render(result);
   if (!this._skipPatternCreation) {
     this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
@@ -1644,8 +1643,8 @@ Object.seal(Instruction.prototype);
 module.exports = Instruction;
 },{}],13:[function(require,module,exports){
 //jshint node: true, browser: true, worker: true
-
 'use strict';
+
 var createLinearGradient = require('./createLinearGradient'),
     createRadialGradient = require('./createRadialGradient'),
     events = require('events'),
@@ -1653,7 +1652,8 @@ var createLinearGradient = require('./createLinearGradient'),
     keycode = require('keycode'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
-    identity = new Float64Array([1, 0, 0, 1, 0, 0]);
+    identity = [1, 0, 0, 1, 0, 0],
+    Img = require('./Img');
 
 util.inherits(Renderer, events.EventEmitter);
 
@@ -1672,9 +1672,6 @@ function Renderer(width, height, parent, worker) {
   this.imageSmoothingEnabledStack = [];
   this.globalCompositeOperationStack = [];
 
-
-
-
   this.pi2 = Math.PI * 2;
 
   this.isReady = false;
@@ -1683,6 +1680,7 @@ function Renderer(width, height, parent, worker) {
     x: 0,
     y: 0,
     state: this.mouseState,
+    clicked: false,
     activeRegions: []
   };
   this.lastMouseEvent = null;
@@ -1693,6 +1691,15 @@ function Renderer(width, height, parent, worker) {
 
   //this is the basic structure of the data sent to the web worker
   this.keyData = {};
+
+  this.touchData = {
+    touches: [],
+    ids: []
+  };
+  this.lastTouchEvent = null;
+  this.ranTouchEvent = false;
+  this.touchRegions = [];
+
 
   //set parent
   if (parent && parent.nodeType === 1) {
@@ -1725,9 +1732,10 @@ function Renderer(width, height, parent, worker) {
   this.canvas.height = height;
   this.parent.appendChild(this.canvas);
 
-  //hook mouse and keyboard events right away
+  //hook mouse, keyboard, and keyboard events right away
   this.hookMouseEvents();
   this.hookKeyboardEvents();
+  this.hookTouchEvents();
 
   this.boundHookRenderFunction = this.hookRender.bind(this);
   Object.seal(this);
@@ -1762,9 +1770,11 @@ Renderer.prototype.render = function render(args) {
     children.push(arguments[i]);
   }
 
+  //loop over every child
   for (i = 0, len = children.length; i < len; i++) {
     child = children[i];
 
+    //flattening algorithm
     if (child && child.constructor === Array) {
       children = concat.apply([], children);
       child = children[i];
@@ -1775,23 +1785,25 @@ Renderer.prototype.render = function render(args) {
       len = children.length;
     }
 
+    //child must be truthy
     if (!child) {
       continue;
     }
 
+    //set props and type object
     props = child.props;
     type = child.type;
 
     if (type === 'transform') {
       cache = this.transformStack[this.transformStack.length - 1];
-      matrix = new Float64Array([
+      matrix = [
         cache[0] * props[0] + cache[2] * props[1],
         cache[1] * props[0] + cache[3] * props[1],
         cache[0] * props[2] + cache[2] * props[3],
         cache[1] * props[2] + cache[3] * props[3],
         cache[0] * props[4] + cache[2] * props[5] + cache[4],
         cache[1] * props[4] + cache[3] * props[5] + cache[5]
-      ]);
+      ];
 
       this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
@@ -1800,18 +1812,23 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'setTransform') {
-      matrix = new Float64Array(props);
-      this.transformStack.push(matrix);
-      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+
+      this.transformStack.push(props);
+      ctx.setTransform(props[0], props[1], props[2], props[3], props[4], props[5]);
       continue;
     }
 
     if (type === 'scale') {
-      matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
-      matrix[0] *= props.x;
-      matrix[1] *= props.x;
-      matrix[2] *= props.y;
-      matrix[3] *= props.y;
+      cache = this.transformStack[this.transformStack.length - 1];
+      matrix = [
+        cache[0] * props.x,
+        cache[1] * props.x,
+        cache[2] * props.y,
+        cache[3] * props.y,
+        cache[4],
+        cache[5]
+      ];
+
 
       this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
@@ -1820,9 +1837,16 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'translate') {
-      matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
-      matrix[4] += matrix[0] * props.x + matrix[2] * props.y;
-      matrix[5] += matrix[1] * props.x + matrix[3] * props.y;
+      //matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
+      cache = this.transformStack[this.transformStack.length - 1];
+      matrix = [
+        cache[0],
+        cache[1],
+        cache[2],
+        cache[3],
+        cache[4] + cache[0] * props.x + cache[2] * props.y,
+        cache[5] + cache[1] * props.x + cache[3] * props.y
+      ];
 
       this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
@@ -1835,13 +1859,14 @@ Renderer.prototype.render = function render(args) {
       sinr = Math.sin(props.r);
 
       cache = this.transformStack[this.transformStack.length - 1];
-      matrix = new Float64Array(cache);
-
-      matrix[0] = cache[0] * cosr + cache[2] * sinr;
-      matrix[1] = cache[1] * cosr + cache[3] * sinr;
-      matrix[2] = cache[0] * -sinr + cache[2] * cosr;
-      matrix[3] = cache[1] * -sinr + cache[3] * cosr;
-
+      matrix = [
+        cache[0] * cosr + cache[2] * sinr,
+        cache[1] * cosr + cache[3] * sinr,
+        cache[0] * -sinr + cache[2] * cosr,
+        cache[1] * -sinr + cache[3] * cosr,
+        cache[4],
+        cache[5]
+      ];
       this.transformStack.push(matrix);
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
@@ -2060,7 +2085,8 @@ Renderer.prototype.render = function render(args) {
       if (!props.img) {
         continue;
       }
-      ctx.drawImage(props.img.imageElement || new Image(), props.dx, props.dy);
+      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+      ctx.drawImage(cache || new Image(), props.dx, props.dy);
       continue;
     }
 
@@ -2068,7 +2094,8 @@ Renderer.prototype.render = function render(args) {
       if (!props.img) {
         continue;
       }
-      ctx.drawImage(props.img.imageElement || new Image(), props.dx, props.dy, props.dWidth, props.dHeight);
+      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+      ctx.drawImage(cache, props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
@@ -2076,7 +2103,8 @@ Renderer.prototype.render = function render(args) {
       if (!props.img) {
         continue;
       }
-      ctx.drawImage(props.img.imageElement || new Image(), props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
+      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+      ctx.drawImage(cache, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
 
@@ -2410,10 +2438,12 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'hitRegion') {
-      this.mouseRegions.push({
+      cache = {
         id: props.id,
         points: transformPoints(props.points, this.transformStack[this.transformStack.length - 1])
-      });
+      };
+      this.mouseRegions.push(cache);
+      this.touchRegions.push(cache);
 
       continue;
     }
@@ -2471,6 +2501,10 @@ Renderer.prototype.hookRender = function hookRender() {
     if (this.lastMouseEvent && !this.ranMouseEvent) {
       this.mouseMove(this.lastMouseEvent);
     }
+
+    if (this.lastTouchEvent && !this.ranTouchEvent) {
+      this.touchEvent(this.lastMouseEvent);
+    }
     //we are browser side, so this should fire the frame synchronously
     this.fireFrame();
 
@@ -2488,6 +2522,60 @@ Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
 
   //mouse up can happen anywhere
   return window.document.addEventListener('mouseup', this.mouseUp.bind(this));
+};
+
+Renderer.prototype.hookTouchEvents = function hookTouchEvents() {
+
+  return ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(function(evt) {
+    return window.document.addEventListener(evt, this.touchEvent.bind(this));
+  }, this);
+};
+
+Renderer.prototype.touchEvent = function touchEvent(evt) {
+  var rect = this.canvas.getBoundingClientRect(),
+      touchRegions = this.touchRegions.slice(),
+      mousePoint = [0,0],
+      region;
+
+  var previousIds = this.touchData.ids.splice(0, this.touchData.ids.length),
+    previousTouches = this.touchData.touches.splice(0, this.touchData.touches.length),
+    touchPoint;
+
+  for(var i = 0; i < evt.touches.length; i++) {
+    var touch = evt.touches.item(i);
+    var index = previousIds.indexOf(touch.identifier);
+
+    touchPoint = index === -1 ? { x: 0, y: 0, activeRegions: [], id: touch.identifier, touched: true, held: false } : previousTouches[index];
+    touchPoint.touched = index === -1;
+    touchPoint.held = !touchPoint.touched;
+
+    touchPoint.x = touch.clientX - rect.left;
+    touchPoint.y = touch.clientY - rect.top;
+    this.touchData.touches.push(touchPoint);
+    this.touchData.ids.push(touchPoint.identifier);
+
+    mousePoint[0] = touchPoint.x;
+    mousePoint[1] = touchPoint.y;
+
+    touchPoint.activeRegions.splice(0, touchPoint.activeRegions.length);
+
+    for(var j = 0; j < this.mouseRegions.length; i++) {
+      region = touchRegions[j];
+      if (pointInPolygon(mousePoint, region.points)) {
+        touchPoint.activeRegions.push(region.id);
+        touchRegions.splice(touchRegions.indexOf(region), 1);
+        j -= 1;
+      }
+    }
+  }
+
+
+  this.lastTouchEvent = evt;
+  this.ranTouchEvent = true;
+
+
+  evt.preventDefault();
+  return false;
 };
 
 Renderer.prototype.mouseMove = function mouseMove(evt) {
@@ -2512,6 +2600,11 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 
   this.mouseData.x = mousePoint[0];
   this.mouseData.y = mousePoint[1];
+
+  //new state is down, last state is up
+
+  this.mouseData.clicked = this.mouseState === 'down' && this.mouseData.state === 'up';
+
   this.mouseData.state = this.mouseState;
   this.mouseData.activeRegions = this.activeRegions;
 
@@ -2535,7 +2628,7 @@ Renderer.prototype.mouseUp = function mouseMove(evt) {
   return this.mouseMove(evt);
 };
 
-Renderer.prototype.hookKeyboardEvents = function hookMouseEvents() {
+Renderer.prototype.hookKeyboardEvents = function hookKeyboardEvents() {
 
   //every code in keycode.code needs to be on keyData
   for (var name in keycode.code) {
@@ -2568,6 +2661,8 @@ Renderer.prototype.keyUp = function keyUp(evt) {
 
 Renderer.prototype.fireFrame = function() {
   this.mouseRegions.splice(0, this.mouseRegions.length);
+  this.touchRegions.splice(0, this.touchRegions.length);
+
   this.emit('frame', {});
   this.activeRegions.splice(0, this.activeRegions.length);
   this.ranMouseEvent = false;
@@ -3467,7 +3562,15 @@ module.exports = scale;
 var Instruction = require('./Instruction');
 
 module.exports = function(matrix, children) {
-  var result = [new Instruction('setTransform', matrix)];
+
+  var result = [new Instruction('setTransform', [
+    matrix[0],
+    matrix[1],
+    matrix[2],
+    matrix[3],
+    matrix[4],
+    matrix[5]
+  ])];
   for(var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
@@ -3692,7 +3795,16 @@ var Instruction = require('./Instruction');
 
 function transform(values, children) {
 
-  var transformResult = [new Instruction('transform', new Float64Array(values))];
+  var transformResult = [
+    new Instruction('transform',[
+      values[0],
+      values[1],
+      values[2],
+      values[3],
+      values[4],
+      values[5]
+    ])
+  ];
   for(var i = 1, len = arguments.length; i < len; i++) {
     transformResult.push(arguments[i]);
   }

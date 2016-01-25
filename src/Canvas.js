@@ -18,7 +18,6 @@ Canvas.prototype.render = function render(children) {
     result.push(arguments[i]);
   }
 
-
   this.renderer.render(result);
   if (!this._skipPatternCreation) {
     this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');

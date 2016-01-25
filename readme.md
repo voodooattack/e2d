@@ -169,11 +169,9 @@ In your `public/index.html` file:
 
 Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
 
-### Webpack
+### webpack-dev-server
 
-```javascript
-var e2d = require('e2d');
-```
+Please see [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html) for all your web development server needs.
 
 # API
 
@@ -216,10 +214,13 @@ r.on('mouse', function(mouseEventData) {
 
 ```
 
+Listening to the event is optional, simply use `r.mouseData` to acquire current mouse information.
+
 __key__
 
 This fires once per key event. This includes `keydown` and `keyup`.
 
+```javascript
 r.on('key', function(keyEventData) {
   //keyEventData looks like this
   /*{
@@ -229,6 +230,9 @@ r.on('key', function(keyEventData) {
     ...
   }*/
 });
+```
+
+Listening to the event is optional, simply use `r.keyData` to acquire current key information.
 
 ### Prototype
 
@@ -261,7 +265,7 @@ r.ready();
 
 __Renderer.prototype.style__
 
-This function applies styles to the browser window.
+This function applies styles to the canvas directly.
 
 ```javascript
 r.style({
@@ -275,6 +279,15 @@ Also supports:
 1. Unlimited arguments, it will apply every style manually to the canvas
 2. `null` values will remove style attributes `(value === null)`
 3. Arrays of style objects
+
+ex.
+
+```javascript
+  r.style({
+    //if there are any active mouse regions, change the cursor to pointer
+    cursor: r.mouseData.activeRegions.length > 0 ? 'pointer' : null
+  });
+```
 
 __Renderer.prototype.measureText__
 
@@ -404,6 +417,8 @@ __drawImage.js__, __fillImage.js__
 
 Drawing an image is as easy as `drawImage(img)` or `fillImage(img)`. Both functions have the same parameters, and can be useful in different situations. It has four forms.
 
+`drawImage` accepts standard browser `Image` objects and `Img` textures too.
+
 See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage) for more information on how to use drawImage
 ```javascript
 var drawImage = e2d.drawImage;
@@ -424,8 +439,16 @@ var imgCommandSize = drawImage(img, x, y, width, height); //specify the size of 
 //or draw the image from a source within the image (this is hard to optimize for the browser and may be slow)
 var imgSourceSize = drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
 ```
+or...
 
-Using `fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up your drawing.
+```javascript
+var img = new Image();
+img.src = '...url';
+img.onload = callback;
+var imgCommand = drawImage(img);
+```
+
+Using `fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle and requires an `Img` texture. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up the frame times as a quick optimization.
 
 
 __fillImagePattern.js__
@@ -469,7 +492,7 @@ var img = temp.toImage(); //uses 'image/png'
 
 __drawCanvas.js__
 
-Drawing an canvas is as easy as `drawCanvas(canvasObject)`. It has four forms.
+Drawing a canvas is as easy as `drawCanvas(canvasObject)`. It has four forms.
 
 ```javascript
 //img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
