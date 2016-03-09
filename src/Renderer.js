@@ -836,13 +836,13 @@ Renderer.prototype.resize = function(width, height) {
   if (this.canvas.width.toString() !== width.toString()) {
     this.canvas.width = width;
     if (this.parent !== document.body) {
-      this.parent.width = width;
+      this.parent.style.width = width + "px";
     }
   }
   if (this.canvas.height.toString() !== height.toString()) {
     this.canvas.height = height;
     if (this.parent !== document.body) {
-      this.parent.height = height;
+      this.parent.style.height = height + "px";
     }
   }
 };
