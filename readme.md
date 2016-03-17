@@ -39,13 +39,18 @@ var spriteSheet = arrayOfImages.map(function(imageElement) {
 var spriteFrame = 0;
 
 function gameLoop() {
-  spriteFrame += 0.5;
-
-  //render your tree
+  
+  //animate a frame property
+  spriteFrame += 0.5; //update sprite frame at 30fps
+  if (spriteFrame > spriteSheet.length) {
+    spriteFrame -= spriteSheet.length;
+  }
+  
+  //render the draw command
   r.render(
     translate(spriteY, spriteX,
       //draw command is already made!
-      spriteSheet[Math.floor(imageData.frameCount)]
+      spriteSheet[Math.floor(spriteFrame)]
     )
   );
 }
