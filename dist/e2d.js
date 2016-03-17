@@ -2479,9 +2479,15 @@ Renderer.prototype.resize = function(width, height) {
   //only resize if the sizes are different, because it clears the canvas
   if (this.canvas.width.toString() !== width.toString()) {
     this.canvas.width = width;
+    if (this.parent !== document.body) {
+      this.parent.style.width = width + "px";
+    }
   }
   if (this.canvas.height.toString() !== height.toString()) {
     this.canvas.height = height;
+    if (this.parent !== document.body) {
+      this.parent.style.height = height + "px";
+    }
   }
 };
 
