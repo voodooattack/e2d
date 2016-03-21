@@ -6,9 +6,6 @@ An es5 declarative canvas renderer.
 
 Most canvas libraries abstract away different aspect of canvas to make you faster.  When using this library, there isn't much abstraction. In fact, the API mirrors the canvas2d API in a way makes coding canvas actually fun!
 
-Some of the functions fill in parts of the language that aren't implemented yet, like `CanvasRenderingContext2D.prototype.ellipse` and `CanvasRenderingContext2D.prototype.addHitRegion`.
-
-
 ### Instruction trees
 
 The goal of `e2d` is to create a tree of instructions instead of imperatively calling `ctx.translate`, or `ctx.drawImage`. It allows the developer to make one way data structures that represent the state of their application data.
