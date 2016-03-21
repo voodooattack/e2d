@@ -8,69 +8,22 @@ Most canvas libraries abstract away different aspect of canvas to make you faste
 
 Some of the functions fill in parts of the language that aren't implemented yet, like `CanvasRenderingContext2D.prototype.ellipse` and `CanvasRenderingContext2D.prototype.addHitRegion`.
 
-# Behavior Testing
-
-Starting up `server.js` and going to localhost:8080/test.html brings up the test suite.
-
-I am still working on the tests and I haven't had time to write more, but they are coming.  Any help would be appreciated.
-
-The Img API changed and now breaks the `fillImage` test because the tests are not async. This will be fixed at a later time after I put e2d through some serious testing.
-
-# API Stability
-
-As of 3.0 WebWorker support is completely gutted and removed because it didn't work as intended.  Frame times were too high to make structured cloning of 2000 instructions practical.
-
-The API might be unstable, but I need testers and dedicated people who want to see this project grow submit pull requests!  Please message me at tenner.joshua@gmail.com or open a "discussion" issue.
 
 ### Instruction trees
 
-Creating a tree of instructions allows the developer to make one way data structures that represent the state of their application data.
+The goal of `e2d` is to create a tree of instructions instead of imperatively calling `ctx.translate`, or `ctx.drawImage`. It allows the developer to make one way data structures that represent the state of their application data.
 
-In games, this is useful because the render engine shouldn't be a part of the game logic.
-
-For instance, this is a sample sprite sheet:
+For instance, sprite sheets can be created by making an array of `drawImage` instructions:
 
 ```javascript
 //create a drawImage array to store the frame commands
 var spriteSheet = arrayOfImages.map(function(imageElement) {
-  return drawImage(imageElement);
+  return e2d.drawImage(imageElement);
 });
-
-var spriteFrame = 0;
-
-function gameLoop() {
-  
-  //animate a frame property
-  spriteFrame += 0.5; //update sprite frame at 30fps
-  if (spriteFrame > spriteSheet.length) {
-    spriteFrame -= spriteSheet.length;
-  }
-  
-  //render the draw command
-  r.render(
-    translate(spriteY, spriteX,
-      //draw command is already made!
-      spriteSheet[Math.floor(spriteFrame)]
-    )
-  );
-}
-
-r.on('frame', gameLoop);
-
 ```
 
-Components can be functions that return instructions.
+Creating an array of draw commands yields an index of frames to render from.
 
-```javascript
-function customContainerItem(x, y, width, height, children) {
-  return translate(x, y,
-    strokeRect(0, 0, width, height),
-    translate(3, 3, //padding
-      children
-    )
-  );
-}
-```
 
 ## Performance
 
@@ -103,11 +56,7 @@ r.on('frame', function() {
 });
 ```
 
-If the goal is to reduce execution time, don't do it pre-emptively.
-
-*The browser bottlenecks more on the drawing operations, and garbage collection, than it does on the code you execute!*
-
-Instead of writing complicated draw functions, store drawing operations in variables, and it will reduce the amount of user-defined function calls to increase memory performance.
+Code can now be self documenting.
 
 ```javascript
 var strokeRed = e2d.strokeStyle('red', e2d.stroke());
@@ -117,7 +66,7 @@ var hexagonPath = e2d.path( //beginPath()
   e2d.createRegularPolygon(50, [0, 0], 10).map(e2d.moveToLineTo) 
 ); //closePath()
 
-var redHexagon = [hexagonPath, strokeRed];
+var redHexagon = [hexagonPath, strokeRed]; //combine drawing operations with arrays
 
 var clearScreen = e2d.clearRect(screenWidth, screenHeight);
 
@@ -140,15 +89,13 @@ That's it.
 
 ### Browserify method
 
-This is how I recommend getting started.
-
 `npm init`
 
 and then...
 
 `npm install --save-dev browserify-middleware express e2d`
 
-Inside `server.js`:
+Inside a `server.js` file:
 
 ```javascript
 var express = require('express'),
