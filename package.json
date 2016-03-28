@@ -1,6 +1,6 @@
 {
   "name": "e2d",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "A declarative canvas renderer.",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "keycode": "^2.1.0",
     "point-in-polygon": "^1.0.0"
   },
+  "bundledDependencies": ["keycode","point-in-polygon"],
   "repository": {
     "type": "git",
     "url": "git://github.com/jtenner/e2d.git"
