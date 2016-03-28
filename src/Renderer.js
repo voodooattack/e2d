@@ -955,7 +955,7 @@ Renderer.prototype.hookRender = function hookRender() {
     if (this.lastTouchEvent && !this.ranTouchEvent) {
       this.touchEvent(this.lastMouseEvent);
     }
-    //we are browser side, so this should fire the frame synchronously
+
     this.fireFrame();
 
   }
@@ -1025,6 +1025,7 @@ Renderer.prototype.touchEvent = function touchEvent(evt) {
 
 
   evt.preventDefault();
+  this.emit('touch', this.touchData);
   return false;
 };
 
@@ -1058,6 +1059,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
   this.mouseData.state = this.mouseState;
   this.mouseData.activeRegions = this.activeRegions;
 
+  this.emit('mouse', this.mouseData);
   //default event stuff
   evt.preventDefault();
   return false;
@@ -1095,6 +1097,7 @@ Renderer.prototype.hookKeyboardEvents = function hookKeyboardEvents() {
 };
 
 Renderer.prototype.keyChange = function keyChange(evt) {
+  this.emit('key', this.keyData);
   evt.preventDefault();
   return false;
 };

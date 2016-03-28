@@ -8,73 +8,92 @@ Most canvas libraries abstract away different aspect of canvas to make you faste
 
 ### Instruction trees
 
-The goal of `e2d` is to create a tree of instructions instead of imperatively calling `ctx.translate`, or `ctx.drawImage`. It allows the developer to make one way data structures that represent the state of their application data.
+`e2d` introduces "Instruction trees" that represent lower level canvas instructions.
 
-For instance, sprite sheets can be created by making an array of `drawImage` instructions:
+For example, all canvas instructions can be variables.  This speeds up execution time and reduces memory usage.
 
 ```javascript
-//create a drawImage array to store the frame commands
-var spriteSheet = arrayOfImages.map(function(imageElement) {
-  return e2d.drawImage(imageElement);
-});
+let fillRed = e2d.fillStyle('red', e2d.fill());
+//fillRed: [Instruction[fillStyle=red], Instruction[fill], Instruction[endFillStyle]];
+
+let redHexagon = [
+  e2d.path( //beginPath()
+    //create a 6 sided polygon with radius 10 at [0,0]
+    e2d.createRegularPolygon(10, [0,0], 6)
+      //convenience function to map coordinates to ctx.moveTo, and ctx.lineTo
+      .map(e2d.moveToLineTo)
+  ),//closePath()
+  fillRed
+];
 ```
 
-Creating an array of draw commands yields an index of frames to render from.
+Mix and match different canvas commands to make code more expressive and easier to read.  For example, using the `redHexagon` variable in the above example to get started:
+
+```javascript
+let width = 400, height = 400;
+let renderer = e2d.Renderer.create(width, height); //it appends to the document.body
+
+renderer.ready(); //fires requestAnimationFrame events
+renderer.on('frame', function() {
+  return renderer.render(
+    e2d.clearRect(width, height), //clear the screen every frame at the default position [0,0]
+    //move to the center
+    e2d.translate(0.5 * width, 0.5 * height,
+      redHexagon //redHexagon will be translated because it's a child of the translate function
+    )
+  );
+});
+
+```
 
 
 ## Performance
 
-The goal of e2d is to be fast.  In fact, e2d can greatly reduce user-defined function calls depending on how often instructions are stored as variables.
+The goal of e2d is to be fast. It has gone under numerous refactors to increase the speed of each canvas property.  On top of engine performance, there is an additional benefit to using `canvas instructions`. As a byproduct of using `e2d` instructions, there will be less user-defined function calls.  With instruction storage, and less user defined functions, the majority of the application view layer will sit around in memory waiting to be parsed every frame.
 
-The `CanvasRenderingContext2D.prototype` is sometimes slow, and much of that cannot be optimized, so `e2d` aims to decrease user-defined memory and function calls.
+Finally, creating an entire render tree every frame has a relatively minimal performance impact. `e2d` truly shines when instructions are repeated and stored as variables.
 
-Creating a render tree every frame has a relatively minimal performance impact. `e2d` truly shines when instructions are repeated and stored as variables.
+## Drawing Collections
+
+Collections are harder to optimize, so try to make data flow into canvas instructions.  See the following example:
 
 ```javascript
-var particles = [];
-for(var i = 0; i < 100; i++) {
-  particles.push({
+import { translate, fillStyle, fillArc, scale } from 'e2d';
+let particles = [];
+for(let i = 0; i < 100; i++) {
+  particles.push({ //create some particles
     x: Math.random() * config.width,
     y: Math.random() * config.height,
-    r: Math.random() * sizeRange + smallestRadiusSize
+    r: 1
   });
 }
 
+//fillArc has default function parameters [x=0, y=0, beginRadians=0, endRadians=Math.PI*2]
+let particle = fillArc(1); //only the radius is provided
+
 //later
-function particleMap(particle) {
-  return translate(particle.x, particle.y,
-    fillArc(particle.r)
-  );
-}
 r.on('frame', function() {
+  let particleMap = [], particle;
+  for(let i = 0; i < particles.length; i++) {
+    particle = particles[i];
+    particleMap.push(
+      translate(particle.x, particle.y, //move to the particle position
+        scale(particle.r, particle) //scale the particle
+      )
+    );
+  }
+
+
   return r.render(
-    particles.map(particleMap) //don't use a map in production
+    clearRect(config.width, config.height),
+    fillStyle('white', particleMap) // every particle is white
   );
 });
 ```
 
-Code can now be self documenting.
-
-```javascript
-var strokeRed = e2d.strokeStyle('red', e2d.stroke());
-
-var hexagonPath = e2d.path( //beginPath()
-  //hexagon drawing instructions
-  e2d.createRegularPolygon(50, [0, 0], 10).map(e2d.moveToLineTo) 
-); //closePath()
-
-var redHexagon = [hexagonPath, strokeRed]; //combine drawing operations with arrays
-
-var clearScreen = e2d.clearRect(screenWidth, screenHeight);
-
-function gameLoop() {
-  return r.render(clearScreen, redHexagon);
-}
-```
-
 # Getting started
 
-I highly recommend using `browserify` or `webpack` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.min.js` file in the `/dist/` folder.
+I highly recommend using `webpack` or `browserify` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.min.js` file in the `/dist/` folder.
 
 ### Import using script method
 
