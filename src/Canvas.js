@@ -6,9 +6,9 @@ function Canvas(width, height) {
   var Renderer = require('./Renderer');
   this.renderer = new Renderer(width, height, window.document.createElement('div'));
   this.fillPattern = null;
-  this._skipPatternCreation = false;
+  this.skipPatternCreation = false;
 
-  Object.seal(this);
+  return Object.seal(this);
 }
 
 Canvas.prototype.render = function render(children) {
@@ -19,10 +19,10 @@ Canvas.prototype.render = function render(children) {
   }
 
   this.renderer.render(result);
-  if (!this._skipPatternCreation) {
+  if (!this.skipPatternCreation) {
     this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
   }
-
+  return this;
 };
 
 Canvas.prototype.style = function style() {
@@ -51,15 +51,6 @@ Object.defineProperty(Canvas.prototype, 'height', {
   configurable: false
 });
 
-Object.defineProperty(Canvas.prototype, 'skipPatternCreation', {
-  get: function() {
-    return this._skipPatternCreation;
-  },
-  set: function(value) {
-    this._skipPatternCreation = value;
-  }
-});
-
 Object.defineProperty(Canvas.prototype, 'width', {
   get: function() {
     return this.renderer.canvas.width;
@@ -68,8 +59,6 @@ Object.defineProperty(Canvas.prototype, 'width', {
   configurable: false
 });
 
-Canvas.cache = {};
-Canvas.cachable = [];
 
 Canvas.create = function create(width, height, id) {
   return new Canvas(width, height, id);

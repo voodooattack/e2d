@@ -1484,9 +1484,9 @@ function Canvas(width, height) {
   var Renderer = require('./Renderer');
   this.renderer = new Renderer(width, height, window.document.createElement('div'));
   this.fillPattern = null;
-  this._skipPatternCreation = false;
+  this.skipPatternCreation = false;
 
-  Object.seal(this);
+  return Object.seal(this);
 }
 
 Canvas.prototype.render = function render(children) {
@@ -1497,10 +1497,10 @@ Canvas.prototype.render = function render(children) {
   }
 
   this.renderer.render(result);
-  if (!this._skipPatternCreation) {
+  if (!this.skipPatternCreation) {
     this.fillPattern = this.renderer.ctx.createPattern(this.renderer.canvas, 'no-repeat');
   }
-
+  return this;
 };
 
 Canvas.prototype.style = function style() {
@@ -1529,15 +1529,6 @@ Object.defineProperty(Canvas.prototype, 'height', {
   configurable: false
 });
 
-Object.defineProperty(Canvas.prototype, 'skipPatternCreation', {
-  get: function() {
-    return this._skipPatternCreation;
-  },
-  set: function(value) {
-    this._skipPatternCreation = value;
-  }
-});
-
 Object.defineProperty(Canvas.prototype, 'width', {
   get: function() {
     return this.renderer.canvas.width;
@@ -1546,8 +1537,6 @@ Object.defineProperty(Canvas.prototype, 'width', {
   configurable: false
 });
 
-Canvas.cache = {};
-Canvas.cachable = [];
 
 Canvas.create = function create(width, height, id) {
   return new Canvas(width, height, id);
@@ -1657,12 +1646,17 @@ var createLinearGradient = require('./createLinearGradient'),
 
 util.inherits(Renderer, events.EventEmitter);
 
-function Renderer(width, height, parent, worker) {
-  //this needs to be done later because of cyclical dependencies
+function Renderer(width, height, parent, opts) {
   events.EventEmitter.call(this);
+  opts = opts || {};
 
   //virtual stack
-  this.transformStack = [identity];
+  this.transformStack = new Float64Array(
+    ((opts.transformStackCount || 500) + 1) * 6 //properties
+  );
+  this.transformStackIndex = 6;
+  this.transformStack.set(identity);
+
   this.fillStyleStack = [];
   this.strokeStyleStack = [];
   this.lineStyleStack = [];
@@ -1689,7 +1683,7 @@ function Renderer(width, height, parent, worker) {
   this.activeRegions = [];
   this.styleQueue = [];
 
-  //this is the basic structure of the data sent to the web worker
+  //user input here
   this.keyData = {};
 
   this.touchData = {
@@ -1699,7 +1693,6 @@ function Renderer(width, height, parent, worker) {
   this.lastTouchEvent = null;
   this.ranTouchEvent = false;
   this.touchRegions = [];
-
 
   //set parent
   if (parent && parent.nodeType === 1) {
@@ -1748,7 +1741,7 @@ Renderer.prototype.render = function render(args) {
       props,
       type,
       cache,
-      matrix,
+      matrix = [1, 0, 0, 1, 0, 0],
       sinr,
       cosr,
       ctx = this.ctx,
@@ -1756,7 +1749,7 @@ Renderer.prototype.render = function render(args) {
       concat = children.concat;
 
   //flush the virtual stack
-  this.transformStack.splice(0, this.transformStack.length, identity);
+
   this.fillStyleStack.splice(0, this.fillStyleStack.length);
   this.strokeStyleStack.splice(0, this.strokeStyleStack.length);
   this.lineStyleStack.splice(0, this.lineStyleStack.length);
@@ -1795,87 +1788,171 @@ Renderer.prototype.render = function render(args) {
     type = child.type;
 
     if (type === 'transform') {
-      cache = this.transformStack[this.transformStack.length - 1];
-      matrix = [
-        cache[0] * props[0] + cache[2] * props[1],
-        cache[1] * props[0] + cache[3] * props[1],
-        cache[0] * props[2] + cache[2] * props[3],
-        cache[1] * props[2] + cache[3] * props[3],
-        cache[0] * props[4] + cache[2] * props[5] + cache[4],
-        cache[1] * props[4] + cache[3] * props[5] + cache[5]
-      ];
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
 
-      this.transformStack.push(matrix);
-      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
+
+      this.transformStack[this.transformStackIndex - 6] = //d
+        matrix[0] * props[0] + matrix[2] * props[1];
+      this.transformStack[this.transformStackIndex - 5] = //b
+        matrix[1] * props[0] + matrix[3] * props[1];
+      this.transformStack[this.transformStackIndex - 4] = //c
+        matrix[0] * props[2] + matrix[2] * props[3];
+      this.transformStack[this.transformStackIndex - 3] = //d
+        matrix[1] * props[2] + matrix[3] * props[3];
+      this.transformStack[this.transformStackIndex - 2] = //e
+        matrix[0] * props[4] + matrix[2] * props[5] + matrix[4];
+      this.transformStack[this.transformStackIndex - 1] = //f
+        matrix[1] * props[4] + matrix[3] * props[5] + matrix[5];
+
+      ctx.setTransform(
+        this.transformStack[this.transformStackIndex - 6],
+        this.transformStack[this.transformStackIndex - 5],
+        this.transformStack[this.transformStackIndex - 4],
+        this.transformStack[this.transformStackIndex - 3],
+        this.transformStack[this.transformStackIndex - 2],
+        this.transformStack[this.transformStackIndex - 1]
+      );
 
       continue;
     }
 
     if (type === 'setTransform') {
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
 
-      this.transformStack.push(props);
+      this.transformStack[this.transformStackIndex - 6] = props[0];//a
+      this.transformStack[this.transformStackIndex - 5] = props[1];//b
+      this.transformStack[this.transformStackIndex - 4] = props[2];//c
+      this.transformStack[this.transformStackIndex - 3] = props[3];//d
+      this.transformStack[this.transformStackIndex - 2] = props[4];//e
+      this.transformStack[this.transformStackIndex - 1] = props[5];//f
       ctx.setTransform(props[0], props[1], props[2], props[3], props[4], props[5]);
       continue;
     }
 
     if (type === 'scale') {
-      cache = this.transformStack[this.transformStack.length - 1];
-      matrix = [
-        cache[0] * props.x,
-        cache[1] * props.x,
-        cache[2] * props.y,
-        cache[3] * props.y,
-        cache[4],
-        cache[5]
-      ];
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
 
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
 
-      this.transformStack.push(matrix);
-      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      this.transformStack[this.transformStackIndex - 6] = matrix[0] * props.x; //a
+      this.transformStack[this.transformStackIndex - 5] = matrix[1] * props.x; //b
+      this.transformStack[this.transformStackIndex - 4] = matrix[2] * props.y; //c
+      this.transformStack[this.transformStackIndex - 3] = matrix[3] * props.y; //d
+      this.transformStack[this.transformStackIndex - 2] = matrix[4]; //e
+      this.transformStack[this.transformStackIndex - 1] = matrix[5]; //f
+
+      ctx.setTransform(
+        this.transformStack[this.transformStackIndex - 6],
+        this.transformStack[this.transformStackIndex - 5],
+        this.transformStack[this.transformStackIndex - 4],
+        this.transformStack[this.transformStackIndex - 3],
+        this.transformStack[this.transformStackIndex - 2],
+        this.transformStack[this.transformStackIndex - 1]
+      );
 
       continue;
     }
 
     if (type === 'translate') {
-      //matrix = new Float64Array(this.transformStack[this.transformStack.length - 1]);
-      cache = this.transformStack[this.transformStack.length - 1];
-      matrix = [
-        cache[0],
-        cache[1],
-        cache[2],
-        cache[3],
-        cache[4] + cache[0] * props.x + cache[2] * props.y,
-        cache[5] + cache[1] * props.x + cache[3] * props.y
-      ];
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
 
-      this.transformStack.push(matrix);
-      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
+
+      this.transformStack[this.transformStackIndex - 6] = matrix[0]; //a
+      this.transformStack[this.transformStackIndex - 5] = matrix[1]; //b
+      this.transformStack[this.transformStackIndex - 4] = matrix[2]; //c
+      this.transformStack[this.transformStackIndex - 3] = matrix[3]; //d
+      this.transformStack[this.transformStackIndex - 2] = matrix[4] + matrix[0] * props.x + matrix[2] * props.y; //e
+      this.transformStack[this.transformStackIndex - 1] = matrix[5] + matrix[1] * props.x + matrix[3] * props.y; //f
+
+      ctx.setTransform(
+        this.transformStack[this.transformStackIndex - 6],
+        this.transformStack[this.transformStackIndex - 5],
+        this.transformStack[this.transformStackIndex - 4],
+        this.transformStack[this.transformStackIndex - 3],
+        this.transformStack[this.transformStackIndex - 2],
+        this.transformStack[this.transformStackIndex - 1]
+      );
 
       continue;
     }
 
     if (type === 'rotate') {
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
       cosr = Math.cos(props.r);
       sinr = Math.sin(props.r);
 
-      cache = this.transformStack[this.transformStack.length - 1];
-      matrix = [
-        cache[0] * cosr + cache[2] * sinr,
-        cache[1] * cosr + cache[3] * sinr,
-        cache[0] * -sinr + cache[2] * cosr,
-        cache[1] * -sinr + cache[3] * cosr,
-        cache[4],
-        cache[5]
-      ];
-      this.transformStack.push(matrix);
-      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
+
+      this.transformStack[this.transformStackIndex - 6] =
+        matrix[0] * cosr + matrix[2] * sinr; //a
+      this.transformStack[this.transformStackIndex - 5] =
+        matrix[1] * cosr + matrix[3] * sinr; //b
+      this.transformStack[this.transformStackIndex - 4] =
+        matrix[0] * -sinr + matrix[2] * cosr; //c
+      this.transformStack[this.transformStackIndex - 3] =
+        matrix[1] * -sinr + matrix[3] * cosr; //d
+      this.transformStack[this.transformStackIndex - 2] = matrix[4]; //e
+      this.transformStack[this.transformStackIndex - 1] = matrix[5];//f
+
+      ctx.setTransform(
+        this.transformStack[this.transformStackIndex - 6],
+        this.transformStack[this.transformStackIndex - 5],
+        this.transformStack[this.transformStackIndex - 4],
+        this.transformStack[this.transformStackIndex - 3],
+        this.transformStack[this.transformStackIndex - 2],
+        this.transformStack[this.transformStackIndex - 1]
+      );
 
       continue;
     }
 
     if (type === 'restore') {
-      this.transformStack.pop();
-      matrix = this.transformStack[this.transformStack.length - 1];
+      this.transformStackIndex -= 6;
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
+
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
       continue;
@@ -2734,6 +2811,13 @@ Renderer.prototype.measureText = function measureText(font, text) {
   result = this.ctx.measureText(text);
   this.ctx.font = oldFont;
   return result;
+};
+
+Renderer.prototype.increaseTransformStackSize = function increaseTransformStackSize() {
+  var cache = this.transformStack;
+  this.transformStack = new Float64Array(this.transformStack.length + 600); //add 100 more
+  this.transformStack.set(cache);
+  return this;
 };
 
 Object.defineProperty(Renderer.prototype, 'height', {
