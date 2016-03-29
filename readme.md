@@ -103,6 +103,11 @@ I highly recommend using `webpack` or `browserify` in `node.js` to modularize yo
 
 That's it.
 
+
+### webpack-dev-server
+
+Please see [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html) for all your web development server needs.
+
 ### Browserify method
 
 `npm init`
@@ -131,10 +136,6 @@ In your `public/index.html` file:
 
 Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
 
-### webpack-dev-server
-
-Please see [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html) for all your web development server needs.
-
 # API
 
 ## Renderer.js
@@ -162,7 +163,7 @@ r.on('frame', function() {
 
 __mouse__
 
-This fires once per mouse event. This includes `mousedown`, `mouseup`, and `mousemove`.  Touch events are not supported yet and are targeted for the next release.
+This fires once per mouse event. This includes `mousedown`, `mouseup`, and `mousemove`.
 
 ```javascript
 r.on('mouse', function(mouseEventData) {
@@ -198,14 +199,27 @@ Listening to the event is optional, use `r.keyData[key]` to find out the current
 
 ### Prototype
 
-To render a set of commands, use the following syntax:
-
 __Renderer.prototype.render__
 
+This is the command that actually draws to the canvas.  Create some drawing instructions and pass them to this function.
+
 ```javascript
-r.render(
-  //comma seperated list of commands
-  //or use an array
+import { translate, fillText, clearRect, Renderer } from 'e2d';
+
+//create a draw command
+let helloWorld = translate(200, 200,
+  fillText("Hello World!")
+);
+
+//create a renderer
+let r = Renderer.create(400, 400);
+r.ready();
+r.on('frame',
+  //draw something
+  () => r.render(
+    clearRect(400, 400),
+    helloWorld
+  )
 );
 ```
 
@@ -268,17 +282,17 @@ __arc.js__
 
 Arcs have 5 forms:
 ```javascript
-var arc = e2d.arc;
+import { arc } from 'e2d';
 
-var fastestArc = arc(); //radius 1 and x, y is 0, 0
-var justRadius = arc(radius); //radius is set, x, y is 0
-var radiusWithXY = arc(x, y, radius); //radius is set, x, y is [x], [y]
+let fastestArc = arc(); //radius 1 and x, y is 0, 0
+let justRadius = arc(radius); //radius is set, x, y is 0
+let radiusWithXY = arc(x, y, radius); //radius is set, x, y is [x], [y]
 
 //radius is set, x, y is [x], [y] and it will start and end at the specified angles
-var radiusWithXYandAngles = arc(x, y, radius, startAngle, endAngle);
+let radiusWithXYandAngles = arc(x, y, radius, startAngle, endAngle);
 
 //see previous arc with anticlockwise direction
-var arcAntiClockwise = arc(x, y, radius, startAngle, endAngle, anticlockwise);
+let arcAntiClockwise = arc(x, y, radius, startAngle, endAngle, anticlockwise);
 ```
 
 __arcTo.js__
