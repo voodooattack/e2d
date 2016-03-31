@@ -2515,9 +2515,15 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'hitRegion') {
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
       cache = {
         id: props.id,
-        points: transformPoints(props.points, this.transformStack[this.transformStack.length - 1])
+        points: transformPoints(props.points, matrix)
       };
       this.mouseRegions.push(cache);
       this.touchRegions.push(cache);
@@ -2588,7 +2594,7 @@ Renderer.prototype.hookRender = function hookRender() {
     if (this.lastTouchEvent && !this.ranTouchEvent) {
       this.touchEvent(this.lastMouseEvent);
     }
-    //we are browser side, so this should fire the frame synchronously
+
     this.fireFrame();
 
   }
@@ -2658,6 +2664,7 @@ Renderer.prototype.touchEvent = function touchEvent(evt) {
 
 
   evt.preventDefault();
+  this.emit('touch', this.touchData);
   return false;
 };
 
@@ -2691,6 +2698,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
   this.mouseData.state = this.mouseState;
   this.mouseData.activeRegions = this.activeRegions;
 
+  this.emit('mouse', this.mouseData);
   //default event stuff
   evt.preventDefault();
   return false;
@@ -2728,6 +2736,7 @@ Renderer.prototype.hookKeyboardEvents = function hookKeyboardEvents() {
 };
 
 Renderer.prototype.keyChange = function keyChange(evt) {
+  this.emit('key', this.keyData);
   evt.preventDefault();
   return false;
 };

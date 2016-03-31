@@ -16,22 +16,27 @@ For example, all canvas instructions can be variables.  This speeds up execution
 let fillRed = e2d.fillStyle('red', e2d.fill());
 //fillRed: [Instruction[fillStyle=red], Instruction[fill], Instruction[endFillStyle]];
 
-let redHexagon = [
-  e2d.path( //beginPath()
-    //create a 6 sided polygon with radius 10 at [0,0]
-    e2d.createRegularPolygon(10, [0,0], 6)
-      //convenience function to map coordinates to ctx.moveTo, and ctx.lineTo
-      .map(e2d.moveToLineTo)
-  ),//closePath()
-  fillRed
-];
+//create a 6 sided polygon with radius 10 at [0,0]
+let hexagonShape = e2d.createRegularPolygon(10, [0,0], 6);
+//hexagonShape: [[x0,y0], [x1,y1], ...[x5,y5]]
+
+let hexagonPath = e2d.path( //beginPath()
+    //convenience function to map coordinates to ctx.moveTo, and ctx.lineTo
+    hexagonShape.map(e2d.moveToLineTo)
+); //closePath()
+//hexagonPath: [Instruction[beginPath], Array[Instruction], Instruction[closePath]]
+
+//combine the path and fill instructions in an array
+let redHexagon = [ hexagonPath, fillRed ];
 ```
 
 Mix and match different canvas commands to make code more expressive and easier to read.  For example, using the `redHexagon` variable in the above example to get started:
 
 ```javascript
 let width = 400, height = 400;
-let renderer = e2d.Renderer.create(width, height); //it appends to the document.body
+
+//it appends to the document.body inside a wrapper div
+let renderer = e2d.Renderer.create(width, height);
 
 renderer.ready(); //fires requestAnimationFrame events
 renderer.on('frame', function() {
