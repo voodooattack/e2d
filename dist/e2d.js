@@ -2515,12 +2515,12 @@ Renderer.prototype.render = function render(args) {
     }
 
     if (type === 'hitRegion') {
-      matrix[0] = this.transformStack[this.transformStackIndex - 6];
-      matrix[1] = this.transformStack[this.transformStackIndex - 5];
-      matrix[2] = this.transformStack[this.transformStackIndex - 4];
-      matrix[3] = this.transformStack[this.transformStackIndex - 3];
-      matrix[4] = this.transformStack[this.transformStackIndex - 2];
-      matrix[5] = this.transformStack[this.transformStackIndex - 1];
+      matrix[0] = this.transformStack[this.transformStackIndex];
+      matrix[1] = this.transformStack[this.transformStackIndex + 1];
+      matrix[2] = this.transformStack[this.transformStackIndex + 2];
+      matrix[3] = this.transformStack[this.transformStackIndex + 3];
+      matrix[4] = this.transformStack[this.transformStackIndex + 4];
+      matrix[5] = this.transformStack[this.transformStackIndex + 5];
       cache = {
         id: props.id,
         points: transformPoints(props.points, matrix)
