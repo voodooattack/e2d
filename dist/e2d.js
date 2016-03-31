@@ -2791,6 +2791,7 @@ Renderer.prototype.style = function style() {
   for (i = 0; i < styles.length; i++) {
     this.styleQueue.push(styles[i]);
   }
+  return this;
 };
 
 Renderer.prototype.applyStyles = function applyStyles() {
@@ -2804,6 +2805,7 @@ Renderer.prototype.applyStyles = function applyStyles() {
     }
   }
   this.styleQueue.splice(0, this.styleQueue.length);
+  return this;
 };
 
 Renderer.prototype.ready = function ready() {
