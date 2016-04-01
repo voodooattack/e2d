@@ -1060,7 +1060,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 
   //new state is down, last state is up
 
-  this.mouseData.clicked = this.mouseState === 'down' && this.mouseData.state === 'up';
+  this.mouseData.clicked = this.mouseData.clicked || this.mouseState === 'down' && this.mouseData.state === 'up';
 
   this.mouseData.state = this.mouseState;
   this.mouseData.activeRegions = this.activeRegions;
@@ -1125,6 +1125,7 @@ Renderer.prototype.fireFrame = function() {
   this.emit('frame', {});
   this.activeRegions.splice(0, this.activeRegions.length);
   this.ranMouseEvent = false;
+  this.mouseData.clicked = false;
   return this;
 };
 

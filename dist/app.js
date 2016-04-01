@@ -1,14 +1,4 @@
-(function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
-	else if(typeof define === 'function' && define.amd)
-		define([], factory);
-	else if(typeof exports === 'object')
-		exports["e2d"] = factory();
-	else
-		root["e2d"] = factory();
-})(this, function() {
-return /******/ (function(modules) { // webpackBootstrap
+/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -54,67 +44,26 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	//jshint node: true
-	'use strict';
+	var e2d = __webpack_require__(1);
 
-	module.exports = {
-	    addColorStop: __webpack_require__(1),
-	    arc: __webpack_require__(3),
-	    arcTo: __webpack_require__(4),
-	    beginPath: __webpack_require__(5),
-	    bezierCurveTo: __webpack_require__(6),
-	    Canvas: __webpack_require__(7),
-	    clearRect: __webpack_require__(21),
-	    clip: __webpack_require__(22),
-	    clipPath: __webpack_require__(23),
-	    closePath: __webpack_require__(24),
-	    createClass: __webpack_require__(25),
-	    createLinearGradient: __webpack_require__(9),
-	    createRadialGradient: __webpack_require__(10),
-	    createRegularPolygon : __webpack_require__(26),
-	    drawCanvas: __webpack_require__(27),
-	    drawImage: __webpack_require__(28),
-	    ellipse: __webpack_require__(29),
-	    fill: __webpack_require__(30),
-	    fillArc: __webpack_require__(31),
-	    fillCanvas: __webpack_require__(32),
-	    fillImage: __webpack_require__(33),
-	    fillImagePattern: __webpack_require__(34),
-	    fillRect: __webpack_require__(35),
-	    fillStyle: __webpack_require__(36),
-	    fillText: __webpack_require__(37),
-	    globalAlpha: __webpack_require__(38),
-	    globalCompositeOperation: __webpack_require__(39),
-	    hitRect: __webpack_require__(40),
-	    hitRegion: __webpack_require__(41),
-	    imageSmoothingEnabled: __webpack_require__(42),
-	    Img: __webpack_require__(19),
-	    Instruction: __webpack_require__(2),
-	    lineStyle: __webpack_require__(43),
-	    lineTo: __webpack_require__(44),
-	    moveTo: __webpack_require__(45),
-	    moveToLineTo: __webpack_require__(46),
-	    path: __webpack_require__(47),
-	    placeHolder: __webpack_require__(48),
-	    quadraticCurveTo: __webpack_require__(49),
-	    rect: __webpack_require__(50),
-	    Renderer: __webpack_require__(8),
-	    resetTransform: __webpack_require__(51),
-	    rotate: __webpack_require__(53),
-	    scale: __webpack_require__(54),
-	    setTransform: __webpack_require__(52),
-	    shadowStyle: __webpack_require__(55),
-	    stroke: __webpack_require__(56),
-	    strokeArc: __webpack_require__(57),
-	    strokeRect: __webpack_require__(58),
-	    strokeStyle: __webpack_require__(59),
-	    strokeText: __webpack_require__(60),
-	    text: __webpack_require__(61),
-	    textStyle: __webpack_require__(62),
-	    transform: __webpack_require__(63),
-	    transformPoints: __webpack_require__(17),
-	    translate: __webpack_require__(64)
-	};
+
+	var r = e2d.Renderer.create(400, 400);
+
+
+	r.ready();
+	r.on('frame', function() {
+
+	  return r.render(
+	    e2d.clearRect(400, 400),
+	    e2d.translate(100, 100,
+	      e2d.rotate(Math.PI / 3,
+	        e2d.scale(2, 1,
+	          e2d.fillArc(20)
+	        )
+	      )
+	    )
+	  );
+	});
 
 
 /***/ },
@@ -122,9 +71,76 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
+	'use strict';
+
+	module.exports = {
+	    addColorStop: __webpack_require__(2),
+	    arc: __webpack_require__(4),
+	    arcTo: __webpack_require__(5),
+	    beginPath: __webpack_require__(6),
+	    bezierCurveTo: __webpack_require__(7),
+	    Canvas: __webpack_require__(8),
+	    clearRect: __webpack_require__(22),
+	    clip: __webpack_require__(23),
+	    clipPath: __webpack_require__(24),
+	    closePath: __webpack_require__(25),
+	    createClass: __webpack_require__(26),
+	    createLinearGradient: __webpack_require__(10),
+	    createRadialGradient: __webpack_require__(11),
+	    createRegularPolygon : __webpack_require__(27),
+	    drawCanvas: __webpack_require__(28),
+	    drawImage: __webpack_require__(29),
+	    ellipse: __webpack_require__(30),
+	    fill: __webpack_require__(31),
+	    fillArc: __webpack_require__(32),
+	    fillCanvas: __webpack_require__(33),
+	    fillImage: __webpack_require__(34),
+	    fillImagePattern: __webpack_require__(35),
+	    fillRect: __webpack_require__(36),
+	    fillStyle: __webpack_require__(37),
+	    fillText: __webpack_require__(38),
+	    globalAlpha: __webpack_require__(39),
+	    globalCompositeOperation: __webpack_require__(40),
+	    hitRect: __webpack_require__(41),
+	    hitRegion: __webpack_require__(42),
+	    imageSmoothingEnabled: __webpack_require__(43),
+	    Img: __webpack_require__(20),
+	    Instruction: __webpack_require__(3),
+	    lineStyle: __webpack_require__(44),
+	    lineTo: __webpack_require__(45),
+	    moveTo: __webpack_require__(46),
+	    moveToLineTo: __webpack_require__(47),
+	    path: __webpack_require__(48),
+	    placeHolder: __webpack_require__(49),
+	    quadraticCurveTo: __webpack_require__(50),
+	    rect: __webpack_require__(51),
+	    Renderer: __webpack_require__(9),
+	    resetTransform: __webpack_require__(52),
+	    rotate: __webpack_require__(54),
+	    scale: __webpack_require__(55),
+	    setTransform: __webpack_require__(53),
+	    shadowStyle: __webpack_require__(56),
+	    stroke: __webpack_require__(57),
+	    strokeArc: __webpack_require__(58),
+	    strokeRect: __webpack_require__(59),
+	    strokeStyle: __webpack_require__(60),
+	    strokeText: __webpack_require__(61),
+	    text: __webpack_require__(62),
+	    textStyle: __webpack_require__(63),
+	    transform: __webpack_require__(64),
+	    transformPoints: __webpack_require__(18),
+	    translate: __webpack_require__(65)
+	};
+
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	//jshint node: true
 
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function addColorStop(offset, color) {
 	  return new Instruction('addColorStop', { offset: offset, color: color });
@@ -133,7 +149,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = addColorStop;
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports) {
 
 	//jshint node: true
@@ -150,12 +166,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Instruction;
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function arc(x, y, r, startAngle, endAngle, anticlockwise) {
 	  if (arguments.length > 5) {
@@ -177,12 +193,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = arc;
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function arcTo(x1, y1, x2, y2, r) {
 	  return new Instruction('arcTo', { x1: x1, y1: y1, x2: x2, y2: y2, r: r });
@@ -192,12 +208,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function beginPath() {
 	  return new Instruction('beginPath');
@@ -205,12 +221,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = beginPath;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
 	  return new Instruction('bezierCurveTo', {
@@ -226,7 +242,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = bezierCurveTo;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint worker: true, browser: true, node: true
@@ -234,7 +250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function Canvas(width, height) {
 
-	  var Renderer = __webpack_require__(8);
+	  var Renderer = __webpack_require__(9);
 	  this.renderer = new Renderer(width, height, window.document.createElement('div'));
 	  this.fillPattern = null;
 	  this.skipPatternCreation = false;
@@ -302,21 +318,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true, browser: true, worker: true
 	'use strict';
 
-	var createLinearGradient = __webpack_require__(9),
-	    createRadialGradient = __webpack_require__(10),
-	    events = __webpack_require__(11),
-	    util = __webpack_require__(12),
-	    keycode = __webpack_require__(16),
-	    transformPoints = __webpack_require__(17),
-	    pointInPolygon = __webpack_require__(18),
+	var createLinearGradient = __webpack_require__(10),
+	    createRadialGradient = __webpack_require__(11),
+	    events = __webpack_require__(12),
+	    util = __webpack_require__(13),
+	    keycode = __webpack_require__(17),
+	    transformPoints = __webpack_require__(18),
+	    pointInPolygon = __webpack_require__(19),
 	    identity = [1, 0, 0, 1, 0, 0],
-	    Img = __webpack_require__(19);
+	    Img = __webpack_require__(20);
 
 	util.inherits(Renderer, events.EventEmitter);
 
@@ -1249,7 +1265,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	Renderer.prototype.toImage = function toImage() {
-	  var Img = __webpack_require__(19);
+	  var Img = __webpack_require__(20);
 	  var img = new Img();
 	  img.src = this.canvas.toDataURL('image/png');
 	  return img;
@@ -1526,7 +1542,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	//jshint node: true, browser: true, worker: true
@@ -1547,7 +1563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	//jshint node: true, browser: true, worker: true
@@ -1567,7 +1583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -1874,7 +1890,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2402,7 +2418,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(14);
+	exports.isBuffer = __webpack_require__(15);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2446,7 +2462,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(15);
+	exports.inherits = __webpack_require__(16);
 
 	exports._extend = function(origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2464,10 +2480,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(13)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(14)))
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -2564,7 +2580,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	module.exports = function isBuffer(arg) {
@@ -2575,7 +2591,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -2604,7 +2620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	// Source: http://jsfiddle.net/vWx8V/
@@ -2757,7 +2773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	//jshint node: true
@@ -2781,7 +2797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = transformPoints;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	module.exports = function (point, vs) {
@@ -2805,15 +2821,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true, browser: true, worker: true
 	'use strict';
 
-	var path = __webpack_require__(20),
-	    events = __webpack_require__(11),
-	    util = __webpack_require__(12);
+	var path = __webpack_require__(21),
+	    events = __webpack_require__(12),
+	    util = __webpack_require__(13);
 
 	util.inherits(Img, events.EventEmitter);
 
@@ -2879,7 +2895,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -3107,15 +3123,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillRect(x, y, width, height) {
 	  if (arguments.length > 2) {
@@ -3128,13 +3144,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = fillRect;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
 
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function clip(path, children) {
 	  var result = [new Instruction('beginClip'), path, new Instruction('clip')];
@@ -3151,12 +3167,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function clipPath() {
 	  return new Instruction('clipPath');
@@ -3164,12 +3180,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = clipPath;
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function closePath() {
 	  return new Instruction('closePath');
@@ -3177,7 +3193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = closePath;
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3217,7 +3233,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3241,12 +3257,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function drawCanvas(canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 	  if (arguments.length === 9) {
@@ -3292,12 +3308,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 	  if (arguments.length === 9) {
@@ -3343,12 +3359,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
 	  if (arguments.length > 7) {
@@ -3370,12 +3386,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ellipse;
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fill() {
 	  return new Instruction('fill');
@@ -3384,12 +3400,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = fill;
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2),
+	var Instruction = __webpack_require__(3),
 	    pi2 = Math.PI * 2;
 
 	function fillArc(x, y, r, startAngle, endAngle, counterclockwise) {
@@ -3409,12 +3425,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = fillArc;
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 	  if (arguments.length === 9) {
@@ -3460,12 +3476,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
 	  if (arguments.length === 9) {
@@ -3511,12 +3527,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillImagePattern(img, dx, dy, dWidth, dHeight) {
 	  if (arguments.length >= 5) {
@@ -3552,12 +3568,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillRect(x, y, width, height) {
 	  if (arguments.length >= 4) {
@@ -3570,12 +3586,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = fillRect;
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillStyle(value, children) {
 	  var result = [new Instruction('fillStyle', { value: value })];
@@ -3591,10 +3607,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	module.exports = function fillText(text, x, y, maxWidth) {
 	  if (arguments.length < 4) {
@@ -3614,12 +3630,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function globalAlpha(alpha, children) {
 	  var result = [new Instruction('globalAlpha', { value: alpha })];
@@ -3633,12 +3649,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = globalAlpha;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function globalCompositeOperation(operationType, children) {
 	  var result = [new Instruction('globalCompositeOperation', { value: operationType })];
@@ -3656,13 +3672,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = globalCompositeOperation;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2),
-	    hitRegion = __webpack_require__(41);
+	var Instruction = __webpack_require__(3),
+	    hitRegion = __webpack_require__(42);
 
 
 	function hitRect(id, x, y, width, height) {
@@ -3686,12 +3702,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = hitRect;
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 
 	function hitRegion(id, points) {
@@ -3704,11 +3720,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = hitRegion;
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	module.exports = function imageSmoothingEnabled(val, children) {
 	  children = [];
@@ -3720,12 +3736,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function lineStyle(value, children) {
 	  
@@ -3768,12 +3784,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = lineStyle;
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function lineTo(x, y) {
 	  if (arguments.length === 0) {
@@ -3785,12 +3801,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = lineTo;
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function moveTo(x, y) {
 	  if (arguments.length === 0) {
@@ -3802,11 +3818,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = moveTo;
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var moveTo = __webpack_require__(45), lineTo = __webpack_require__(44);
+	var moveTo = __webpack_require__(46), lineTo = __webpack_require__(45);
 	function moveToLineTo(point, index) {
 	  return index === 0 ? moveTo(point[0], point[1]) : lineTo(point[0], point[1]);
 	}
@@ -3815,14 +3831,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
 
-	var beginPath = __webpack_require__(5),
-	    closePath = __webpack_require__(24);
+	var beginPath = __webpack_require__(6),
+	    closePath = __webpack_require__(25);
 
 	function path(children) {
 	  var result = [beginPath()];
@@ -3836,23 +3852,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = path;
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 	module.exports = function placeHolder() {
 	  return new Instruction('placeholder');
 	};
 
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function quadraticCurveTo(cpx, cpy, x, y) {
 	  return new Instruction('quadraticCurveTo', {
@@ -3866,12 +3882,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = quadraticCurveTo;
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function rect(x, y, width, height) {
 	  if (arguments.length > 2) {
@@ -3884,11 +3900,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = rect;
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var setTransform = __webpack_require__(52);
+	var setTransform = __webpack_require__(53);
 
 	module.exports = function resetTransform() {
 	  var args = [];
@@ -3900,11 +3916,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	module.exports = function(matrix, children) {
 
@@ -3925,12 +3941,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function rotate(r, children) {
 	  r = +r;
@@ -3945,12 +3961,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = rotate;
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function scale(x, y, children) {
 	  var i = 2;
@@ -3972,12 +3988,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = scale;
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function shadowStyle(value, children) {
 	  value = value || {};
@@ -4013,12 +4029,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = shadowStyle;
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function stroke() {
 	  return new Instruction('stroke');
@@ -4027,12 +4043,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = stroke;
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2),
+	var Instruction = __webpack_require__(3),
 	    pi2 = Math.PI * 2;
 
 	function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
@@ -4051,12 +4067,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = strokeArc;
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function strokeRect(x, y, width, height) {
 	  if (arguments.length > 2) {
@@ -4069,12 +4085,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = strokeRect;
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function fillStyle(value, children) {
 	  var result = [ new Instruction('strokeStyle', { value: value }) ];
@@ -4089,10 +4105,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	module.exports = function strokeText(text, x, y, maxWidth) {
 	  if (arguments.length < 4) {
@@ -4112,12 +4128,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 	function text(str, x, y, fill, stroke, maxWidth) {
 	  if (arguments.length === 6) {
 	    return new Instruction('text', {
@@ -4175,12 +4191,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = text;
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function textStyle(value, children) {
 	  value = value || {};
@@ -4214,12 +4230,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = textStyle;
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function transform(values, children) {
 
@@ -4246,12 +4262,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//jshint node: true
 	'use strict';
-	var Instruction = __webpack_require__(2);
+	var Instruction = __webpack_require__(3);
 
 	function translate(x, y, children) {
 	  
@@ -4273,6 +4289,4 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = translate;
 
 /***/ }
-/******/ ])
-});
-;
+/******/ ]);

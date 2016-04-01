@@ -1,8 +1,8 @@
 {
   "name": "e2d",
   "main": "dist/e2d.min.js",
-  "version": "3.2.1",
   "homepage": "https://github.com/jtenner/e2d",
+  "version": "3.2.1",
   "authors": [
     "jtenner <tenner.joshua@gmail.com>"
   ],
