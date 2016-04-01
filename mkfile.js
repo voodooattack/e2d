@@ -74,3 +74,4 @@ let parseArgs = () => {
 };
 
 var args = parseArgs();
+console.log(args);
