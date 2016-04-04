@@ -34,17 +34,17 @@ if (cli.input[0] === 'tag') {
   args.message = rs.question('Commit Message? ');
 }
 export const tag = () => [
+    `mk clean`,
+    `mk build`,
     `echo Version set to ${args.version}`,
     `json -I -f package.json -e "this.version='${args.version}'"`,
     `json -I -f bower.json -e "this.version='${args.version}'"`,
     `echo Tagging v${args.version}`,
-    `mk clean`,
-    `mk build`,
-    `mk commit ${args.message}`,
+    `git add .`,
+    `git commit -am "${args.message}"`,
     `git tag -a v${args.version} -m ${args.message}`,
     `git push origin master --tags`
 ].map(execMap);
-
 
 export const push = () => [
   `echo Pushing`,
