@@ -9,11 +9,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "browserify-middleware": "^7.0.0",
-    "crel": "^2.1.8",
-    "express": "^4.13.1",
     "jasmine": "^2.3.2",
-    "mocha": "^2.3.3"
+    "mocha": "^2.3.3",
+    "prompt": "^1.0.0",
+    "readline-sync": "^1.4.1"
   },
   "dependencies": {
     "keycode": "^2.1.0",

@@ -1,36 +1,42 @@
 let execMap = (command) => exec(command);
-let runMap = function(command) {
-  return this.run(command);
-};
 
+import rs from 'readline-sync';
+
+let args = { message: '', version: '' };
 
 export const setup = () => [
-  "npm install",
-  "npm install -g webpack uglifyjs json webpack-dev-server"
+  `npm install`,
+  `npm install -g webpack uglifyjs json webpack-dev-server`
 ].map(execMap);
 
 export const minify = () => [
-  "uglifyjs dist/e2d.js > dist/e2d.min.js"
+  `uglifyjs dist/e2d.js > dist/e2d.min.js`
 ].map(execMap);
 
 export function clean() {
   this.fs.delete('./dist');
 }
-
-export const build = () => ['webpack'].map(execMap);
-
+export const build = () => [
+  `mk clean`,
+  `webpack`
+].map(execMap);
+console.log(cli.input);
+if (cli.input[0] === 'commit') {
+  args.message = rs.question('Commit Message? ');
+}
 export const commit = () => [
   `git add .`,
   `git commit -am "${args.message}"`
 ].map(execMap);
 
-export const version = () => [
+if (cli.input[0] === 'tag') {
+  args.version = rs.question('Commit Version? ');
+  args.message = rs.question('Commit Message? ');
+}
+export const tag = () => [
     `echo Version set to ${args.version}`,
     `json -I -f package.json -e "this.version='${args.version}'"`,
-    `json -I -f bower.json -e "this.version='${args.version}'"`
-].map(execMap);
-
-export const tag = () => [
+    `json -I -f bower.json -e "this.version='${args.version}'"`,
     `echo Tagging v${args.version}`,
     `mk clean`,
     `mk build`,
@@ -39,39 +45,16 @@ export const tag = () => [
     `git push origin master --tags`
 ].map(execMap);
 
+
 export const push = () => [
-  `mk commit -am ${args.message}`,
+  `echo Pushing`,
   `git push origin master`
 ].map(execMap);
 
-export const devServer = () => ['webpack-dev-server'].map(execMap);
+export const watch = () => [
+  `webpack-dev-server --config webpack-dev-server.config.js --progress --colors --content-base public/ --inline --open`
+].map(execMap);
 
 export default function () {
-  return ['setup', 'clean', 'build','devServer'].map(runMap);
+  return ['mk setup', 'mk clean', 'mk build', 'mk watch'].map(execMap);
 }
-
-let parseArgs = () => {
-  let versionRegex = /\d+\.\d+\.\d+/;
-  let versionVal = "";
-
-  let messageRegex = /\".*\"/;
-  let message = "";
-
-
-  for (let arg of cli.input) {
-
-      if (versionRegex.test(arg)) {
-        versionVal = arg;
-      }
-      if (!versionRegex.test(arg) && !exports.hasOwnProperty(arg)) {
-        message = arg;
-      }
-  }
-  return {
-    message,
-    version: versionVal
-  };
-};
-
-var args = parseArgs();
-console.log(args);
