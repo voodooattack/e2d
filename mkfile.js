@@ -1,7 +1,5 @@
 let execMap = (command) => exec(command);
 
-import rs from 'readline-sync';
-
 let args = { message: '', version: '' };
 
 export const setup = () => [
@@ -13,15 +11,25 @@ export const minify = () => [
   `uglifyjs dist/e2d.js > dist/e2d.min.js`
 ].map(execMap);
 
-export function clean() {
-  this.fs.delete('./dist');
-}
+export const clean = () => (process.platform.indexOf('win') === 0 ?
+  //windows
+  [
+    `rm dist -r`,
+    `rm node_modules -r`
+  ] :
+  //*nix
+  [
+    `rm -rf dist`,
+    `rm -rf node_modules`
+  ]
+).map(execMap);
+
 export const build = () => [
-  `mk clean`,
-  `webpack`
+  `webpack --progress --colors --config webpack.config.js`
 ].map(execMap);
-console.log(cli.input);
+
 if (cli.input[0] === 'commit') {
+  let rs = require('readline-sync');
   args.message = rs.question('Commit Message? ');
 }
 export const commit = () => [
@@ -30,6 +38,7 @@ export const commit = () => [
 ].map(execMap);
 
 if (cli.input[0] === 'tag') {
+  let rs = require('readline-sync');
   args.version = rs.question('Commit Version? ');
   args.message = rs.question('Commit Message? ');
 }
@@ -56,5 +65,5 @@ export const watch = () => [
 ].map(execMap);
 
 export default function () {
-  return ['mk setup', 'mk clean', 'mk build', 'mk watch'].map(execMap);
+  return ['mk clean', 'mk setup', 'mk build', 'mk watch'].map(execMap);
 }
