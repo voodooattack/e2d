@@ -40,33 +40,17 @@
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 0:
+/******/ ([
+/* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ctx = __webpack_require__(66);
+	var ctx = !(function webpackMissingModule() { var e = new Error("Cannot find module \"./test/\""); e.code = 'MODULE_NOT_FOUND'; throw e; }());
 
 	ctx.keys().forEach(function(key) {
 	  ctx(key);
 	});
 
 
-/***/ },
-
-/***/ 66:
-/***/ function(module, exports) {
-
-	function webpackContext(req) {
-		throw new Error("Cannot find module '" + req + "'.");
-	}
-	webpackContext.keys = function() { return []; };
-	webpackContext.resolve = webpackContext;
-	module.exports = webpackContext;
-	webpackContext.id = 66;
-
-
 /***/ }
-
-/******/ });
+/******/ ]);

@@ -2626,8 +2626,6 @@
 	// Source: http://jsfiddle.net/vWx8V/
 	// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
-
-
 	/**
 	 * Conenience method returns corresponding value for given keyName or keyCode.
 	 *
@@ -2711,7 +2709,7 @@
 	  '[': 219,
 	  '\\': 220,
 	  ']': 221,
-	  "'": 222,
+	  "'": 222
 	}
 
 	// Helper aliases

@@ -109,8 +109,6 @@ Renderer.prototype.render = function render(args) {
       type,
       cache,
       matrix = [1, 0, 0, 1, 0, 0],
-      sinr,
-      cosr,
       ctx = this.ctx,
       children = [],
       concat = children.concat;
@@ -280,8 +278,6 @@ Renderer.prototype.render = function render(args) {
       matrix[3] = this.transformStack[this.transformStackIndex - 3];
       matrix[4] = this.transformStack[this.transformStackIndex - 2];
       matrix[5] = this.transformStack[this.transformStackIndex - 1];
-      cosr = Math.cos(props.r);
-      sinr = Math.sin(props.r);
 
       this.transformStackIndex += 6;
       if (this.transformStackIndex > this.transformStack.length) {
@@ -289,15 +285,93 @@ Renderer.prototype.render = function render(args) {
       }
 
       this.transformStack[this.transformStackIndex - 6] =
-        matrix[0] * cosr + matrix[2] * sinr; //a
+        matrix[0] * props.cos + matrix[2] * props.sin; //a
       this.transformStack[this.transformStackIndex - 5] =
-        matrix[1] * cosr + matrix[3] * sinr; //b
+        matrix[1] * props.cos + matrix[3] * props.sin; //b
       this.transformStack[this.transformStackIndex - 4] =
-        matrix[0] * -sinr + matrix[2] * cosr; //c
+        matrix[0] * -props.sin + matrix[2] * props.cos; //c
       this.transformStack[this.transformStackIndex - 3] =
-        matrix[1] * -sinr + matrix[3] * cosr; //d
+        matrix[1] * -props.sin + matrix[3] * props.cos; //d
       this.transformStack[this.transformStackIndex - 2] = matrix[4]; //e
       this.transformStack[this.transformStackIndex - 1] = matrix[5];//f
+
+      ctx.setTransform(
+        this.transformStack[this.transformStackIndex - 6],
+        this.transformStack[this.transformStackIndex - 5],
+        this.transformStack[this.transformStackIndex - 4],
+        this.transformStack[this.transformStackIndex - 3],
+        this.transformStack[this.transformStackIndex - 2],
+        this.transformStack[this.transformStackIndex - 1]
+      );
+
+      continue;
+    }
+
+    if (type === 'skewX') {
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
+
+
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
+
+      this.transformStack[this.transformStackIndex - 6] = //d
+        matrix[0];
+      this.transformStack[this.transformStackIndex - 5] = //b
+        matrix[1];
+      this.transformStack[this.transformStackIndex - 4] = //c
+        matrix[0] * props.x + matrix[2];
+      this.transformStack[this.transformStackIndex - 3] = //d
+        matrix[1] * props.x + matrix[3];
+      this.transformStack[this.transformStackIndex - 2] = //e
+        matrix[4];
+      this.transformStack[this.transformStackIndex - 1] = //f
+        matrix[5];
+
+      ctx.setTransform(
+        this.transformStack[this.transformStackIndex - 6],
+        this.transformStack[this.transformStackIndex - 5],
+        this.transformStack[this.transformStackIndex - 4],
+        this.transformStack[this.transformStackIndex - 3],
+        this.transformStack[this.transformStackIndex - 2],
+        this.transformStack[this.transformStackIndex - 1]
+      );
+
+      continue;
+    }
+
+    if (type === 'skewY') {
+      matrix[0] = this.transformStack[this.transformStackIndex - 6];
+      matrix[1] = this.transformStack[this.transformStackIndex - 5];
+      matrix[2] = this.transformStack[this.transformStackIndex - 4];
+      matrix[3] = this.transformStack[this.transformStackIndex - 3];
+      matrix[4] = this.transformStack[this.transformStackIndex - 2];
+      matrix[5] = this.transformStack[this.transformStackIndex - 1];
+
+
+      this.transformStackIndex += 6;
+      if (this.transformStackIndex > this.transformStack.length) {
+        this.increaseTransformStackSize();
+      }
+
+      this.transformStack[this.transformStackIndex - 6] = //d
+        matrix[0] * 1 + matrix[2] * props.y;
+      this.transformStack[this.transformStackIndex - 5] = //b
+        matrix[1] * 1 + matrix[3] * props.y;
+      this.transformStack[this.transformStackIndex - 4] = //c
+        matrix[2];
+      this.transformStack[this.transformStackIndex - 3] = //d
+        matrix[3];
+      this.transformStack[this.transformStackIndex - 2] = //e
+        matrix[4];
+      this.transformStack[this.transformStackIndex - 1] = //f
+        matrix[5];
 
       ctx.setTransform(
         this.transformStack[this.transformStackIndex - 6],

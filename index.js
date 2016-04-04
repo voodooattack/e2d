@@ -1,61 +1,10 @@
 //jshint node: true
 'use strict';
 
-module.exports = {
-    addColorStop: require('./src/addColorStop'),
-    arc: require('./src/arc'),
-    arcTo: require('./src/arcTo'),
-    beginPath: require('./src/beginPath'),
-    bezierCurveTo: require('./src/bezierCurveTo'),
-    Canvas: require('./src/Canvas'),
-    clearRect: require('./src/clearRect'),
-    clip: require('./src/clip'),
-    clipPath: require('./src/clipPath'),
-    closePath: require('./src/closePath'),
-    createClass: require('./src/createClass'),
-    createLinearGradient: require('./src/createLinearGradient'),
-    createRadialGradient: require('./src/createRadialGradient'),
-    createRegularPolygon : require('./src/createRegularPolygon'),
-    drawCanvas: require('./src/drawCanvas'),
-    drawImage: require('./src/drawImage'),
-    ellipse: require('./src/ellipse'),
-    fill: require('./src/fill'),
-    fillArc: require('./src/fillArc'),
-    fillCanvas: require('./src/fillCanvas'),
-    fillImage: require('./src/fillImage'),
-    fillImagePattern: require('./src/fillImagePattern'),
-    fillRect: require('./src/fillRect'),
-    fillStyle: require('./src/fillStyle'),
-    fillText: require('./src/fillText'),
-    globalAlpha: require('./src/globalAlpha'),
-    globalCompositeOperation: require('./src/globalCompositeOperation'),
-    hitRect: require('./src/hitRect'),
-    hitRegion: require('./src/hitRegion'),
-    imageSmoothingEnabled: require('./src/imageSmoothingEnabled'),
-    Img: require('./src/Img'),
-    Instruction: require('./src/Instruction'),
-    lineStyle: require('./src/lineStyle'),
-    lineTo: require('./src/lineTo'),
-    moveTo: require('./src/moveTo'),
-    moveToLineTo: require('./src/moveToLineTo'),
-    path: require('./src/path'),
-    placeHolder: require('./src/placeHolder'),
-    quadraticCurveTo: require('./src/quadraticCurveTo'),
-    rect: require('./src/rect'),
-    Renderer: require('./src/Renderer'),
-    resetTransform: require('./src/resetTransform'),
-    rotate: require('./src/rotate'),
-    scale: require('./src/scale'),
-    setTransform: require('./src/setTransform'),
-    shadowStyle: require('./src/shadowStyle'),
-    stroke: require('./src/stroke'),
-    strokeArc: require('./src/strokeArc'),
-    strokeRect: require('./src/strokeRect'),
-    strokeStyle: require('./src/strokeStyle'),
-    strokeText: require('./src/strokeText'),
-    text: require('./src/text'),
-    textStyle: require('./src/textStyle'),
-    transform: require('./src/transform'),
-    transformPoints: require('./src/transformPoints'),
-    translate: require('./src/translate')
-};
+var src = require.context('./src', true, /\.js$/i),
+  path = require('path');
+
+module.exports = src.keys().reduce(function(index, key) {
+  index[path.basename(key, path.extname(key))] = src(key);
+  return index;
+}, {});
