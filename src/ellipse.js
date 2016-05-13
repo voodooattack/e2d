@@ -1,4 +1,3 @@
-//jshint node: true
 'use strict';
 var Instruction = require('./Instruction');
 
@@ -6,7 +5,7 @@ function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlo
   if (arguments.length > 7) {
     return new Instruction(anticlockwise ? 'anticlockwise-ellipse' : 'ellipse', { x: x, y: y, radiusX: radiusX, radiusY: radiusY, startAngle: startAngle, endAngle: endAngle });
   }
-  
+
   if (arguments.length === 7) {
     return new Instruction('ellipse', { x: x, y: y, radiusX: radiusX, radiusY: radiusY, rotation: rotation, startAngle: startAngle, endAngle: endAngle });
   }

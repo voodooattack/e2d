@@ -1,5 +1,5 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function globalCompositeOperation(operationType, children) {
@@ -7,7 +7,7 @@ function globalCompositeOperation(operationType, children) {
   if (arguments.length === 0) {
     return [];
   }
-  
+
   for (var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }

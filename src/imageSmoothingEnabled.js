@@ -1,4 +1,5 @@
 'use strict';
+
 var Instruction = require('./Instruction');
 
 module.exports = function imageSmoothingEnabled(val, children) {

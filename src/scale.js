@@ -1,5 +1,5 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function scale(x, y, children) {
@@ -9,7 +9,7 @@ function scale(x, y, children) {
     i = 1;
   }
   children = children || [];
-  
+
   var result = [new Instruction('scale', { x: x, y: y })],
       child;
   for (; i < arguments.length; i++) {

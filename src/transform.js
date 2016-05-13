@@ -1,9 +1,8 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function transform(values, children) {
-
   var transformResult = [
     new Instruction('transform',[
       values[0],
@@ -14,7 +13,7 @@ function transform(values, children) {
       values[5]
     ])
   ];
-  for(var i = 1, len = arguments.length; i < len; i++) {
+  for(var i = 1; i < arguments.length; i++) {
     transformResult.push(arguments[i]);
   }
   transformResult.push(new Instruction('restore'));

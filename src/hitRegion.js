@@ -1,7 +1,6 @@
-//jshint node: true
 'use strict';
-var Instruction = require('./Instruction');
 
+var Instruction = require('./Instruction');
 
 function hitRegion(id, points) {
   return new Instruction('hitRegion', {

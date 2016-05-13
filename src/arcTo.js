@@ -1,5 +1,5 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function arcTo(x1, y1, x2, y2, r) {

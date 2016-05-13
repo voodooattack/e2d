@@ -1,6 +1,7 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
+
 function text(str, x, y, fill, stroke, maxWidth) {
   if (arguments.length === 6) {
     return new Instruction('text', {
@@ -22,7 +23,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
       maxWidth: 0
     });
   }
-  
+
   if (arguments.length === 4) {
     return new Instruction('text', {
       x: x,
@@ -33,7 +34,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
       maxWidth: 0
     });
   }
-  
+
   if (arguments.length === 3) {
     return new Instruction('text', {
       x: x,
@@ -44,7 +45,7 @@ function text(str, x, y, fill, stroke, maxWidth) {
       maxWidth: 0
     });
   }
-  
+
   return new Instruction('text', {
     x: 0,
     y: 0,

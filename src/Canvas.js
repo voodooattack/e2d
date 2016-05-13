@@ -1,4 +1,3 @@
-//jshint worker: true, browser: true, node: true
 'use strict';
 
 function Canvas(width, height) {

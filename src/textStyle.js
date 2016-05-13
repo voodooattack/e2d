@@ -1,5 +1,5 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function textStyle(value, children) {
@@ -10,18 +10,18 @@ function textStyle(value, children) {
     textBaseline: null,
     direction: null
   };
-  
+
   if (typeof value.font !== 'undefined') {
-    result.font = value.font; 
+    result.font = value.font;
   }
   if (typeof value.textAlign !== 'undefined') {
-    result.textAlign = value.textAlign; 
+    result.textAlign = value.textAlign;
   }
   if (typeof value.textBaseline !== 'undefined') {
-    result.textBaseline = value.textBaseline; 
+    result.textBaseline = value.textBaseline;
   }
   if (typeof value.direction !== 'undefined') {
-    result.direction = value.direction; 
+    result.direction = value.direction;
   }
   var tree = [new Instruction('textStyle', value)];
   for(var i = 1; i < arguments.length; i++) {

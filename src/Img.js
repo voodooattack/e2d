@@ -1,19 +1,18 @@
-//jshint node: true, browser: true, worker: true
 'use strict';
 
 var path = require('path'),
-    events = require('events'),
-    util = require('util');
-
-util.inherits(Img, events.EventEmitter);
+    events = require('events');
 
 function Img() {
   events.EventEmitter.call(this);
   this.imageElement = null;
   this.imagePattern = null;
   this.imagePatternRepeat = null;
-  Object.seal(this);
+
+  return Object.seal(this);
 }
+
+Img.prototype = Object.create(events.EventEmitter.prototype);
 
 Object.defineProperty(Img.prototype, 'src', {
   set: function(val) {

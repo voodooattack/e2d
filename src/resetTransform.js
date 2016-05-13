@@ -1,4 +1,5 @@
 'use strict';
+
 var setTransform = require('./setTransform');
 
 module.exports = function resetTransform() {

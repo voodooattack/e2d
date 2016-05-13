@@ -1,9 +1,9 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function lineStyle(value, children) {
-  
+
   value = value || {};
   var result = {
     lineWidth: null,
@@ -13,7 +13,7 @@ function lineStyle(value, children) {
     lineDash: [],
     lineDashOffset: null
   };
-  
+
   if (typeof value.lineWidth !== 'undefined') {
     result.lineWidth = value.lineWidth;
   }

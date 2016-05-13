@@ -1,6 +1,8 @@
+'use strict';
+
 var Instruction = require('./Instruction');
 
-module.exports = function strokeText(text, x, y, maxWidth) {
+function strokeText(text, x, y, maxWidth) {
   if (arguments.length < 4) {
     maxWidth = null;
   }
@@ -15,3 +17,5 @@ module.exports = function strokeText(text, x, y, maxWidth) {
     maxWidth: maxWidth
   });
 };
+
+module.exports = strokeText;

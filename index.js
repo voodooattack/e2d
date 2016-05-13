@@ -1,4 +1,3 @@
-//jshint node: true
 'use strict';
 
 var src = require.context('./src', true, /\.js$/i),

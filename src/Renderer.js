@@ -1,17 +1,13 @@
-//jshint node: true, browser: true, worker: true
 'use strict';
 
 var createLinearGradient = require('./createLinearGradient'),
     createRadialGradient = require('./createRadialGradient'),
     events = require('events'),
-    util = require('util'),
     keycode = require('keycode'),
     transformPoints = require('./transformPoints'),
     pointInPolygon = require('point-in-polygon'),
     identity = [1, 0, 0, 1, 0, 0],
     Img = require('./Img');
-
-util.inherits(Renderer, events.EventEmitter);
 
 function Renderer(width, height, parent, opts) {
   events.EventEmitter.call(this);
@@ -36,14 +32,21 @@ function Renderer(width, height, parent, opts) {
   this.pi2 = Math.PI * 2;
 
   this.isReady = false;
-  this.mouseState = 'up';
   this.mouseData = {
     x: 0,
     y: 0,
-    state: this.mouseState,
-    clicked: false,
+    state: 'up',
+    clicked: 0,
     activeRegions: []
   };
+  this.previousMouseData = {
+    x: 0,
+    y: 0,
+    state: 'up',
+    clicked: 0,
+    activeRegions: []
+  };
+
   this.lastMouseEvent = null;
   this.ranMouseEvent = false;
   this.mouseRegions = [];
@@ -98,8 +101,10 @@ function Renderer(width, height, parent, opts) {
   this.hookTouchEvents();
 
   this.boundHookRenderFunction = this.hookRender.bind(this);
-  Object.seal(this);
+  return Object.seal(this);
 }
+
+Renderer.prototype = Object.create(events.EventEmitter.prototype);
 
 Renderer.prototype.render = function render(args) {
   var i,
@@ -1027,20 +1032,25 @@ Renderer.prototype.hookRender = function hookRender() {
 
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
-    //fire the mouse event again if it wasn't run
-    if (this.lastMouseEvent && !this.ranMouseEvent) {
-      this.mouseMove(this.lastMouseEvent);
-    }
 
-    if (this.lastTouchEvent && !this.ranTouchEvent) {
-      this.touchEvent(this.lastMouseEvent);
-    }
 
     this.fireFrame();
-
   }
 
   return window.requestAnimationFrame(this.boundHookRenderFunction);
+};
+
+
+Renderer.prototype.cleanupMouseEvents = function cleanupMouseEvents() {
+  this.previousMouseData.x = this.mouseData.x;
+  this.previousMouseData.y = this.mouseData.y;
+  this.previousMouseData.state = this.mouseData.state;
+  this.previousMouseData.clicked = this.mouseData.clicked;
+  //copy the only active regions
+  this.previousMouseData.activeRegions =
+    this.mouseData.activeRegions.splice(0, this.mouseData.activeRegions.length);
+  this.mouseData.clicked = 0;
+  this.ranMouseEvent = false;
 };
 
 Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
@@ -1048,7 +1058,7 @@ Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
   window.document.addEventListener('mousemove', this.mouseMove.bind(this));
 
   //only report mousedown on canvas
-  this.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
+  window.document.addEventListener('mousedown', this.mouseDown.bind(this));
 
   //mouse up can happen anywhere
   return window.document.addEventListener('mouseup', this.mouseUp.bind(this));
@@ -1123,7 +1133,7 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
   for(var i = 0; i < this.mouseRegions.length; i++) {
     region = this.mouseRegions[i];
     if (pointInPolygon(mousePoint, region.points)) {
-      this.activeRegions.push(region.id);
+      this.mouseData.activeRegions.push(region.id);
       this.mouseRegions.splice(this.mouseRegions.indexOf(region), 1);
       i -= 1;
     }
@@ -1131,13 +1141,6 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 
   this.mouseData.x = mousePoint[0];
   this.mouseData.y = mousePoint[1];
-
-  //new state is down, last state is up
-
-  this.mouseData.clicked = this.mouseData.clicked || this.mouseState === 'down' && this.mouseData.state === 'up';
-
-  this.mouseData.state = this.mouseState;
-  this.mouseData.activeRegions = this.activeRegions;
 
   this.emit('mouse', this.mouseData);
   //default event stuff
@@ -1147,15 +1150,20 @@ Renderer.prototype.mouseMove = function mouseMove(evt) {
 
 Renderer.prototype.mouseDown = function mouseMove(evt) {
   //set the mouseState down
-  this.mouseState = 'down';
-  this.canvas.focus();
-  //defer to mouseMove
-  return this.mouseMove(evt);
+  if (evt.target === this.canvas) {
+    if (this.mouseData.state === 'up') {
+      this.mouseData.clicked += 1;
+    }
+    this.mouseData.state = 'down';
+    this.canvas.focus();
+    //defer to mouseMove
+    return this.mouseMove(evt);
+  }
 };
 
 Renderer.prototype.mouseUp = function mouseMove(evt) {
   //set the mouse state
-  this.mouseState = 'up';
+  this.mouseData.state = 'up';
   //defer to mouse move
   return this.mouseMove(evt);
 };
@@ -1193,13 +1201,22 @@ Renderer.prototype.keyUp = function keyUp(evt) {
 };
 
 Renderer.prototype.fireFrame = function() {
+  //fire the mouse event again if it wasn't run
+  if (this.lastMouseEvent && !this.ranMouseEvent) {
+    this.mouseMove(this.lastMouseEvent);
+  }
+
+  if (this.lastTouchEvent && !this.ranTouchEvent) {
+    this.touchEvent(this.lastMouseEvent);
+  }
+
   this.mouseRegions.splice(0, this.mouseRegions.length);
   this.touchRegions.splice(0, this.touchRegions.length);
 
   this.emit('frame', {});
   this.activeRegions.splice(0, this.activeRegions.length);
-  this.ranMouseEvent = false;
-  this.mouseData.clicked = false;
+
+  this.cleanupMouseEvents();
   return this;
 };
 

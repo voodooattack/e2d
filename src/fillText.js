@@ -1,3 +1,5 @@
+'use strict';
+
 var Instruction = require('./Instruction');
 
 module.exports = function fillText(text, x, y, maxWidth) {

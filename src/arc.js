@@ -1,5 +1,5 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function arc(x, y, r, startAngle, endAngle, anticlockwise) {
@@ -15,7 +15,7 @@ function arc(x, y, r, startAngle, endAngle, anticlockwise) {
   if (arguments.length >= 1) {
     return new Instruction('quick-arc', { r: x });
   }
-  
+
   return new Instruction('quick-arc', { r: 1 });
 }
 

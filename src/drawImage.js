@@ -1,5 +1,5 @@
-//jshint node: true
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {

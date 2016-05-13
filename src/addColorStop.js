@@ -1,6 +1,5 @@
-//jshint node: true
-
 'use strict';
+
 var Instruction = require('./Instruction');
 
 function addColorStop(offset, color) {
