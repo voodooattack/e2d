@@ -43,7 +43,7 @@ if (cli.input[0] === 'tag') {
   args.message = rs.question('Commit Message? ');
 }
 export const tag = () => [
-    `mk clean`,
+    `mk setup`,
     `mk build`,
     `echo Version set to ${args.version}`,
     `json -I -f package.json -e "this.version='${args.version}'"`,
@@ -52,7 +52,8 @@ export const tag = () => [
     `git add .`,
     `git commit -am "${args.message}"`,
     `git tag -a v${args.version} -m ${args.message}`,
-    `git push origin master --tags`
+    `git push origin master --tags`,
+    `npm publish`
 ].map(execMap);
 
 export const push = () => [
