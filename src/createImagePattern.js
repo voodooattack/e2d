@@ -1,7 +1,8 @@
 'use strict';
-
-var ctx = document.createElement('canvas').getContext('2d'),
-  Img = require('./Img');
+if (typeof window !== 'undefined') {
+  var ctx = document.createElement('canvas').getContext('2d'),
+    Img = require('./Img');
+}
 
 function createImagePattern(img, type) {
   if (img) {

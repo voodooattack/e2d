@@ -608,7 +608,7 @@ Renderer.prototype.render = function render(args) {
       if (!props.img) {
         continue;
       }
-      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+      cache = props.img.imageElement || props.img || new Image();
       ctx.drawImage(cache || new Image(), props.dx, props.dy);
       continue;
     }
@@ -617,7 +617,7 @@ Renderer.prototype.render = function render(args) {
       if (!props.img) {
         continue;
       }
-      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+      cache = props.img.imageElement || props.img || new Image();
       ctx.drawImage(cache, props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }
@@ -626,7 +626,7 @@ Renderer.prototype.render = function render(args) {
       if (!props.img) {
         continue;
       }
-      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+      cache = props.img.imageElement || props.img || new Image();
       ctx.drawImage(cache, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
       continue;
     }

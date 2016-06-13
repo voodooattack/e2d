@@ -33,7 +33,7 @@ if (cli.input[0] === 'commit') {
   args.message = rs.question('Commit Message? ');
 }
 export const commit = () => [
-  `git add .`,
+  `git add --all .`,
   `git commit -am "${args.message}"`
 ].map(execMap);
 

@@ -834,7 +834,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!props.img) {
 	        continue;
 	      }
-	      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+	      cache = props.img.imageElement || props.img || new Image();
 	      ctx.drawImage(cache || new Image(), props.dx, props.dy);
 	      continue;
 	    }
@@ -843,7 +843,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!props.img) {
 	        continue;
 	      }
-	      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+	      cache = props.img.imageElement || props.img || new Image();
 	      ctx.drawImage(cache, props.dx, props.dy, props.dWidth, props.dHeight);
 	      continue;
 	    }
@@ -852,7 +852,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!props.img) {
 	        continue;
 	      }
-	      cache = props.img.constructor === Img ? props.img.imageElement || new Image() : props.img;
+	      cache = props.img.imageElement || props.img || new Image();
 	      ctx.drawImage(cache, props.sx, props.sy, props.sWidth, props.sHeight, props.dx, props.dy, props.dWidth, props.dHeight);
 	      continue;
 	    }
@@ -1540,7 +1540,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	var ctx = window.document.createElement('canvas').getContext('2d');
+	if (typeof window !== 'undefined') {
+	  var ctx = window.document.createElement('canvas').getContext('2d');
+	}
 	var concat = [].concat;
 
 	function createLinearGradient(x0, y0, x1, y1) {
@@ -1559,7 +1561,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      grd.addColorStop(colorStop.props.offset, colorStop.props.color);
 	    }
 	  }
-	  
+
 	  return grd;
 	}
 
@@ -1572,8 +1574,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	var ctx = window.document.createElement('canvas').getContext('2d'),
-	  concat = [].concat;
+	if (typeof window !== 'undefined') {
+	  var ctx = window.document.createElement('canvas').getContext('2d'),
+	    concat = [].concat;
+	}
 
 	function createRadialGradient(x0, y0, r0, x1, y1, r1) {
 	  var grd = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1),
@@ -1973,7 +1977,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'insert': 45,
 	  'delete': 46,
 	  'command': 91,
-	  'right click': 93,
+	  'left command': 91,
+	  'right command': 93,
 	  'numpad *': 106,
 	  'numpad +': 107,
 	  'numpad -': 109,
@@ -2014,7 +2019,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'escape': 27,
 	  'spc': 32,
 	  'pgup': 33,
-	  'pgdn': 33,
+	  'pgdn': 34,
 	  'ins': 45,
 	  'del': 46,
 	  'cmd': 91
@@ -2413,6 +2418,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	// shim for using process in browser
 
 	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	(function () {
+	  try {
+	    cachedSetTimeout = setTimeout;
+	  } catch (e) {
+	    cachedSetTimeout = function () {
+	      throw new Error('setTimeout is not defined');
+	    }
+	  }
+	  try {
+	    cachedClearTimeout = clearTimeout;
+	  } catch (e) {
+	    cachedClearTimeout = function () {
+	      throw new Error('clearTimeout is not defined');
+	    }
+	  }
+	} ())
 	var queue = [];
 	var draining = false;
 	var currentQueue;
@@ -2437,7 +2467,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = cachedSetTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -2454,7 +2484,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    cachedClearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -2466,7 +2496,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        cachedSetTimeout(drainQueue, 0);
 	    }
 	};
 
@@ -2740,9 +2770,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
-	var ctx = document.createElement('canvas').getContext('2d'),
-	  Img = __webpack_require__(10);
+	if (typeof window !== 'undefined') {
+	  var ctx = document.createElement('canvas').getContext('2d'),
+	    Img = __webpack_require__(10);
+	}
 
 	function createImagePattern(img, type) {
 	  if (img) {
@@ -3336,7 +3367,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	var ctx = document.createElement('canvas').getContext('2d');
+	if (typeof window !== 'undefined') {
+	  var ctx = document.createElement('canvas').getContext('2d');
+	}
 
 	function measureText(text, font) {
 	  ctx.font = font;
@@ -3726,7 +3759,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    y: y,
 	    maxWidth: maxWidth
 	  });
-	};
+	}
 
 	module.exports = strokeText;
 

@@ -1,5 +1,7 @@
 'use strict';
-var ctx = window.document.createElement('canvas').getContext('2d');
+if (typeof window !== 'undefined') {
+  var ctx = window.document.createElement('canvas').getContext('2d');
+}
 var concat = [].concat;
 
 function createLinearGradient(x0, y0, x1, y1) {
@@ -18,7 +20,7 @@ function createLinearGradient(x0, y0, x1, y1) {
       grd.addColorStop(colorStop.props.offset, colorStop.props.color);
     }
   }
-  
+
   return grd;
 }
 

@@ -1,5 +1,7 @@
 'use strict';
-var ctx = document.createElement('canvas').getContext('2d');
+if (typeof window !== 'undefined') {
+  var ctx = document.createElement('canvas').getContext('2d');
+}
 
 function measureText(text, font) {
   ctx.font = font;

@@ -16,6 +16,6 @@ function strokeText(text, x, y, maxWidth) {
     y: y,
     maxWidth: maxWidth
   });
-};
+}
 
 module.exports = strokeText;

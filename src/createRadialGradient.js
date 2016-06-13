@@ -1,6 +1,8 @@
 'use strict';
-var ctx = window.document.createElement('canvas').getContext('2d'),
-  concat = [].concat;
+if (typeof window !== 'undefined') {
+  var ctx = window.document.createElement('canvas').getContext('2d'),
+    concat = [].concat;
+}
 
 function createRadialGradient(x0, y0, r0, x1, y1, r1) {
   var grd = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1),
