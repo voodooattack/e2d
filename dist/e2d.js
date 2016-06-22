@@ -1325,7 +1325,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    touchPoint.activeRegions.splice(0, touchPoint.activeRegions.length);
 
-	    for(var j = 0; j < this.mouseRegions.length; i++) {
+	    for(var j = 0; j < this.mouseRegions.length; j++) {
 	      region = touchRegions[j];
 	      if (pointInPolygon(mousePoint, region.points)) {
 	        touchPoint.activeRegions.push(region.id);
