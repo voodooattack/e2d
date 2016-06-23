@@ -1056,6 +1056,7 @@ Renderer.prototype.cleanupTouchEvents = function cleanupTouchEvents() {
     var touch = this.touchData.touches[i];
     if (!touch.held) {
       this.touchData.touches.splice(i, 1);
+      this.touchData.ids.splice(i, 1);
       i -= 1;
       continue;
     }
@@ -1109,10 +1110,11 @@ Renderer.prototype.touchEvent = function touchEvent(evt) {
         moved: false,
         held: true
       });
+      this.touchData.ids.push(touch.identifier);
     }
 
     if (type === 'touchend' || type === 'touchcancel') {
-      for (j = 0; j < this.touchData.length; j++) {
+      for (j = 0; j < this.touchData.touches.length; j++) {
         touchPoint = this.touchData.touches[j];
         if (touchPoint.id === touch.identifier) {
           touchPoint.activeRegions.splice(0, touchPoint.activeRegions.length);
@@ -1123,7 +1125,7 @@ Renderer.prototype.touchEvent = function touchEvent(evt) {
     }
 
     if (type === 'touchmove') {
-      for (j = 0; j < this.touchData.length; j++) {
+      for (j = 0; j < this.touchData.touches.length; j++) {
         touchPoint = this.touchData.touches[j];
         if (touchPoint.id === touch.identifier) {
           touchPoint.moved = true;
@@ -1134,8 +1136,6 @@ Renderer.prototype.touchEvent = function touchEvent(evt) {
 
     mousePoint[0] = touchPoint.x = touch.clientX - rect.left;
     mousePoint[1] = touchPoint.y = touch.clientY - rect.top;
-
-
 
     for (j = 0; j < this.touchRegions.length; j++) {
       region = this.touchRegions[j];
