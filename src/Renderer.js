@@ -1032,8 +1032,6 @@ Renderer.prototype.hookRender = function hookRender() {
 
   //If the client has sent a 'ready' command and a tree exists
   if (this.isReady) {
-
-
     this.fireFrame();
   }
 
@@ -1053,6 +1051,22 @@ Renderer.prototype.cleanupMouseEvents = function cleanupMouseEvents() {
   this.ranMouseEvent = false;
 };
 
+Renderer.prototype.cleanupTouchEvents = function cleanupTouchEvents() {
+  for(var i = 0; i < this.touchData.touches.length; i++) {
+    var touch = this.touchData.touches[i];
+    if (!touch.held) {
+      this.touchData.touches.splice(i, 1);
+      i -= 1;
+      continue;
+    }
+
+    touch.previousX = touch.x;
+    touch.previousY = touch.y;
+    touch.touched = false;
+    touch.activeRegions.splice(0, touch.activeRegions.length);
+  }
+};
+
 Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
   //whenever the mouse moves, report the position
   window.document.addEventListener('mousemove', this.mouseMove.bind(this));
@@ -1065,49 +1079,72 @@ Renderer.prototype.hookMouseEvents = function hookMouseEvents() {
 };
 
 Renderer.prototype.hookTouchEvents = function hookTouchEvents() {
-
+  var listener = this.touchEvent.bind(this);
   return ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(function(evt) {
-    return window.document.addEventListener(evt, this.touchEvent.bind(this));
-  }, this);
+    return window.document.addEventListener(evt, listener);
+  });
 };
 
 Renderer.prototype.touchEvent = function touchEvent(evt) {
   var rect = this.canvas.getBoundingClientRect(),
       mousePoint = [0,0],
-      region;
+      region,
+      i, j;
 
-  var previousIds = this.touchData.ids.splice(0, this.touchData.ids.length),
-    previousTouches = this.touchData.touches.splice(0, this.touchData.touches.length),
-    touchPoint;
+  var type = evt.type,
+    touches = evt.changedTouches,
+    touchPoint,
+    touch;
 
-  for(var i = 0; i < evt.touches.length; i++) {
-    var touch = evt.touches.item(i);
-    var index = previousIds.indexOf(touch.identifier);
+  for (i = 0; i < touches.length; i++) {
+    touch = touches.item(i);
 
-    touchPoint = index === -1 ? { x: 0, y: 0, activeRegions: [], id: touch.identifier, touched: true, held: false } : previousTouches[index];
-    touchPoint.touched = index === -1;
-    touchPoint.held = !touchPoint.touched;
+    if (type === 'touchstart') {
+      this.touchData.touches.push(touchPoint = {
+        x: 0,
+        y: 0,
+        activeRegions: [],
+        id: touch.identifier,
+        touched: true,
+        moved: false,
+        held: true
+      });
+    }
 
-    touchPoint.x = touch.clientX - rect.left;
-    touchPoint.y = touch.clientY - rect.top;
-    this.touchData.touches.push(touchPoint);
-    this.touchData.ids.push(touchPoint.identifier);
+    if (type === 'touchend' || type === 'touchcancel') {
+      for (j = 0; j < this.touchData.length; j++) {
+        touchPoint = this.touchData.touches[j];
+        if (touchPoint.id === touch.identifier) {
+          touchPoint.activeRegions.splce(0, touchPoint.activeRegions.length);
+          touchPoint.held = false;
+          break;
+        }
+      }
+    }
 
-    mousePoint[0] = touchPoint.x;
-    mousePoint[1] = touchPoint.y;
+    if (type === 'touchmove') {
+      for (j = 0; j < this.touchData.length; j++) {
+        touchPoint = this.touchData.touches[j];
+        if (touchPoint.id === touch.identifier) {
+          touchPoint.moved = true;
+          break;
+        }
+      }
+    }
 
-    touchPoint.activeRegions.splice(0, touchPoint.activeRegions.length);
+    mousePoint[0] = touchPoint.x = touch.clientX - rect.left;
+    mousePoint[1] = touchPoint.y = touch.clientY - rect.top;
 
-    for(var j = 0; j < this.touchRegions.length; j++) {
+
+
+    for (j = 0; j < this.touchRegions.length; j++) {
       region = this.touchRegions[j];
       if (pointInPolygon(mousePoint, region.points)) {
         touchPoint.activeRegions.push(region.id);
-        this.touchRegions.splice(j, 1);
-        j -= 1;
       }
     }
-  }
 
+  }
 
   this.lastTouchEvent = evt;
   this.ranTouchEvent = true;
@@ -1216,6 +1253,7 @@ Renderer.prototype.fireFrame = function() {
   this.activeRegions.splice(0, this.activeRegions.length);
 
   this.cleanupMouseEvents();
+  this.cleanupTouchEvents();
   return this;
 };
 
