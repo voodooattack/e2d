@@ -1341,7 +1341,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      for (j = 0; j < this.touchData.length; j++) {
 	        touchPoint = this.touchData.touches[j];
 	        if (touchPoint.id === touch.identifier) {
-	          touchPoint.activeRegions.splce(0, touchPoint.activeRegions.length);
+	          touchPoint.activeRegions.splice(0, touchPoint.activeRegions.length);
 	          touchPoint.held = false;
 	          break;
 	        }
