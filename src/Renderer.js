@@ -1073,7 +1073,6 @@ Renderer.prototype.hookTouchEvents = function hookTouchEvents() {
 
 Renderer.prototype.touchEvent = function touchEvent(evt) {
   var rect = this.canvas.getBoundingClientRect(),
-      touchRegions = this.touchRegions.slice(),
       mousePoint = [0,0],
       region;
 
@@ -1099,11 +1098,11 @@ Renderer.prototype.touchEvent = function touchEvent(evt) {
 
     touchPoint.activeRegions.splice(0, touchPoint.activeRegions.length);
 
-    for(var j = 0; j < this.mouseRegions.length; j++) {
-      region = touchRegions[j];
+    for(var j = 0; j < this.touchRegions.length; j++) {
+      region = this.touchRegions[j];
       if (pointInPolygon(mousePoint, region.points)) {
         touchPoint.activeRegions.push(region.id);
-        touchRegions.splice(touchRegions.indexOf(region), 1);
+        this.touchRegions.splice(j, 1);
         j -= 1;
       }
     }

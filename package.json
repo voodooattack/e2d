@@ -2,7 +2,7 @@
   "name": "e2d",
   "description": "A declarative canvas renderer.",
   "main": "dist/e2d.js",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
