@@ -8,6 +8,8 @@
   <script src="../dist/e2d.js"></script>
   <script>
     let canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
     let ctx = canvas.getContext('2d');
     e2d.use(ctx);
     document.body.appendChild(canvas);
@@ -15,9 +17,12 @@
       requestAnimationFrame(frame);
       let { x, y } = e2d.mouseData(ctx);
       return e2d.render(
-        e2d.translate(x, y,
-          e2d.fillArc(10)
-        ),
+        [
+          e2d.clearRect(canvas.width, canvas.height),
+          e2d.translate(x, y,
+            e2d.fillArc(10)
+          )
+        ],
         ctx
       );
     };

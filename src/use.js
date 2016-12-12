@@ -1,3 +1,5 @@
+let keycode = require('keycode');
+
 module.exports = (ctx) => {
   let { canvas } = ctx;
 
@@ -12,6 +14,15 @@ module.exports = (ctx) => {
     state: 'up',
     clicked: 0
   };
+
+
+  let keys = canvas[Symbol.for('keyData')] = {};
+
+  for (let name in keycode.code) {
+    if (keycode.code.hasOwnProperty(name)) {
+      keys[name] = "up";
+    }
+  }
 
   //mouse regions
   canvas[Symbol.for('regions')] = [];
@@ -55,5 +66,15 @@ module.exports = (ctx) => {
     let mouseData = canvas[Symbol.for('mouseData')];
     mouseData.state = 'up';
     return mouseMove(evt);
+  });
+  canvas.addEventListener('keydown', (evt) => {
+    canvas[Symbol.for('keyData')][keycode(evt.keyCode)] = true;
+    evt.preventDefault();
+    return false;
+  });
+  canvas.addEventListener('keyup', (evt) => {
+    canvas[Symbol.for('keyData')][keycode(evt.keyCode)] = false;
+    evt.preventDefault();
+    return false;
   });
 };

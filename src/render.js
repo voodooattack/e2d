@@ -13,6 +13,7 @@ let identity = [1, 0, 0, 1, 0, 0],
   concat = [].concat;
 
 let transformPoints = require('./transformPoints');
+let keycode = require('keycode');
 
 const increaseTransformStackSize = () => {
   let cache = transformStack;
@@ -25,8 +26,9 @@ transformStack.set(identity);
 
 const PI2 = Math.PI * 2;
 
-module.exports = (children, ctx) => {
-
+module.exports = (...args) => {
+  let children = args.slice(0, -1);
+  let ctx = args[args.length - 1];
   let mouseData = ctx.canvas[Symbol.for('mouseData')];
   let regions = ctx.canvas[Symbol.for('regions')];
 
