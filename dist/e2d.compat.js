@@ -71,7 +71,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 56);
+/******/ 	return __webpack_require__(__webpack_require__.s = 57);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -489,25 +489,26 @@ var map = {
 	"./path.js": 36,
 	"./placeHolder.js": 37,
 	"./quadraticCurveTo.js": 38,
-	"./rect.js": 39,
-	"./render.js": 40,
-	"./resetTransform.js": 41,
-	"./rotate.js": 42,
-	"./scale.js": 43,
+	"./raf.js": 39,
+	"./rect.js": 40,
+	"./render.js": 41,
+	"./resetTransform.js": 42,
+	"./rotate.js": 43,
+	"./scale.js": 44,
 	"./setTransform.js": 6,
-	"./shadowStyle.js": 44,
-	"./skewX.js": 45,
-	"./skewY.js": 46,
-	"./stroke.js": 47,
-	"./strokeArc.js": 48,
-	"./strokeRect.js": 49,
-	"./strokeStyle.js": 50,
-	"./strokeText.js": 51,
-	"./textStyle.js": 52,
-	"./transform.js": 53,
+	"./shadowStyle.js": 45,
+	"./skewX.js": 46,
+	"./skewY.js": 47,
+	"./stroke.js": 48,
+	"./strokeArc.js": 49,
+	"./strokeRect.js": 50,
+	"./strokeStyle.js": 51,
+	"./strokeText.js": 52,
+	"./textStyle.js": 53,
+	"./transform.js": 54,
 	"./transformPoints.js": 7,
-	"./translate.js": 54,
-	"./use.js": 55
+	"./translate.js": 55,
+	"./use.js": 56
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -978,7 +979,7 @@ var createWrapper = function createWrapper() {
   };
 };
 
-module.exports = createClass;
+module.exports = concat;
 
 /***/ },
 /* 22 */
@@ -1385,6 +1386,20 @@ module.exports = quadraticCurveTo;
 
 /***/ },
 /* 39 */
+/***/ function(module, exports) {
+
+"use strict";
+"use strict";
+
+var raf = function raf(func) {
+  requestAnimationFrame(func);
+  return func();
+};
+
+module.exports = raf;
+
+/***/ },
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1400,7 +1415,7 @@ var rect = function rect(x, y, width, height) {
 module.exports = rect;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1419,8 +1434,6 @@ var identity = [1, 0, 0, 1, 0, 0],
     transformStack = new Float64Array(501 * 6),
     transformStackIndex = 6;
 
-var ctxState = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"./state\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-
 var transformPoints = __webpack_require__(7);
 
 var increaseTransformStackSize = function increaseTransformStackSize() {
@@ -1430,7 +1443,7 @@ var increaseTransformStackSize = function increaseTransformStackSize() {
   return undefined;
 };
 
-transformStack.set(identidy);
+transformStack.set(identity);
 
 var PI2 = Math.PI * 2;
 
@@ -2044,13 +2057,11 @@ module.exports = function (children, ctx) {
       ctx.imageSmoothingEnabled = imageSmoothingEnabledStack.pop();
       continue;
     }
-
-    ctxState.set(ctx, { mouseRegions: mouseRegions, touchRegions: touchRegions });
   }
 };
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2069,7 +2080,7 @@ var resetTransform = function resetTransform() {
 module.exports = resetTransform;
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2089,7 +2100,7 @@ var rotate = function rotate(r) {
 module.exports = rotate;
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2116,7 +2127,7 @@ var scale = function scale(x, y) {
 module.exports = scale;
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2157,7 +2168,7 @@ var shadowStyle = function shadowStyle(value) {
 module.exports = shadowStyle;
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2177,7 +2188,7 @@ var skewX = function skewX(x) {
 module.exports = skewX;
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2197,7 +2208,7 @@ var skewY = function skewY(x) {
 module.exports = skewY;
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2212,7 +2223,7 @@ var stroke = function stroke() {
 module.exports = stroke;
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2243,7 +2254,7 @@ var strokeArc = function strokeArc(x, y, r, startAngle, endAngle, counterclockwi
 module.exports = strokeArc;
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2259,7 +2270,7 @@ var rect = function rect(x, y, width, height) {
 module.exports = rect;
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2279,7 +2290,7 @@ var fillStyle = function fillStyle(value) {
 module.exports = fillStyle;
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2307,7 +2318,7 @@ var strokeText = function strokeText(text, x, y, maxWidth) {
 module.exports = strokeText;
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2344,7 +2355,7 @@ var textStyle = function textStyle(value, children) {
 module.exports = textStyle;
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2364,7 +2375,7 @@ var transform = function transform(values) {
 module.exports = transform;
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2384,7 +2395,7 @@ var translate = function translate(x, y) {
 module.exports = translate;
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -2459,7 +2470,7 @@ module.exports = function (ctx) {
 };
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";

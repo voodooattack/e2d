@@ -1,6 +1,4 @@
-
-
-var concat = [].concat;
+let concat = [].concat;
 
 let createWrapper = (...args) => {
   let found = false;
@@ -22,4 +20,4 @@ let createWrapper = (...args) => {
   return (...children) =>  args.splice(i, 1, children);
 };
 
-module.exports = createClass;
+module.exports = concat;

@@ -5,6 +5,23 @@
   <title>e2d Test</title>
 </head>
 <body>
-  <script src="app.js"></script>
+  <script src="e2d.js"></script>
+  <script>
+    let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d');
+    e2d.use(ctx);
+    document.body.appendChild(canvas);
+    let frame = () => {
+      requestAnimationFrame(frame);
+      let { x, y } = e2d.mouseData(ctx);
+      return e2d.render(
+        e2d.translate(x, y,
+          e2d.fillArc(10)
+        ),
+        ctx
+      );
+    };
+    requestAnimationFrame(frame);
+  </script>
 </body>
 </html>

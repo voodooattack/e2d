@@ -71,7 +71,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 57);
+/******/ 	return __webpack_require__(__webpack_require__.s = 56);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -472,26 +472,25 @@ var map = {
 	"./path.js": 36,
 	"./placeHolder.js": 37,
 	"./quadraticCurveTo.js": 38,
-	"./raf.js": 39,
-	"./rect.js": 40,
-	"./render.js": 41,
-	"./resetTransform.js": 42,
-	"./rotate.js": 43,
-	"./scale.js": 44,
+	"./rect.js": 39,
+	"./render.js": 40,
+	"./resetTransform.js": 41,
+	"./rotate.js": 42,
+	"./scale.js": 43,
 	"./setTransform.js": 6,
-	"./shadowStyle.js": 45,
-	"./skewX.js": 46,
-	"./skewY.js": 47,
-	"./stroke.js": 48,
-	"./strokeArc.js": 49,
-	"./strokeRect.js": 50,
-	"./strokeStyle.js": 51,
-	"./strokeText.js": 52,
-	"./textStyle.js": 53,
-	"./transform.js": 54,
+	"./shadowStyle.js": 44,
+	"./skewX.js": 45,
+	"./skewY.js": 46,
+	"./stroke.js": 47,
+	"./strokeArc.js": 48,
+	"./strokeRect.js": 49,
+	"./strokeStyle.js": 50,
+	"./strokeText.js": 51,
+	"./textStyle.js": 52,
+	"./transform.js": 53,
 	"./transformPoints.js": 7,
-	"./translate.js": 55,
-	"./use.js": 56
+	"./translate.js": 54,
+	"./use.js": 55
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -1282,17 +1281,6 @@ module.exports = quadraticCurveTo;
 
 /***/ },
 /* 39 */
-/***/ function(module, exports) {
-
-let raf = (func) => {
-  requestAnimationFrame(func);
-  return func();
-};
-
-module.exports = raf;
-
-/***/ },
-/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -1307,7 +1295,7 @@ module.exports = rect;
 
 
 /***/ },
-/* 41 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 let identity = [1, 0, 0, 1, 0, 0],
@@ -1332,7 +1320,7 @@ const increaseTransformStackSize = () => {
   return this;
 };
 
-transformStack.set(identity);
+transformStack.set(identidy);
 
 const PI2 = Math.PI * 2;
 
@@ -1996,7 +1984,7 @@ module.exports = (children, ctx) => {
 };
 
 /***/ },
-/* 42 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 let setTransform = __webpack_require__(6);
@@ -2006,7 +1994,7 @@ let resetTransform = (...children) => setTransform([1, 0, 0, 1, 0, 0], children)
 module.exports = resetTransform;
 
 /***/ },
-/* 43 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2022,7 +2010,7 @@ module.exports = rotate;
 
 
 /***/ },
-/* 44 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2047,7 +2035,7 @@ module.exports = scale;
 
 
 /***/ },
-/* 45 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2086,7 +2074,7 @@ module.exports = shadowStyle;
 
 
 /***/ },
-/* 46 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2102,7 +2090,7 @@ module.exports = skewX;
 
 
 /***/ },
-/* 47 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2118,7 +2106,7 @@ module.exports = skewY;
 
 
 /***/ },
-/* 48 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2129,7 +2117,7 @@ module.exports = stroke;
 
 
 /***/ },
-/* 49 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0),
@@ -2158,7 +2146,7 @@ module.exports = strokeArc;
 
 
 /***/ },
-/* 50 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2173,7 +2161,7 @@ module.exports = rect;
 
 
 /***/ },
-/* 51 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2189,7 +2177,7 @@ module.exports = fillStyle;
 
 
 /***/ },
-/* 52 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2213,7 +2201,7 @@ let strokeText = (text, x, y, maxWidth) => {
 module.exports = strokeText;
 
 /***/ },
-/* 53 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2252,7 +2240,7 @@ module.exports = textStyle;
 
 
 /***/ },
-/* 54 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2278,7 +2266,7 @@ module.exports = transform;
 
 
 /***/ },
-/* 55 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 let Instruction = __webpack_require__(0);
@@ -2294,7 +2282,7 @@ module.exports = translate;
 
 
 /***/ },
-/* 56 */
+/* 55 */
 /***/ function(module, exports) {
 
 module.exports = (ctx) => {
@@ -2358,7 +2346,7 @@ module.exports = (ctx) => {
 };
 
 /***/ },
-/* 57 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";

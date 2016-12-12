@@ -11,8 +11,6 @@ let identity = [1, 0, 0, 1, 0, 0],
   transformStack = new Float64Array(501 * 6),
   transformStackIndex = 6;
 
-let ctxState = require('./state');
-
 let transformPoints = require('./transformPoints');
 
 const increaseTransformStackSize = () => {
@@ -22,7 +20,7 @@ const increaseTransformStackSize = () => {
   return this;
 };
 
-transformStack.set(identidy);
+transformStack.set(identity);
 
 const PI2 = Math.PI * 2;
 
@@ -682,6 +680,5 @@ module.exports = (children, ctx) => {
       continue;
     }
 
-    ctxState.set(ctx, { mouseRegions, touchRegions });
   }
 };
