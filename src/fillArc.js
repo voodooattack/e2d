@@ -3,7 +3,7 @@
 let Instruction = require('./Instruction'),
     pi2 = Math.PI * 2;
 
-let fillArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
+function fillArc (x, y, r, startAngle, endAngle, counterclockwise) {
   let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
 
@@ -13,13 +13,13 @@ let fillArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1){
+  if (arguments.length >= 2) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
   return new Instruction("fillArc",  props);
-};
+}
 
 module.exports = fillArc;

@@ -9,7 +9,8 @@ let identity = [1, 0, 0, 1, 0, 0],
   globalAlphaStack = [],
   imageSmoothingEnabledStack = [],
   transformStack = new Float64Array(501 * 6),
-  transformStackIndex = 6;
+  transformStackIndex = 6,
+  concat = [].concat;
 
 let transformPoints = require('./transformPoints');
 
@@ -48,7 +49,7 @@ module.exports = (children, ctx) => {
   let len = children.length;
 
   //flatten children during the loop process to save cpu
-  for (let i = 0; children.length; i++) {
+  for (let i = 0; i < len; i++) {
     let child = children[i];
 
     //flattening algorithm

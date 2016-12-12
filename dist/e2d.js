@@ -133,12 +133,12 @@ module.exports = hitRegion;
 
 let Instruction = __webpack_require__(0);
 
-let lineTo = (x, y) => {
+function lineTo (x, y) {
   if (arguments.length === 0) {
     return new Instruction('lineTo', { x: 0, y: 0 });
   }
   return new Instruction('lineTo', { x, y });
-};
+}
 
 module.exports = lineTo;
 
@@ -149,12 +149,12 @@ module.exports = lineTo;
 
 let Instruction = __webpack_require__(0);
 
-let moveTo = (x, y) => {
+function moveTo (x, y) {
   if (arguments.length === 0) {
     return new Instruction('moveTo', { x: 0, y: 0 });
   }
   return new Instruction('moveTo', { x, y });
-};
+}
 
 module.exports = moveTo;
 
@@ -768,12 +768,10 @@ module.exports = addColorStop;
 /* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-
-
 let Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-const arc = (x, y, r, startAngle, endAngle, counterclockwise) => {
+function arc(x, y, r, startAngle, endAngle, counterclockwise) {
   let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
 
@@ -790,7 +788,7 @@ const arc = (x, y, r, startAngle, endAngle, counterclockwise) => {
   }
 
   return new Instruction("arc",  props);
-};
+}
 
 module.exports = arc;
 
@@ -831,9 +829,12 @@ module.exports = bezierCurveTo;
 
 let Instruction = __webpack_require__(0);
 
-let clearRect = (x, y, width, height) => new Instruction('clearRect',
-  arguments.length > 2 ? { x, y, width, height } : { x: 0, y: 0, width: x, height: y }
-);
+function clearRect (x, y, width, height) {
+  return new Instruction('clearRect',
+    arguments.length > 2 ?
+      { x, y, width, height } :
+      { x: 0, y: 0, width: x, height: y });
+}
 
 module.exports = clearRect;
 
@@ -928,7 +929,7 @@ module.exports = concat;
 
 let Instruction = __webpack_require__(0);
 
-let  drawImage = (img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) => {
+function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   if (arguments.length === 9) {
     return new Instruction('drawImageSource', {
       img,
@@ -966,7 +967,7 @@ let  drawImage = (img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) => {
     dx: 0,
     dy: 0
   });
-};
+}
 
 module.exports = drawImage;
 
@@ -980,7 +981,7 @@ module.exports = drawImage;
 let Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-let ellipse = (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) => {
+function ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
   let props = { x: 0, y: 0, radiusX: x, radiusY: y, startAngle: 0, endAngle: pi2, anticlockwise: false };
 
   if (arguments.length > 4) {
@@ -997,7 +998,7 @@ let ellipse = (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlock
   }
 
   return new Instruction("ellipse",  props);
-};
+}
 
 module.exports = ellipse;
 
@@ -1023,7 +1024,7 @@ module.exports = fill;
 let Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-let fillArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
+function fillArc (x, y, r, startAngle, endAngle, counterclockwise) {
   let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
 
@@ -1033,14 +1034,14 @@ let fillArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1){
+  if (arguments.length >= 2) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
   return new Instruction("fillArc",  props);
-};
+}
 
 module.exports = fillArc;
 
@@ -1051,9 +1052,13 @@ module.exports = fillArc;
 
 let Instruction = __webpack_require__(0);
 
-let fillRect = (x, y, width, height) => new Instruction('fillRect',
-  arguments.length > 2 ? { x, y, width, height } : { x: 0, y: 0, width: x, height: y }
-);
+function fillRect (x, y, width, height) {
+  return new Instruction('fillRect',
+    arguments.length > 2 ?
+    { x, y, width, height } :
+    { x: 0, y: 0, width: x, height: y }
+  );
+}
 
 module.exports = fillRect;
 
@@ -1080,7 +1085,7 @@ module.exports = fillStyle;
 
 let Instruction = __webpack_require__(0);
 
-let fillText = (text, x, y, maxWidth) => {
+function fillText (text, x, y, maxWidth) {
   if (arguments.length < 4) {
     maxWidth = null;
   }
@@ -1089,7 +1094,7 @@ let fillText = (text, x, y, maxWidth) => {
     y = 0;
   }
   return new Instruction('fillText', { text, x, y, maxWidth });
-};
+}
 
 module.exports = fillText;
 
@@ -1136,7 +1141,7 @@ module.exports = globalCompositeOperation;
 let Instruction = __webpack_require__(0),
     hitRegion = __webpack_require__(3);
 
-let hitRect = (id, x, y, width, height) => {
+function hitRect (id, x, y, width, height) {
   if (arguments.length <= 3) {
     width = x;
     height = y;
@@ -1149,7 +1154,7 @@ let hitRect = (id, x, y, width, height) => {
     [x + width, y + height],
     [x + width, y]
   ]);
-};
+}
 
 module.exports = hitRect;
 
@@ -1297,11 +1302,13 @@ module.exports = raf;
 
 let Instruction = __webpack_require__(0);
 
-let rect = (x, y, width, height) => new Instruction('rect',
-  arguments.length > 2 ?
-    { x, y, width, height } :
-    { x: 0, y: 0, width: x, height: y }
-);
+function rect (x, y, width, height) {
+  return new Instruction('rect',
+    arguments.length > 2 ?
+      { x, y, width, height } :
+      { x: 0, y: 0, width: x, height: y }
+  );
+}
 
 module.exports = rect;
 
@@ -1321,7 +1328,8 @@ let identity = [1, 0, 0, 1, 0, 0],
   globalAlphaStack = [],
   imageSmoothingEnabledStack = [],
   transformStack = new Float64Array(501 * 6),
-  transformStackIndex = 6;
+  transformStackIndex = 6,
+  concat = [].concat;
 
 let transformPoints = __webpack_require__(7);
 
@@ -1360,7 +1368,7 @@ module.exports = (children, ctx) => {
   let len = children.length;
 
   //flatten children during the loop process to save cpu
-  for (let i = 0; children.length; i++) {
+  for (let i = 0; i < len; i++) {
     let child = children[i];
 
     //flattening algorithm
@@ -2135,7 +2143,7 @@ module.exports = stroke;
 let Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-let strokeArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
+function strokeArc  (x, y, r, startAngle, endAngle, counterclockwise) {
   let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
 
@@ -2152,7 +2160,7 @@ let strokeArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
   }
 
   return new Instruction("strokeArc",  props);
-};
+}
 
 module.exports = strokeArc;
 
@@ -2163,13 +2171,15 @@ module.exports = strokeArc;
 
 let Instruction = __webpack_require__(0);
 
-let rect = (x, y, width, height) => new Instruction('strokeRect',
-  arguments.length > 2 ?
-    { x, y, width, height } :
-    { x: 0, y: 0, width: x, height: y }
-);
+function strokeRect(x, y, width, height) {
+  return new Instruction('strokeRect',
+    arguments.length > 2 ?
+      { x, y, width, height } :
+      { x: 0, y: 0, width: x, height: y }
+  );
+}
 
-module.exports = rect;
+module.exports = strokeRect;
 
 
 /***/ },
@@ -2194,7 +2204,7 @@ module.exports = fillStyle;
 
 let Instruction = __webpack_require__(0);
 
-let strokeText = (text, x, y, maxWidth) => {
+function strokeText(text, x, y, maxWidth) {
   if (arguments.length < 4) {
     maxWidth = null;
   }
@@ -2208,7 +2218,7 @@ let strokeText = (text, x, y, maxWidth) => {
     y,
     maxWidth
   });
-};
+}
 
 module.exports = strokeText;
 

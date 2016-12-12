@@ -3,7 +3,7 @@
 let Instruction = require('./Instruction'),
     pi2 = Math.PI * 2;
 
-let ellipse = (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) => {
+function ellipse (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
   let props = { x: 0, y: 0, radiusX: x, radiusY: y, startAngle: 0, endAngle: pi2, anticlockwise: false };
 
   if (arguments.length > 4) {
@@ -20,6 +20,6 @@ let ellipse = (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlock
   }
 
   return new Instruction("ellipse",  props);
-};
+}
 
 module.exports = ellipse;

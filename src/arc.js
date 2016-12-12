@@ -1,9 +1,7 @@
-
-
 let Instruction = require('./Instruction'),
     pi2 = Math.PI * 2;
 
-const arc = (x, y, r, startAngle, endAngle, counterclockwise) => {
+function arc(x, y, r, startAngle, endAngle, counterclockwise) {
   let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
 
@@ -20,6 +18,6 @@ const arc = (x, y, r, startAngle, endAngle, counterclockwise) => {
   }
 
   return new Instruction("arc",  props);
-};
+}
 
 module.exports = arc;
