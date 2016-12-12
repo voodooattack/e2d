@@ -1,9 +1,7 @@
-
-
 let Instruction = require('./Instruction'),
     pi2 = Math.PI * 2;
 
-const strokeArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
+let strokeArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
   let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
 

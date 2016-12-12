@@ -1,9 +1,8 @@
+let Instruction = require('./Instruction');
+let end = new Instruction('restore');
 
-
-var Instruction = require('./Instruction');
-
-function transform(values, children) {
-  var transformResult = [
+let transform = (values, ...children) => {
+  return [
     new Instruction('transform',[
       values[0],
       values[1],
@@ -11,15 +10,11 @@ function transform(values, children) {
       values[3],
       values[4],
       values[5]
-    ])
+    ]),
+    children,
+    end
   ];
-  for(var i = 1; i < arguments.length; i++) {
-    transformResult.push(arguments[i]);
-  }
-  transformResult.push(new Instruction('restore'));
-
-  return transformResult;
-}
+};
 
 
 module.exports = transform;

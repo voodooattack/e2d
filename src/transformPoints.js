@@ -1,6 +1,4 @@
-
-
-function transformPoints(points, matrix) {
+let transformPoints = (points, matrix) => {
   var result = [],
       len = points.length,
       point;
@@ -13,6 +11,6 @@ function transformPoints(points, matrix) {
     ]);
   }
   return result;
-}
+};
 
 module.exports = transformPoints;

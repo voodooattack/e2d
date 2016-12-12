@@ -1,8 +1,7 @@
+let Instruction = require('./Instruction');
+let end = new Instruction('endShadowStyle');
 
-
-var Instruction = require('./Instruction');
-
-function shadowStyle(value, children) {
+let shadowStyle = (value, ...children) => {
   value = value || {};
   var result = {
     shadowBlur: null,
@@ -24,13 +23,11 @@ function shadowStyle(value, children) {
     result.shadowOffsetY = value.shadowOffsetY;
   }
 
-  var tree = [new Instruction('shadowStyle', value)];
-  for (var i = 1; i < arguments.length; i++) {
-    tree.push(arguments[i]);
-  }
-  tree.push(new Instruction('endShadowStyle'));
-
-  return tree;
+  return [
+    new Instruction('shadowStyle', value),
+    children,
+    end
+  ];
 }
 
 module.exports = shadowStyle;

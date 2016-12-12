@@ -1,22 +1,19 @@
+let Instruction = require('./Instruction');
+let end = new Instruction('restore');
 
-
-var Instruction = require('./Instruction');
-
-function scale(x, y, children) {
+let scale = (x, y, ...children) => {
   var i = 2;
   if (typeof y !== 'number') {
+    children = [y].concat(children);
     y = x;
-    i = 1;
   }
-  children = children || [];
 
-  var result = [new Instruction('scale', { x: x, y: y })],
-      child;
-  for (; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
   result.push(new Instruction('restore'));
-  return result;
-}
+  return [
+    new Instruction('scale', { x, y }),
+    children,
+    end
+  ];
+};
 
 module.exports = scale;
