@@ -1,12 +1,10 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-function moveTo(x, y) {
+let moveTo = (x, y) => {
   if (arguments.length === 0) {
-    return new Instruction('moveTo', { x: 0, y: 0});
+    return new Instruction('moveTo', { x: 0, y: 0 });
   }
-  return new Instruction('moveTo', { x: x, y: y });
-}
+  return new Instruction('moveTo', { x, y });
+};
 
 module.exports = moveTo;

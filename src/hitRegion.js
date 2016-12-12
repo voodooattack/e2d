@@ -1,12 +1,5 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-function hitRegion(id, points) {
-  return new Instruction('hitRegion', {
-    id: id,
-    points: points
-  });
-}
+let hitRegion = (id, points) => new Instruction('hitRegion', { id, points });
 
 module.exports = hitRegion;

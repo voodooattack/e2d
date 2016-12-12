@@ -1,8 +1,6 @@
-'use strict';
+let Instruction = require('./Instruction');
+let cache = new Instruction('closePath');
 
-var Instruction = require('./Instruction');
+let closePath = () => cache;
 
-function closePath() {
-  return new Instruction('closePath');
-}
 module.exports = closePath;

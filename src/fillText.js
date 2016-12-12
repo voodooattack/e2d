@@ -1,8 +1,6 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-module.exports = function fillText(text, x, y, maxWidth) {
+let fillText = (text, x, y, maxWidth) => {
   if (arguments.length < 4) {
     maxWidth = null;
   }
@@ -10,10 +8,7 @@ module.exports = function fillText(text, x, y, maxWidth) {
     x = 0;
     y = 0;
   }
-  return new Instruction('fillText', {
-    text: text,
-    x: x,
-    y: y,
-    maxWidth: maxWidth
-  });
+  return new Instruction('fillText', { text, x, y, maxWidth });
 };
+
+module.exports = fillText;

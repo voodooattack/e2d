@@ -1,9 +1,5 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-function addColorStop(offset, color) {
-  return new Instruction('addColorStop', { offset: offset, color: color });
-}
+let addColorStop = (offset, color) => new Instruction('addColorStop', { offset, color });  
 
 module.exports = addColorStop;

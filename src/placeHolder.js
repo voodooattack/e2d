@@ -1,7 +1,6 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
+let cache = new Instruction('placeholder');
+let placeHolder = () => cache;
 
-module.exports = function placeHolder() {
-  return new Instruction('placeholder');
-};
+module.exports = placeHolder;

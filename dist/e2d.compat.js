@@ -78,29 +78,38 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ function(module, exports) {
 
-class Instruction {
-  constructor(type, props) {
-    this.type = type;
-    this.props = props;
-    return Object.seal(this);
-  }
-}
+"use strict";
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Instruction = function Instruction(type, props) {
+  _classCallCheck(this, Instruction);
+
+  this.type = type;
+  this.props = props;
+  return Object.seal(this);
+};
 
 Object.seal(Instruction);
 Object.seal(Instruction.prototype);
 
 module.exports = Instruction;
 
-
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+'use strict';
+
 //jshint node: true
 
-let Instruction = __webpack_require__(0);
-let cache = new Instruction('beginPath');
-let beginPath = () => cache;
+var Instruction = __webpack_require__(0);
+var cache = new Instruction('beginPath');
+var beginPath = function beginPath() {
+  return cache;
+};
 
 module.exports = beginPath;
 
@@ -108,86 +117,96 @@ module.exports = beginPath;
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let cache = new Instruction('closePath');
+"use strict";
+'use strict';
 
-let closePath = () => cache;
+var Instruction = __webpack_require__(0);
+var cache = new Instruction('closePath');
+
+var closePath = function closePath() {
+  return cache;
+};
 
 module.exports = closePath;
-
 
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let hitRegion = (id, points) => new Instruction('hitRegion', { id, points });
+var Instruction = __webpack_require__(0);
+
+var hitRegion = function hitRegion(id, points) {
+  return new Instruction('hitRegion', { id: id, points: points });
+};
 
 module.exports = hitRegion;
-
 
 /***/ },
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let lineTo = (x, y) => {
-  if (arguments.length === 0) {
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var lineTo = function lineTo(x, y) {
+  if (_arguments.length === 0) {
     return new Instruction('lineTo', { x: 0, y: 0 });
   }
-  return new Instruction('lineTo', { x, y });
+  return new Instruction('lineTo', { x: x, y: y });
 };
 
 module.exports = lineTo;
-
 
 /***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let moveTo = (x, y) => {
-  if (arguments.length === 0) {
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var moveTo = function moveTo(x, y) {
+  if (_arguments.length === 0) {
     return new Instruction('moveTo', { x: 0, y: 0 });
   }
-  return new Instruction('moveTo', { x, y });
+  return new Instruction('moveTo', { x: x, y: y });
 };
 
 module.exports = moveTo;
-
 
 /***/ },
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
-module.exports = function(matrix, children) {
+module.exports = function (matrix, children) {
 
-  var result = [new Instruction('setTransform', [
-    matrix[0],
-    matrix[1],
-    matrix[2],
-    matrix[3],
-    matrix[4],
-    matrix[5]
-  ])];
-  for(var i = 1; i < arguments.length; i++) {
+  var result = [new Instruction('setTransform', [matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]])];
+  for (var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
   result.push(new Instruction('restore'));
   return result;
 };
 
-
 /***/ },
 /* 7 */
 /***/ function(module, exports) {
+
+"use strict";
+"use strict";
 
 module.exports = new WeakMap();
 
@@ -195,31 +214,31 @@ module.exports = new WeakMap();
 /* 8 */
 /***/ function(module, exports) {
 
-
+"use strict";
+"use strict";
 
 function transformPoints(points, matrix) {
   var result = [],
       len = points.length,
       point;
 
-  for(var i = 0; i < len; i++) {
+  for (var i = 0; i < len; i++) {
     point = points[i];
-    result.push([
-      matrix[0] * point[0] + matrix[2] * point[1] + matrix[4],
-      matrix[1] * point[0] + matrix[3] * point[1] + matrix[5]
-    ]);
+    result.push([matrix[0] * point[0] + matrix[2] * point[1] + matrix[4], matrix[1] * point[0] + matrix[3] * point[1] + matrix[5]]);
   }
   return result;
 }
 
 module.exports = transformPoints;
 
-
 /***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+// Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the
@@ -272,20 +291,19 @@ function normalizeArray(parts, allowAboveRoot) {
 
 // Split a filename into [root, dir, basename, ext], unix version
 // 'root' is just a slash, or nothing.
-var splitPathRe =
-    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-var splitPath = function(filename) {
+var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+var splitPath = function splitPath(filename) {
   return splitPathRe.exec(filename).slice(1);
 };
 
 // path.resolve([from ...], to)
 // posix version
-exports.resolve = function() {
+exports.resolve = function () {
   var resolvedPath = '',
       resolvedAbsolute = false;
 
   for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = (i >= 0) ? arguments[i] : process.cwd();
+    var path = i >= 0 ? arguments[i] : process.cwd();
 
     // Skip empty and invalid entries
     if (typeof path !== 'string') {
@@ -302,21 +320,21 @@ exports.resolve = function() {
   // handle relative paths to be safe (might happen when process.cwd() fails)
 
   // Normalize the path
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function (p) {
     return !!p;
   }), !resolvedAbsolute).join('/');
 
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
 };
 
 // path.normalize(path)
 // posix version
-exports.normalize = function(path) {
+exports.normalize = function (path) {
   var isAbsolute = exports.isAbsolute(path),
       trailingSlash = substr(path, -1) === '/';
 
   // Normalize the path
-  path = normalizeArray(filter(path.split('/'), function(p) {
+  path = normalizeArray(filter(path.split('/'), function (p) {
     return !!p;
   }), !isAbsolute).join('/');
 
@@ -331,14 +349,14 @@ exports.normalize = function(path) {
 };
 
 // posix version
-exports.isAbsolute = function(path) {
+exports.isAbsolute = function (path) {
   return path.charAt(0) === '/';
 };
 
 // posix version
-exports.join = function() {
+exports.join = function () {
   var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
+  return exports.normalize(filter(paths, function (p, index) {
     if (typeof p !== 'string') {
       throw new TypeError('Arguments to path.join must be strings');
     }
@@ -346,10 +364,9 @@ exports.join = function() {
   }).join('/'));
 };
 
-
 // path.relative(from, to)
 // posix version
-exports.relative = function(from, to) {
+exports.relative = function (from, to) {
   from = exports.resolve(from).substr(1);
   to = exports.resolve(to).substr(1);
 
@@ -393,7 +410,7 @@ exports.relative = function(from, to) {
 exports.sep = '/';
 exports.delimiter = ':';
 
-exports.dirname = function(path) {
+exports.dirname = function (path) {
   var result = splitPath(path),
       root = result[0],
       dir = result[1];
@@ -411,8 +428,7 @@ exports.dirname = function(path) {
   return root + dir;
 };
 
-
-exports.basename = function(path, ext) {
+exports.basename = function (path, ext) {
   var f = splitPath(path)[2];
   // TODO: make this comparison case-insensitive on windows?
   if (ext && f.substr(-1 * ext.length) === ext) {
@@ -421,29 +437,26 @@ exports.basename = function(path, ext) {
   return f;
 };
 
-
-exports.extname = function(path) {
+exports.extname = function (path) {
   return splitPath(path)[3];
 };
 
-function filter (xs, f) {
-    if (xs.filter) return xs.filter(f);
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (f(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
+function filter(xs, f) {
+  if (xs.filter) return xs.filter(f);
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    if (f(xs[i], i, xs)) res.push(xs[i]);
+  }
+  return res;
 }
 
 // String.prototype.substr - negative index don't work in IE8
-var substr = 'ab'.substr(-1) === 'b'
-    ? function (str, start, len) { return str.substr(start, len) }
-    : function (str, start, len) {
-        if (start < 0) start = str.length + start;
-        return str.substr(start, len);
-    }
-;
-
+var substr = 'ab'.substr(-1) === 'b' ? function (str, start, len) {
+  return str.substr(start, len);
+} : function (str, start, len) {
+  if (start < 0) start = str.length + start;
+  return str.substr(start, len);
+};
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ },
@@ -526,29 +539,36 @@ webpackContext.id = 10;
 /* 11 */
 /***/ function(module, exports) {
 
+"use strict";
+"use strict";
+
 module.exports = function (point, vs) {
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-    
-    var x = point[0], y = point[1];
-    
+
+    var x = point[0],
+        y = point[1];
+
     var inside = false;
     for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-        var xi = vs[i][0], yi = vs[i][1];
-        var xj = vs[j][0], yj = vs[j][1];
-        
-        var intersect = ((yi > y) != (yj > y))
-            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        var xi = vs[i][0],
+            yi = vs[i][1];
+        var xj = vs[j][0],
+            yj = vs[j][1];
+
+        var intersect = yi > y != yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
         if (intersect) inside = !inside;
     }
-    
+
     return inside;
 };
-
 
 /***/ },
 /* 12 */
 /***/ function(module, exports) {
+
+"use strict";
+'use strict';
 
 // shim for using process in browser
 var process = module.exports = {};
@@ -564,7 +584,7 @@ var cachedClearTimeout;
 function defaultSetTimout() {
     throw new Error('setTimeout has not been defined');
 }
-function defaultClearTimeout () {
+function defaultClearTimeout() {
     throw new Error('clearTimeout has not been defined');
 }
 (function () {
@@ -586,7 +606,7 @@ function defaultClearTimeout () {
     } catch (e) {
         cachedClearTimeout = defaultClearTimeout;
     }
-} ())
+})();
 function runTimeout(fun) {
     if (cachedSetTimeout === setTimeout) {
         //normal enviroments in sane situations
@@ -600,17 +620,15 @@ function runTimeout(fun) {
     try {
         // when when somebody has screwed with setTimeout but no I.E. maddness
         return cachedSetTimeout(fun, 0);
-    } catch(e){
+    } catch (e) {
         try {
             // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
             return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
+        } catch (e) {
             // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
             return cachedSetTimeout.call(this, fun, 0);
         }
     }
-
-
 }
 function runClearTimeout(marker) {
     if (cachedClearTimeout === clearTimeout) {
@@ -625,19 +643,16 @@ function runClearTimeout(marker) {
     try {
         // when when somebody has screwed with setTimeout but no I.E. maddness
         return cachedClearTimeout(marker);
-    } catch (e){
+    } catch (e) {
         try {
             // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
             return cachedClearTimeout.call(null, marker);
-        } catch (e){
+        } catch (e) {
             // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
             // Some versions of I.E. have different rules for clearTimeout vs setTimeout
             return cachedClearTimeout.call(this, marker);
         }
     }
-
-
-
 }
 var queue = [];
 var draining = false;
@@ -667,7 +682,7 @@ function drainQueue() {
     draining = true;
 
     var len = queue.length;
-    while(len) {
+    while (len) {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
@@ -725,31 +740,37 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-process.cwd = function () { return '/' };
+process.cwd = function () {
+    return '/';
+};
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
-process.umask = function() { return 0; };
-
+process.umask = function () {
+    return 0;
+};
 
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-let pointInPolygon = __webpack_require__(11);
+"use strict";
+'use strict';
 
-module.exports = (ctx) => {
-  let regions = ctx.canvas[Symbol.for('regions')];
-  let mousePoints = ctx.canvas[Symbol.for('mousePoints')];
-  let mouseData = ctx.canvas[Symbol.for('mouseData')];
-  let results = [];
-  let found = false;
+var pointInPolygon = __webpack_require__(11);
 
-  for (let i = 0; i < regions.length; i++) {
-    let region = regions[i];
+module.exports = function (ctx) {
+  var regions = ctx.canvas[Symbol.for('regions')];
+  var mousePoints = ctx.canvas[Symbol.for('mousePoints')];
+  var mouseData = ctx.canvas[Symbol.for('mouseData')];
+  var results = [];
+  var found = false;
 
-    for(let j = 0; j < mousePoints.length; j++) {
-      let mousePoint = mousePoints[j];
+  for (var i = 0; i < regions.length; i++) {
+    var region = regions[i];
+
+    for (var j = 0; j < mousePoints.length; j++) {
+      var mousePoint = mousePoints[j];
 
       if (pointInPolygon(mousePoint, region.points)) {
         region.hover = true;
@@ -769,158 +790,185 @@ module.exports = (ctx) => {
 /* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let addColorStop = (offset, color) => new Instruction('addColorStop', { offset, color });  
+var Instruction = __webpack_require__(0);
+
+var addColorStop = function addColorStop(offset, color) {
+  return new Instruction('addColorStop', { offset: offset, color: color });
+};
 
 module.exports = addColorStop;
-
 
 /***/ },
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+"use strict";
+
+var _arguments = arguments;
 
 
-let Instruction = __webpack_require__(0),
+var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-const arc = (x, y, r, startAngle, endAngle, counterclockwise) => {
-  let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
+var arc = function arc(x, y, r, startAngle, endAngle, counterclockwise) {
+  var props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-
-  if (arguments.length > 3) {
+  if (_arguments.length > 3) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1){
+  if (_arguments.length > 1) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
-  return new Instruction("arc",  props);
+  return new Instruction("arc", props);
 };
 
 module.exports = arc;
-
 
 /***/ },
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let arcTo = (x1, y1, x2, y2, r) => new Instruction('arcTo', { x1, y1, x2, y2, r });
+var Instruction = __webpack_require__(0);
+
+var arcTo = function arcTo(x1, y1, x2, y2, r) {
+  return new Instruction('arcTo', { x1: x1, y1: y1, x2: x2, y2: y2, r: r });
+};
 
 module.exports = arcTo;
-
 
 /***/ },
 /* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let bezierCurveTo = (cp1x, cp1y, cp2x, cp2y, x, y) => new Instruction('bezierCurveTo', {
-  cp1x,
-  cp1y,
-  cp2x,
-  cp2y,
-  x,
-  y
-});
+var Instruction = __webpack_require__(0);
 
+var bezierCurveTo = function bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
+  return new Instruction('bezierCurveTo', {
+    cp1x: cp1x,
+    cp1y: cp1y,
+    cp2x: cp2x,
+    cp2y: cp2y,
+    x: x,
+    y: y
+  });
+};
 
 module.exports = bezierCurveTo;
-
 
 /***/ },
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let clearRect = (x, y, width, height) => new Instruction('clearRect',
-  arguments.length > 2 ? { x, y, width, height } : { x: 0, y: 0, width: x, height: y }
-);
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var clearRect = function clearRect(x, y, width, height) {
+  return new Instruction('clearRect', _arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
+};
 
 module.exports = clearRect;
-
 
 /***/ },
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let begin = new Instruction('beginClip'),
-  performClip = new Instruction('clip'),
-  end = new Instruction('endClip');
+var Instruction = __webpack_require__(0);
 
-let clip = (path, ...children) => [
-  begin,
-  path,
-  performClip,
-  children,
-  end
-];
+var begin = new Instruction('beginClip'),
+    performClip = new Instruction('clip'),
+    end = new Instruction('endClip');
+
+var clip = function clip(path) {
+  for (var _len = arguments.length, children = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    children[_key - 1] = arguments[_key];
+  }
+
+  return [begin, path, performClip, children, end];
+};
 
 module.exports = clip;
-
 
 /***/ },
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let cache = new Instruction('clipPath');
+"use strict";
+'use strict';
 
-let clipPath = () => cache;
+var Instruction = __webpack_require__(0);
+var cache = new Instruction('clipPath');
+
+var clipPath = function clipPath() {
+  return cache;
+};
 
 module.exports = clipPath;
-
 
 /***/ },
 /* 21 */
 /***/ function(module, exports) {
 
-let createRegularPolygon = (radius, position, sides) => {
+"use strict";
+"use strict";
+
+var createRegularPolygon = function createRegularPolygon(radius, position, sides) {
   radius = +radius || 1;
   position[0] = +position[0] || 0;
   position[1] = +position[1] || 0;
   sides = +sides || 3;
-  let polygon = [];
-  for(let i = 0; i < sides; i++) {
-    polygon.push([
-      position[0] + radius * Math.cos(Math.PI * 2 * i / sides),
-      position[1] + radius * Math.sin(Math.PI * 2 * i / sides)
-    ]);
+  var polygon = [];
+  for (var i = 0; i < sides; i++) {
+    polygon.push([position[0] + radius * Math.cos(Math.PI * 2 * i / sides), position[1] + radius * Math.sin(Math.PI * 2 * i / sides)]);
   }
   return polygon;
 };
 
 module.exports = createRegularPolygon;
 
-
 /***/ },
 /* 22 */
 /***/ function(module, exports) {
 
-
+"use strict";
+'use strict';
 
 var concat = [].concat;
 
-let createWrapper = (...args) => {
-  let found = false;
-  for(let i = 0; i < args.length; i++) {
+var createWrapper = function createWrapper() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var found = false;
+  for (var _i = 0; _i < args.length; _i++) {
     //parse and flatten the arguments
-    while (args[i] && args[i].constructor === Array) {
+    while (args[_i] && args[_i].constructor === Array) {
       args = concat.apply([], args).filter(Boolean);
     }
-    let { type } = args[i];
+    var type = args[_i].type;
+
     if (type === 'placeholder') {
       found = true;
 
@@ -930,36 +978,45 @@ let createWrapper = (...args) => {
   }
 
   if (!found) throw new Error('Could not find placeholder, did you forget the e2d.placeHolder() call?');
-  return (...children) =>  args.splice(i, 1, children);
+  return function () {
+    for (var _len2 = arguments.length, children = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      children[_key2] = arguments[_key2];
+    }
+
+    return args.splice(i, 1, children);
+  };
 };
 
 module.exports = createClass;
-
 
 /***/ },
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let  drawImage = (img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) => {
-  if (arguments.length === 9) {
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var drawImage = function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
+  if (_arguments.length === 9) {
     return new Instruction('drawImageSource', {
-      img,
-      sx,
-      sy,
-      sWidth,
-      sHeight,
-      dx,
-      dy,
-      dWidth,
-      dHeight
+      img: img,
+      sx: sx,
+      sy: sy,
+      sWidth: sWidth,
+      sHeight: sHeight,
+      dx: dx,
+      dy: dy,
+      dWidth: dWidth,
+      dHeight: dHeight
     });
   }
 
-  if (arguments.length >= 5) {
+  if (_arguments.length >= 5) {
     return new Instruction('drawImageSize', {
-      img,
+      img: img,
       dx: sx,
       dy: sy,
       dWidth: sWidth,
@@ -967,16 +1024,16 @@ let  drawImage = (img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) => {
     });
   }
 
-  if (arguments.length >= 3) {
+  if (_arguments.length >= 3) {
     return new Instruction('drawImage', {
-      img,
+      img: img,
       dx: sx,
       dy: sy
     });
   }
 
   return new Instruction('drawImage', {
-    img,
+    img: img,
     dx: 0,
     dy: 0
   });
@@ -984,125 +1041,144 @@ let  drawImage = (img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) => {
 
 module.exports = drawImage;
 
-
 /***/ },
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+"use strict";
+
+var _arguments = arguments;
 
 
-let Instruction = __webpack_require__(0),
+var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-let ellipse = (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) => {
-  let props = { x: 0, y: 0, radiusX: x, radiusY: y, startAngle: 0, endAngle: pi2, anticlockwise: false };
+var ellipse = function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
+  var props = { x: 0, y: 0, radiusX: x, radiusY: y, startAngle: 0, endAngle: pi2, anticlockwise: false };
 
-  if (arguments.length > 4) {
+  if (_arguments.length > 4) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.anticlockwise = !!anticlockwise;
   }
 
-  if (arguments.length > 2){
+  if (_arguments.length > 2) {
     props.x = x;
     props.y = y;
     props.radiusX = radiusX;
     props.radiusY = radiusY;
   }
 
-  return new Instruction("ellipse",  props);
+  return new Instruction("ellipse", props);
 };
 
 module.exports = ellipse;
-
 
 /***/ },
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let cache = new Instruction('fill');
+"use strict";
+'use strict';
 
-let fill = () => cache;
+var Instruction = __webpack_require__(0);
+var cache = new Instruction('fill');
+
+var fill = function fill() {
+  return cache;
+};
 
 module.exports = fill;
-
 
 /***/ },
 /* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+"use strict";
+
+var _arguments = arguments;
 
 
-let Instruction = __webpack_require__(0),
+var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-let fillArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
-  let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
+var fillArc = function fillArc(x, y, r, startAngle, endAngle, counterclockwise) {
+  var props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-
-  if (arguments.length > 3) {
+  if (_arguments.length > 3) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1){
+  if (_arguments.length > 1) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
-  return new Instruction("fillArc",  props);
+  return new Instruction("fillArc", props);
 };
 
 module.exports = fillArc;
-
 
 /***/ },
 /* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let fillRect = (x, y, width, height) => new Instruction('fillRect',
-  arguments.length > 2 ? { x, y, width, height } : { x: 0, y: 0, width: x, height: y }
-);
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var fillRect = function fillRect(x, y, width, height) {
+  return new Instruction('fillRect', _arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
+};
 
 module.exports = fillRect;
-
 
 /***/ },
 /* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let end = new Instruction('endFillStyle');
+"use strict";
+'use strict';
 
-let fillStyle = (value, ...children) => [
-    new Instruction('fillStyle', { value }),
-    children,
-    end
-];
+var Instruction = __webpack_require__(0);
+var end = new Instruction('endFillStyle');
+
+var fillStyle = function fillStyle(value) {
+    for (var _len = arguments.length, children = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        children[_key - 1] = arguments[_key];
+    }
+
+    return [new Instruction('fillStyle', { value: value }), children, end];
+};
 
 module.exports = fillStyle;
-
 
 /***/ },
 /* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let fillText = (text, x, y, maxWidth) => {
-  if (arguments.length < 4) {
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var fillText = function fillText(text, x, y, maxWidth) {
+  if (_arguments.length < 4) {
     maxWidth = null;
   }
-  if (arguments.length < 3) {
+  if (_arguments.length < 3) {
     x = 0;
     y = 0;
   }
-  return new Instruction('fillText', { text, x, y, maxWidth });
+  return new Instruction('fillText', { text: text, x: x, y: y, maxWidth: maxWidth });
 };
 
 module.exports = fillText;
@@ -1111,58 +1187,57 @@ module.exports = fillText;
 /* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+'use strict';
 
+var Instruction = __webpack_require__(0);
+var end = new Instruction('endGlobalAlpha');
 
-let Instruction = __webpack_require__(0);
-let end = new Instruction('endGlobalAlpha');
-
-let globalAlpha = (value, children) => [
-  new Instruction('globalAlpha', { value }),
-  children,
-  end
-];
+var globalAlpha = function globalAlpha(value, children) {
+  return [new Instruction('globalAlpha', { value: value }), children, end];
+};
 module.exports = globalAlpha;
-
 
 /***/ },
 /* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
-let end = new Instruction('endGlobalCompositeOperation');
+var end = new Instruction('endGlobalCompositeOperation');
 
-let globalCompositeOperation = (value, ...children) => [
-  new Instruction('globalCompositeOperation', { value }),
-  children,
-  end
-];
+var globalCompositeOperation = function globalCompositeOperation(value) {
+  for (var _len = arguments.length, children = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    children[_key - 1] = arguments[_key];
+  }
+
+  return [new Instruction('globalCompositeOperation', { value: value }), children, end];
+};
 
 module.exports = globalCompositeOperation;
-
 
 /***/ },
 /* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0),
+"use strict";
+'use strict';
+
+var _arguments = arguments;
+var Instruction = __webpack_require__(0),
     hitRegion = __webpack_require__(3);
 
-let hitRect = (id, x, y, width, height) => {
-  if (arguments.length <= 3) {
+var hitRect = function hitRect(id, x, y, width, height) {
+  if (_arguments.length <= 3) {
     width = x;
     height = y;
     x = 0;
     y = 0;
   }
-  return hitRegion(id, [
-    [x, y],
-    [x, y + height],
-    [x + width, y + height],
-    [x + width, y]
-  ]);
+  return hitRegion(id, [[x, y], [x, y + height], [x + width, y + height], [x + width, y]]);
 };
 
 module.exports = hitRect;
@@ -1171,25 +1246,35 @@ module.exports = hitRect;
 /* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let end = new Instruction('endImageSmoothingEnabled');
+"use strict";
+'use strict';
 
-let imageSmoothingEnabled = (value, ...children) => [
-  new Instruction('imageSmoothingEnabled', { value }),
-  children,
-  end
-];
+var Instruction = __webpack_require__(0);
+var end = new Instruction('endImageSmoothingEnabled');
+
+var imageSmoothingEnabled = function imageSmoothingEnabled(value) {
+  for (var _len = arguments.length, children = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    children[_key - 1] = arguments[_key];
+  }
+
+  return [new Instruction('imageSmoothingEnabled', { value: value }), children, end];
+};
 module.exports = imageSmoothingEnabled;
-
 
 /***/ },
 /* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let end = new Instruction('endLineStyle');
+"use strict";
+'use strict';
 
-let lineStyle = (value, ...children) => {
+var Instruction = __webpack_require__(0);
+var end = new Instruction('endLineStyle');
+
+var lineStyle = function lineStyle(value) {
+  for (var _len = arguments.length, children = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    children[_key - 1] = arguments[_key];
+  }
 
   value = value || {};
   var result = {
@@ -1219,132 +1304,149 @@ let lineStyle = (value, ...children) => {
   if (typeof value.lineDashOffset !== 'undefined') {
     result.lineDashOffset = value.lineDashOffset;
   }
-  return [
-    new Instruction('lineStyle', result),
-    children,
-    end
-  ];
+  return [new Instruction('lineStyle', result), children, end];
 };
 
 module.exports = lineStyle;
-
 
 /***/ },
 /* 35 */
 /***/ function(module, exports) {
 
-module.exports = (ctx) => ctx.canvas[Symbol.for('mouseData')];
+"use strict";
+'use strict';
+
+module.exports = function (ctx) {
+  return ctx.canvas[Symbol.for('mouseData')];
+};
 
 /***/ },
 /* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
-let moveTo = __webpack_require__(5), lineTo = __webpack_require__(4);
+"use strict";
+'use strict';
 
-let moveToLineTo = (point, index) => index === 0 ?
-  moveTo(point[0], point[1]) :
-  lineTo(point[0], point[1]);
+var moveTo = __webpack_require__(5),
+    lineTo = __webpack_require__(4);
+
+var moveToLineTo = function moveToLineTo(point, index) {
+  return index === 0 ? moveTo(point[0], point[1]) : lineTo(point[0], point[1]);
+};
 
 module.exports = moveToLineTo;
-
 
 /***/ },
 /* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+'use strict';
 
-
-let beginPath = __webpack_require__(1)(),
+var beginPath = __webpack_require__(1)(),
     closePath = __webpack_require__(2)();
 
-let path = (...children) => [
-  beginPath,
-  children,
-  closePath
-];
+var path = function path() {
+  for (var _len = arguments.length, children = Array(_len), _key = 0; _key < _len; _key++) {
+    children[_key] = arguments[_key];
+  }
+
+  return [beginPath, children, closePath];
+};
 
 module.exports = path;
-
 
 /***/ },
 /* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let cache = new Instruction('placeholder');
-let placeHolder = () => cache;
+var Instruction = __webpack_require__(0);
+
+var cache = new Instruction('placeholder');
+var placeHolder = function placeHolder() {
+  return cache;
+};
 
 module.exports = placeHolder;
-
 
 /***/ },
 /* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let quadraticCurveTo = (cpx, cpy, x, y) => new Instruction('quadraticCurveTo', {
-  cpx,
-  cpy,
-  x,
-  y
-});
+var Instruction = __webpack_require__(0);
+
+var quadraticCurveTo = function quadraticCurveTo(cpx, cpy, x, y) {
+  return new Instruction('quadraticCurveTo', {
+    cpx: cpx,
+    cpy: cpy,
+    x: x,
+    y: y
+  });
+};
 
 module.exports = quadraticCurveTo;
-
 
 /***/ },
 /* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
+"use strict";
+'use strict';
 
-let rect = (x, y, width, height) => new Instruction('rect',
-  arguments.length > 2 ?
-    { x, y, width, height } :
-    { x: 0, y: 0, width: x, height: y }
-);
+var _arguments = arguments;
+var Instruction = __webpack_require__(0);
+
+var rect = function rect(x, y, width, height) {
+  return new Instruction('rect', _arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
+};
 
 module.exports = rect;
-
 
 /***/ },
 /* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
-let identity = [1, 0, 0, 1, 0, 0],
-  matrix = new Float64Array(identity),
-  fillStyleStack = [],
-  strokeStyleStack = [],
-  lineStyleStack = [],
-  textStyleStack = [],
-  shadowStyleStack = [],
-  globalCompositeOperationStack = [],
-  globalAlphaStack = [],
-  imageSmoothingEnabledStack = [],
-  transformStack = new Float64Array(501 * 6),
-  transformStackIndex = 6;
+"use strict";
+'use strict';
 
-let ctxState = __webpack_require__(7);
+var identity = [1, 0, 0, 1, 0, 0],
+    matrix = new Float64Array(identity),
+    fillStyleStack = [],
+    strokeStyleStack = [],
+    lineStyleStack = [],
+    textStyleStack = [],
+    shadowStyleStack = [],
+    globalCompositeOperationStack = [],
+    globalAlphaStack = [],
+    imageSmoothingEnabledStack = [],
+    transformStack = new Float64Array(501 * 6),
+    transformStackIndex = 6;
 
-let transformPoints = __webpack_require__(8);
+var ctxState = __webpack_require__(7);
 
-const increaseTransformStackSize = () => {
-  let cache = transformStack;
+var transformPoints = __webpack_require__(8);
+
+var increaseTransformStackSize = function increaseTransformStackSize() {
+  var cache = transformStack;
   transformStack = new Float64Array(transformStack.length + 600); //add 100 more
   transformStack.set(cache);
-  return this;
+  return undefined;
 };
 
 transformStack.set(identidy);
 
-const PI2 = Math.PI * 2;
+var PI2 = Math.PI * 2;
 
-module.exports = (children, ctx) => {
+module.exports = function (children, ctx) {
 
-  let mouseData = ctx.canvas[Symbol.for('mouseData')];
-  let regions = ctx.canvas[Symbol.for('regions')];
+  var mouseData = ctx.canvas[Symbol.for('mouseData')];
+  var regions = ctx.canvas[Symbol.for('regions')];
 
   if (mouseData) {
     mouseData.dx = mouseData.x - mouseData.previousX;
@@ -1362,11 +1464,11 @@ module.exports = (children, ctx) => {
   //wrap children in case
   children = [children];
 
-  let len = children.length;
+  var len = children.length;
 
   //flatten children during the loop process to save cpu
-  for (let i = 0; children.length; i++) {
-    let child = children[i];
+  for (var i = 0; children.length; i++) {
+    var child = children[i];
 
     //flattening algorithm
     if (child && child.constructor === Array) {
@@ -1387,7 +1489,10 @@ module.exports = (children, ctx) => {
       continue;
     }
 
-    let { props, type } = child;
+    var _child = child,
+        props = _child.props,
+        type = _child.type;
+
 
     if (type === 'transform') {
 
@@ -1407,27 +1512,20 @@ module.exports = (children, ctx) => {
 
       //perform the transform math
       transformStack[transformStackIndex - 6] = //d
-        matrix[0] * props[0] + matrix[2] * props[1];
+      matrix[0] * props[0] + matrix[2] * props[1];
       transformStack[transformStackIndex - 5] = //b
-        matrix[1] * props[0] + matrix[3] * props[1];
+      matrix[1] * props[0] + matrix[3] * props[1];
       transformStack[transformStackIndex - 4] = //c
-        matrix[0] * props[2] + matrix[2] * props[3];
+      matrix[0] * props[2] + matrix[2] * props[3];
       transformStack[transformStackIndex - 3] = //d
-        matrix[1] * props[2] + matrix[3] * props[3];
+      matrix[1] * props[2] + matrix[3] * props[3];
       transformStack[transformStackIndex - 2] = //e
-        matrix[0] * props[4] + matrix[2] * props[5] + matrix[4];
+      matrix[0] * props[4] + matrix[2] * props[5] + matrix[4];
       transformStack[transformStackIndex - 1] = //f
-        matrix[1] * props[4] + matrix[3] * props[5] + matrix[5];
+      matrix[1] * props[4] + matrix[3] * props[5] + matrix[5];
 
       //modify the ctx
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
 
       continue;
     }
@@ -1438,12 +1536,12 @@ module.exports = (children, ctx) => {
         increaseTransformStackSize();
       }
 
-      transformStack[transformStackIndex - 6] = props[0];//a
-      transformStack[transformStackIndex - 5] = props[1];//b
-      transformStack[transformStackIndex - 4] = props[2];//c
-      transformStack[transformStackIndex - 3] = props[3];//d
-      transformStack[transformStackIndex - 2] = props[4];//e
-      transformStack[transformStackIndex - 1] = props[5];//f
+      transformStack[transformStackIndex - 6] = props[0]; //a
+      transformStack[transformStackIndex - 5] = props[1]; //b
+      transformStack[transformStackIndex - 4] = props[2]; //c
+      transformStack[transformStackIndex - 3] = props[3]; //d
+      transformStack[transformStackIndex - 2] = props[4]; //e
+      transformStack[transformStackIndex - 1] = props[5]; //f
       ctx.setTransform(props[0], props[1], props[2], props[3], props[4], props[5]);
 
       continue;
@@ -1469,14 +1567,7 @@ module.exports = (children, ctx) => {
       transformStack[transformStackIndex - 2] = matrix[4]; //e
       transformStack[transformStackIndex - 1] = matrix[5]; //f
 
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
 
       continue;
     }
@@ -1501,14 +1592,7 @@ module.exports = (children, ctx) => {
       transformStack[transformStackIndex - 2] = matrix[4] + matrix[0] * props.x + matrix[2] * props.y; //e
       transformStack[transformStackIndex - 1] = matrix[5] + matrix[1] * props.x + matrix[3] * props.y; //f
 
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
 
       continue;
     }
@@ -1526,25 +1610,14 @@ module.exports = (children, ctx) => {
         increaseTransformStackSize();
       }
 
-      transformStack[transformStackIndex - 6] =
-        matrix[0] * props.cos + matrix[2] * props.sin; //a
-      transformStack[transformStackIndex - 5] =
-        matrix[1] * props.cos + matrix[3] * props.sin; //b
-      transformStack[transformStackIndex - 4] =
-        matrix[0] * -props.sin + matrix[2] * props.cos; //c
-      transformStack[transformStackIndex - 3] =
-        matrix[1] * -props.sin + matrix[3] * props.cos; //d
+      transformStack[transformStackIndex - 6] = matrix[0] * props.cos + matrix[2] * props.sin; //a
+      transformStack[transformStackIndex - 5] = matrix[1] * props.cos + matrix[3] * props.sin; //b
+      transformStack[transformStackIndex - 4] = matrix[0] * -props.sin + matrix[2] * props.cos; //c
+      transformStack[transformStackIndex - 3] = matrix[1] * -props.sin + matrix[3] * props.cos; //d
       transformStack[transformStackIndex - 2] = matrix[4]; //e
-      transformStack[transformStackIndex - 1] = matrix[5];//f
+      transformStack[transformStackIndex - 1] = matrix[5]; //f
 
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
 
       continue;
     }
@@ -1557,33 +1630,25 @@ module.exports = (children, ctx) => {
       matrix[4] = transformStack[transformStackIndex - 2];
       matrix[5] = transformStack[transformStackIndex - 1];
 
-
       transformStackIndex += 6;
       if (transformStackIndex > transformStack.length) {
         increaseTransformStackSize();
       }
 
       transformStack[transformStackIndex - 6] = //d
-        matrix[0];
+      matrix[0];
       transformStack[transformStackIndex - 5] = //b
-        matrix[1];
+      matrix[1];
       transformStack[transformStackIndex - 4] = //c
-        matrix[0] * props.x + matrix[2];
+      matrix[0] * props.x + matrix[2];
       transformStack[transformStackIndex - 3] = //d
-        matrix[1] * props.x + matrix[3];
+      matrix[1] * props.x + matrix[3];
       transformStack[transformStackIndex - 2] = //e
-        matrix[4];
+      matrix[4];
       transformStack[transformStackIndex - 1] = //f
-        matrix[5];
+      matrix[5];
 
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
 
       continue;
     }
@@ -1596,33 +1661,25 @@ module.exports = (children, ctx) => {
       matrix[4] = transformStack[transformStackIndex - 2];
       matrix[5] = transformStack[transformStackIndex - 1];
 
-
       transformStackIndex += 6;
       if (transformStackIndex > transformStack.length) {
         increaseTransformStackSize();
       }
 
       transformStack[transformStackIndex - 6] = //d
-        matrix[0] * 1 + matrix[2] * props.y;
+      matrix[0] * 1 + matrix[2] * props.y;
       transformStack[transformStackIndex - 5] = //b
-        matrix[1] * 1 + matrix[3] * props.y;
+      matrix[1] * 1 + matrix[3] * props.y;
       transformStack[transformStackIndex - 4] = //c
-        matrix[2];
+      matrix[2];
       transformStack[transformStackIndex - 3] = //d
-        matrix[3];
+      matrix[3];
       transformStack[transformStackIndex - 2] = //e
-        matrix[4];
+      matrix[4];
       transformStack[transformStackIndex - 1] = //f
-        matrix[5];
+      matrix[5];
 
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
 
       continue;
     }
@@ -1897,7 +1954,7 @@ module.exports = (children, ctx) => {
       continue;
     }
 
- if (type === 'globalCompositeOperation') {
+    if (type === 'globalCompositeOperation') {
       globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
 
@@ -1997,7 +2054,7 @@ module.exports = (children, ctx) => {
       continue;
     }
 
-    ctxState.set(ctx, { mouseRegions, touchRegions });
+    ctxState.set(ctx, { mouseRegions: mouseRegions, touchRegions: touchRegions });
   }
 };
 
@@ -2005,9 +2062,18 @@ module.exports = (children, ctx) => {
 /* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-let setTransform = __webpack_require__(6);
+"use strict";
+'use strict';
 
-let resetTransform = (...children) => setTransform([1, 0, 0, 1, 0, 0], children); 
+var setTransform = __webpack_require__(6);
+
+var resetTransform = function resetTransform() {
+  for (var _len = arguments.length, children = Array(_len), _key = 0; _key < _len; _key++) {
+    children[_key] = arguments[_key];
+  }
+
+  return setTransform([1, 0, 0, 1, 0, 0], children);
+};
 
 module.exports = resetTransform;
 
@@ -2015,23 +2081,28 @@ module.exports = resetTransform;
 /* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
-let Instruction = __webpack_require__(0);
-let end = new Instruction('restore');
+"use strict";
+'use strict';
 
-let rotate = (r, ...children) => [
-  new Instruction('rotate', { cos: Math.cos(r), sin: Math.sin(r) }),
-  children,
-  end
-];
+var Instruction = __webpack_require__(0);
+var end = new Instruction('restore');
+
+var rotate = function rotate(r) {
+  for (var _len = arguments.length, children = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    children[_key - 1] = arguments[_key];
+  }
+
+  return [new Instruction('rotate', { cos: Math.cos(r), sin: Math.sin(r) }), children, end];
+};
 
 module.exports = rotate;
-
 
 /***/ },
 /* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2054,12 +2125,12 @@ function scale(x, y, children) {
 
 module.exports = scale;
 
-
 /***/ },
 /* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2096,19 +2167,19 @@ function shadowStyle(value, children) {
 
 module.exports = shadowStyle;
 
-
 /***/ },
 /* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
-function skewX(x, children){
+function skewX(x, children) {
   var result = [new Instruction('skewX', { x: Math.tan(x) })];
-  for (var i = 1; i < arguments.length; i++){
-      result.push(arguments[i]);
+  for (var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
   }
   result.push(new Instruction('restore'));
   return result;
@@ -2116,19 +2187,19 @@ function skewX(x, children){
 
 module.exports = skewX;
 
-
 /***/ },
 /* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
-function skewY(y, children){
+function skewY(y, children) {
   var result = [new Instruction('skewY', { y: Math.tan(y) })];
-  for (var i = 1; i < arguments.length; i++){
-      result.push(arguments[i]);
+  for (var i = 1; i < arguments.length; i++) {
+    result.push(arguments[i]);
   }
   result.push(new Instruction('restore'));
   return result;
@@ -2136,12 +2207,12 @@ function skewY(y, children){
 
 module.exports = skewY;
 
-
 /***/ },
 /* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2151,43 +2222,45 @@ function stroke() {
 
 module.exports = stroke;
 
-
 /***/ },
 /* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+"use strict";
+
+var _arguments = arguments;
 
 
-let Instruction = __webpack_require__(0),
+var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-const strokeArc = (x, y, r, startAngle, endAngle, counterclockwise) => {
-  let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
+var strokeArc = function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
+  var props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-
-  if (arguments.length > 3) {
+  if (_arguments.length > 3) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1){
+  if (_arguments.length > 1) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
-  return new Instruction("strokeArc",  props);
+  return new Instruction("strokeArc", props);
 };
 
 module.exports = strokeArc;
-
 
 /***/ },
 /* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2201,17 +2274,18 @@ function strokeRect(x, y, width, height) {
 
 module.exports = strokeRect;
 
-
 /***/ },
 /* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
 function fillStyle(value, children) {
   var result = [new Instruction('strokeStyle', { value: value })];
-  for(var i = 1; i < arguments.length; i++) {
+  for (var i = 1; i < arguments.length; i++) {
     result.push(arguments[i]);
   }
   result.push(new Instruction('endStrokeStyle'));
@@ -2220,12 +2294,12 @@ function fillStyle(value, children) {
 
 module.exports = fillStyle;
 
-
 /***/ },
 /* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2247,12 +2321,12 @@ function strokeText(text, x, y, maxWidth) {
 
 module.exports = strokeText;
 
-
 /***/ },
 /* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2278,7 +2352,7 @@ function textStyle(value, children) {
     result.direction = value.direction;
   }
   var tree = [new Instruction('textStyle', value)];
-  for(var i = 1; i < arguments.length; i++) {
+  for (var i = 1; i < arguments.length; i++) {
     tree.push(arguments[i]);
   }
   tree.push(new Instruction('endTextStyle'));
@@ -2287,27 +2361,18 @@ function textStyle(value, children) {
 
 module.exports = textStyle;
 
-
 /***/ },
 /* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
 function transform(values, children) {
-  var transformResult = [
-    new Instruction('transform',[
-      values[0],
-      values[1],
-      values[2],
-      values[3],
-      values[4],
-      values[5]
-    ])
-  ];
-  for(var i = 1; i < arguments.length; i++) {
+  var transformResult = [new Instruction('transform', [values[0], values[1], values[2], values[3], values[4], values[5]])];
+  for (var i = 1; i < arguments.length; i++) {
     transformResult.push(arguments[i]);
   }
   transformResult.push(new Instruction('restore'));
@@ -2315,15 +2380,14 @@ function transform(values, children) {
   return transformResult;
 }
 
-
 module.exports = transform;
-
 
 /***/ },
 /* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
-
+"use strict";
+'use strict';
 
 var Instruction = __webpack_require__(0);
 
@@ -2340,15 +2404,18 @@ function translate(x, y, children) {
 
 module.exports = translate;
 
-
 /***/ },
 /* 56 */
 /***/ function(module, exports) {
 
-module.exports = (ctx) => {
-  let { canvas } = ctx;
+"use strict";
+'use strict';
+
+module.exports = function (ctx) {
+  var canvas = ctx.canvas;
 
   //mouseData
+
   canvas[Symbol.for('mouseData')] = {
     x: 0,
     y: 0,
@@ -2367,14 +2434,18 @@ module.exports = (ctx) => {
   //make the canvas receive touch and mouse events
   canvas.tabIndex = 1;
 
-  let mouseMove = (evt) => {
-    let { clientX, clientY } = evt;
+  var mouseMove = function mouseMove(evt) {
+    var clientX = evt.clientX,
+        clientY = evt.clientY;
     //get left and top coordinates
-    let { left, top } = canvas.getBoundingClientRect();
 
-    let point = [clientX - left, clientY - top];
+    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+        left = _canvas$getBoundingCl.left,
+        top = _canvas$getBoundingCl.top;
 
-    let mouseData = canvas[Symbol.for('mouseData')];
+    var point = [clientX - left, clientY - top];
+
+    var mouseData = canvas[Symbol.for('mouseData')];
     mouseData.x = point[0];
     mouseData.y = point[1];
 
@@ -2384,11 +2455,14 @@ module.exports = (ctx) => {
     return false;
   };
 
-  canvas.addEventListener('mousemove', (evt) => mouseMove(evt));
-  canvas.addEventListener('mousedown', (evt) => {
-    let { target } = evt;
+  canvas.addEventListener('mousemove', function (evt) {
+    return mouseMove(evt);
+  });
+  canvas.addEventListener('mousedown', function (evt) {
+    var target = evt.target;
+
     if (target === canvas) {
-      let mouseData = canvas[Symbol.for('mouseData')];
+      var mouseData = canvas[Symbol.for('mouseData')];
 
       if (mouseData.state === 'up') {
         mouseData.clicked += 1;
@@ -2398,8 +2472,8 @@ module.exports = (ctx) => {
       return mouseMove(evt);
     }
   });
-  canvas.addEventListener('mouseup', (evt) => {
-    let mouseData = canvas[Symbol.for('mouseData')];
+  canvas.addEventListener('mouseup', function (evt) {
+    var mouseData = canvas[Symbol.for('mouseData')];
     mouseData.state = 'up';
     return mouseMove(evt);
   });
@@ -2413,13 +2487,12 @@ module.exports = (ctx) => {
 'use strict';
 
 var src = __webpack_require__(10),
-  path = __webpack_require__(9);
+    path = __webpack_require__(9);
 
-module.exports = src.keys().reduce(function(index, key) {
+module.exports = src.keys().reduce(function (index, key) {
   index[path.basename(key, path.extname(key))] = src(key);
   return index;
 }, {});
-
 
 /***/ }
 /******/ ]);

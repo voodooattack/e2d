@@ -1,21 +1,25 @@
-'use strict';
-var Instruction = require('./Instruction');
 
-function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
-  if (arguments.length > 7) {
-    return new Instruction(anticlockwise ? 'anticlockwise-ellipse' : 'ellipse', { x: x, y: y, radiusX: radiusX, radiusY: radiusY, startAngle: startAngle, endAngle: endAngle });
+
+let Instruction = require('./Instruction'),
+    pi2 = Math.PI * 2;
+
+let ellipse = (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) => {
+  let props = { x: 0, y: 0, radiusX: x, radiusY: y, startAngle: 0, endAngle: pi2, anticlockwise: false };
+
+  if (arguments.length > 4) {
+    props.startAngle = startAngle;
+    props.endAngle = endAngle;
+    props.anticlockwise = !!anticlockwise;
   }
 
-  if (arguments.length === 7) {
-    return new Instruction('ellipse', { x: x, y: y, radiusX: radiusX, radiusY: radiusY, rotation: rotation, startAngle: startAngle, endAngle: endAngle });
+  if (arguments.length > 2){
+    props.x = x;
+    props.y = y;
+    props.radiusX = radiusX;
+    props.radiusY = radiusY;
   }
-  if (arguments.length >= 5) {
-    return new Instruction('full-ellipse', { x: x, y: y, radiusX: radiusX, radiusY: radiusY, rotation: rotation });
-  }
-  if (arguments.length === 4) {
-    return new Instruction('quick-ellipse', { x: x, y: y, radiusX: radiusX, radiusY: radiusY });
-  }
-  return new Instruction('quick-ellipse', { x: 0, y: 0, radiusX: x, radiusY: y });
-}
+
+  return new Instruction("ellipse",  props);
+};
 
 module.exports = ellipse;

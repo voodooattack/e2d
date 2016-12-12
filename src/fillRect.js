@@ -1,13 +1,7 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-function fillRect(x, y, width, height) {
-  if (arguments.length >= 4) {
-    return new Instruction("fillRect", { x: x, y: y, width: width, height: height });
-  } else {
-    return new Instruction("fillRect", { x: 0, y: 0, width: x, height: y });
-  }
-}
+let fillRect = (x, y, width, height) => new Instruction('fillRect',
+  arguments.length > 2 ? { x, y, width, height } : { x: 0, y: 0, width: x, height: y }
+);
 
 module.exports = fillRect;

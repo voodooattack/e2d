@@ -1,8 +1,7 @@
 //jshint node: true
-'use strict';
-var Instruction = require('./Instruction');
 
-function beginPath() {
-  return new Instruction('beginPath');
-}
+let Instruction = require('./Instruction');
+let cache = new Instruction('beginPath');
+let beginPath = () => cache;
+
 module.exports = beginPath;

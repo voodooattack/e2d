@@ -1,4 +1,4 @@
-'use strict';
+
 
 function transformPoints(points, matrix) {
   var result = [],

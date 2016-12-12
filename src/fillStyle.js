@@ -1,15 +1,10 @@
-'use strict';
+let Instruction = require('./Instruction');
+let end = new Instruction('endFillStyle');
 
-var Instruction = require('./Instruction');
-
-function fillStyle(value, children) {
-  var result = [new Instruction('fillStyle', { value: value })];
-
-  for(var i = 1; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
-  result.push(new Instruction('endFillStyle'));
-  return result;
-}
+let fillStyle = (value, ...children) => [
+    new Instruction('fillStyle', { value }),
+    children,
+    end
+];
 
 module.exports = fillStyle;
