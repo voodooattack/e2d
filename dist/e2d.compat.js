@@ -2569,7 +2569,7 @@ module.exports = function (ctx) {
     dy: 0,
     previousX: 0,
     previousY: 0,
-    state: 'up',
+    state: false,
     clicked: 0
   };
 
@@ -2577,7 +2577,7 @@ module.exports = function (ctx) {
 
   for (var name in keycode.code) {
     if (keycode.code.hasOwnProperty(name)) {
-      keys[name] = "up";
+      keys[name] = false;
     }
   }
 
@@ -2618,17 +2618,17 @@ module.exports = function (ctx) {
     if (target === canvas) {
       var mouseData = canvas[Symbol.for('mouseData')];
 
-      if (mouseData.state === 'up') {
+      if (!mouseData.state) {
         mouseData.clicked += 1;
       }
 
-      mouseData.state = 'down';
+      mouseData.state = true;
       return mouseMove(evt);
     }
   });
   canvas.addEventListener('mouseup', function (evt) {
     var mouseData = canvas[Symbol.for('mouseData')];
-    mouseData.state = 'up';
+    mouseData.state = false;
     return mouseMove(evt);
   });
   canvas.addEventListener('keydown', function (evt) {

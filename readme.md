@@ -110,13 +110,13 @@ e2d.raf(() => {
 
 ## Performance
 
-The goal of e2d is to be fast. It has gone under numerous refactors to increase the speed of each canvas property.  On top of engine performance, there is an additional benefit to using `canvas variables`. Using these will result in less user-defined function calls.  With instruction storage, and less user defined function calls, the majority of the application view layer will sit around in memory waiting to be parsed every frame.
+The goal of e2d is to be fast. It has gone under numerous refactors to increase the speed of each canvas property.  On top of engine performance, there is an additional benefit to using `instruction variables`. Using these will result in less user-defined function calls.  With instruction storage, and less user defined function calls, the majority of the application view layer will sit around in memory waiting to be parsed every frame.
 
 Most importantly, creating an entire render tree every frame has a relatively minimal performance impact.
 
 ## Drawing Collections
 
-Collections are harder to optimize, so try to make data flow into canvas instructions.  See the following example:
+Collections are harder to optimize, so try to make data flow into `instruction variables`.  See the following example:
 
 ```javascript
 import e2d from 'e2d';
@@ -157,7 +157,7 @@ e2d.raf(() => {
 
   return e2d.render(
     e2d.clearRect(config.width, config.height),
-    e2d.fillStyle('white', particleMap), // every particle is white in this case
+    e2d.fillStyle('blue', particleMap), // every particle is blue in this case
     ctx
   );
 });
