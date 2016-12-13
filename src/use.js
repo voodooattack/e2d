@@ -11,7 +11,7 @@ module.exports = (ctx) => {
     dy: 0,
     previousX: 0,
     previousY: 0,
-    state: 'up',
+    state: false,
     clicked: 0
   };
 
@@ -20,7 +20,7 @@ module.exports = (ctx) => {
 
   for (let name in keycode.code) {
     if (keycode.code.hasOwnProperty(name)) {
-      keys[name] = "up";
+      keys[name] = false;
     }
   }
 
@@ -54,17 +54,17 @@ module.exports = (ctx) => {
     if (target === canvas) {
       let mouseData = canvas[Symbol.for('mouseData')];
 
-      if (mouseData.state === 'up') {
+      if (!mouseData.state) {
         mouseData.clicked += 1;
       }
 
-      mouseData.state = 'down';
+      mouseData.state = true;
       return mouseMove(evt);
     }
   });
   canvas.addEventListener('mouseup', (evt) => {
     let mouseData = canvas[Symbol.for('mouseData')];
-    mouseData.state = 'up';
+    mouseData.state = false;
     return mouseMove(evt);
   });
   canvas.addEventListener('keydown', (evt) => {
