@@ -2184,7 +2184,7 @@ module.exports = function () {
       continue;
     }
 
-    if (type === 'hitRegion') {
+    if (type === 'hitRegion' && regions) {
       matrix[0] = transformStack[transformStackIndex - 6];
       matrix[1] = transformStack[transformStackIndex - 5];
       matrix[2] = transformStack[transformStackIndex - 4];
