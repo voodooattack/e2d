@@ -2277,7 +2277,6 @@ var scale = function scale(x, y) {
     y = x;
   }
 
-  result.push(new Instruction('restore'));
   return [new Instruction('scale', { x: x, y: y }), children, end];
 };
 
