@@ -2204,7 +2204,6 @@ let scale = (x, y, ...children) => {
     y = x;
   }
 
-  result.push(new Instruction('restore'));
   return [
     new Instruction('scale', { x, y }),
     children,
