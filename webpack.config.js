@@ -1,10 +1,12 @@
 var path = require('path'),
-    pkg = require('./package.json');
+    pkg = require('./package.json'),
+    webpack = require('webpack'),
+    Babili = require('babili-webpack-plugin');
 
-module.exports = [{
+let buildConfig = (useBabel, useUglify, name) => ({
   context: __dirname,
   entry: {
-    "e2d.compat": 'babel-loader!./index.js'
+    [name]: './index.js'
   },
   output: {
     path: path.join(__dirname, '/dist/'),
@@ -13,27 +15,25 @@ module.exports = [{
     libraryTarget: 'umd'
   },
   module: {
-    rules: [
-      { test: /\.js$/i, use: ['babel-loader'] }
-    ]
-  }
-},
-{
-  context: __dirname,
-  entry: {
-    "e2d": './index.js'
+    rules: useBabel ? [
+      {
+        test: /\.js$/i,
+        use: ['babel-loader']
+      }
+    ] : []
   },
-  output: {
-    path: path.join(__dirname, '/dist/'),
-    filename: '[name].js',
-    library: 'e2d',
-    libraryTarget: 'umd'
-  },
-  module: {
-    rules: [
-      //{ test: /\.js$/i, use: ['babel-loader'] }
-    ]
-  }
-}
-
+  plugins: useUglify && useBabel ? [
+    new webpack.optimize.UglifyJsPlugin({
+      sourceMap: true
+    })
+  ] :
+  useUglify && !useBabel ? [
+    new Babili()
+  ] : []
+});
+module.exports = [
+  buildConfig(false, false, 'e2d'),
+  buildConfig(true, false, 'e2d.compat'),
+  buildConfig(false, true, 'e2d.min'),
+  buildConfig(true, true, 'e2d.compat.min')
 ];

@@ -1,10 +1,12 @@
 let Instruction = require('./Instruction');
 
-function strokeText(text, x, y, maxWidth) {
-  if (arguments.length < 4) {
+let strokeText = (...args) => {
+  let [text, x, y, maxWidth] = args;
+
+  if (args.length < 4) {
     maxWidth = null;
   }
-  if (arguments.length < 3) {
+  if (args.length < 3) {
     x = 0;
     y = 0;
   }
@@ -14,6 +16,6 @@ function strokeText(text, x, y, maxWidth) {
     y,
     maxWidth
   });
-}
+};
 
 module.exports = strokeText;

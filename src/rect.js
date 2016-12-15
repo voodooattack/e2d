@@ -1,11 +1,9 @@
 let Instruction = require('./Instruction');
 
-function rect (x, y, width, height) {
-  return new Instruction('rect',
-    arguments.length > 2 ?
-      { x, y, width, height } :
-      { x: 0, y: 0, width: x, height: y }
-  );
-}
+let rect = (...args) => new Instruction('rect',
+  args.length > 2 ?
+    { x: args[0], y: args[1], width: args[2], height: args[3] } :
+    { x: 0, y: 0, width: args[0], height: args[1] }
+);
 
 module.exports = rect;

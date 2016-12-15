@@ -1,14 +1,15 @@
 let Instruction = require('./Instruction');
 
-function fillText (text, x, y, maxWidth) {
-  if (arguments.length < 4) {
+let fillText = (...args) => {
+  let [text, x, y, maxWidth] = args;
+  if (args.length < 4) {
     maxWidth = null;
   }
-  if (arguments.length < 3) {
+  if (args.length < 3) {
     x = 0;
     y = 0;
   }
   return new Instruction('fillText', { text, x, y, maxWidth });
-}
+};
 
 module.exports = fillText;

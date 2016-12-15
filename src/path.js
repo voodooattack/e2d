@@ -1,5 +1,3 @@
-
-
 let beginPath = require('./beginPath')(),
     closePath = require('./closePath')();
 

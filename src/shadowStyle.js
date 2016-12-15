@@ -28,6 +28,6 @@ let shadowStyle = (value, ...children) => {
     children,
     end
   ];
-}
+};
 
 module.exports = shadowStyle;

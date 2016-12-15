@@ -1,7 +1,9 @@
 let Instruction = require('./Instruction');
 
-function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
-  if (arguments.length === 9) {
+let drawImage = (...args) => {
+  let [img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight] = args;
+
+  if (args.length === 9) {
     return new Instruction('drawImageSource', {
       img,
       sx,
@@ -15,7 +17,7 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     });
   }
 
-  if (arguments.length >= 5) {
+  if (args.length >= 5) {
     return new Instruction('drawImageSize', {
       img,
       dx: sx,
@@ -25,7 +27,7 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     });
   }
 
-  if (arguments.length >= 3) {
+  if (args.length >= 3) {
     return new Instruction('drawImage', {
       img,
       dx: sx,
@@ -38,6 +40,6 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     dx: 0,
     dy: 0
   });
-}
+};
 
 module.exports = drawImage;

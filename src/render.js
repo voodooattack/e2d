@@ -1,3 +1,6 @@
+
+//initialize all the properties
+
 let identity = [1, 0, 0, 1, 0, 0],
   matrix = new Float64Array(identity),
   fillStyleStack = [],
@@ -10,10 +13,16 @@ let identity = [1, 0, 0, 1, 0, 0],
   imageSmoothingEnabledStack = [],
   transformStack = new Float64Array(501 * 6),
   transformStackIndex = 6,
-  concat = [].concat;
+  concat = [].concat,
+  supportsEllipse = false;
 
-let transformPoints = require('./transformPoints');
-let keycode = require('keycode');
+if (typeof CanvasRenderingContext2D !== 'undefined') {
+  supportsEllipse = CanvasRenderingContext2D.prototype.hasOwnProperty('ellipse');
+}
+
+//transform points function
+const transformPoints = require('./transformPoints');
+const cycleMouseData = require('./cycleMouseData');
 
 const increaseTransformStackSize = () => {
   let cache = transformStack;
@@ -29,18 +38,9 @@ const PI2 = Math.PI * 2;
 module.exports = (...args) => {
   let children = args.slice(0, -1);
   let ctx = args[args.length - 1];
-  let mouseData = ctx.canvas[Symbol.for('mouseData')];
   let regions = ctx.canvas[Symbol.for('regions')];
 
-  if (mouseData) {
-    mouseData.dx = mouseData.x - mouseData.previousX;
-    mouseData.dy = mouseData.y - mouseData.previousY;
-
-    mouseData.previousX = mouseData.x;
-    mouseData.previousY = mouseData.y;
-
-    mouseData.clicked = 0;
-  }
+  cycleMouseData(ctx);
 
   if (regions) {
     regions.splice(0, regions.length);
@@ -114,7 +114,6 @@ module.exports = (...args) => {
         transformStack[transformStackIndex - 2],
         transformStack[transformStackIndex - 1]
       );
-
       continue;
     }
 
@@ -195,7 +194,6 @@ module.exports = (...args) => {
         transformStack[transformStackIndex - 2],
         transformStack[transformStackIndex - 1]
       );
-
       continue;
     }
 
@@ -231,7 +229,6 @@ module.exports = (...args) => {
         transformStack[transformStackIndex - 2],
         transformStack[transformStackIndex - 1]
       );
-
       continue;
     }
 
@@ -242,7 +239,6 @@ module.exports = (...args) => {
       matrix[3] = transformStack[transformStackIndex - 3];
       matrix[4] = transformStack[transformStackIndex - 2];
       matrix[5] = transformStack[transformStackIndex - 1];
-
 
       transformStackIndex += 6;
       if (transformStackIndex > transformStack.length) {
@@ -270,7 +266,6 @@ module.exports = (...args) => {
         transformStack[transformStackIndex - 2],
         transformStack[transformStackIndex - 1]
       );
-
       continue;
     }
 
@@ -281,7 +276,6 @@ module.exports = (...args) => {
       matrix[3] = transformStack[transformStackIndex - 3];
       matrix[4] = transformStack[transformStackIndex - 2];
       matrix[5] = transformStack[transformStackIndex - 1];
-
 
       transformStackIndex += 6;
       if (transformStackIndex > transformStack.length) {
@@ -309,7 +303,6 @@ module.exports = (...args) => {
         transformStack[transformStackIndex - 2],
         transformStack[transformStackIndex - 1]
       );
-
       continue;
     }
 
@@ -323,45 +316,38 @@ module.exports = (...args) => {
       matrix[5] = transformStack[transformStackIndex - 1];
 
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-
       continue;
     }
 
     if (type === 'fillRect') {
       ctx.fillRect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'strokeRect') {
       ctx.strokeRect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'clearRect') {
       ctx.clearRect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'rect') {
       ctx.rect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
-
       continue;
     }
 
     if (type === 'strokeStyle') {
       strokeStyleStack.push(ctx.strokeStyle);
       ctx.strokeStyle = props.value;
-
       continue;
     }
 
@@ -373,7 +359,6 @@ module.exports = (...args) => {
 
     if (type === 'endStrokeStyle') {
       ctx.strokeStyle = strokeStyleStack.pop();
-
       continue;
     }
     if (type === 'lineStyle') {
@@ -404,7 +389,6 @@ module.exports = (...args) => {
       if (props.lineDashOffset !== null) {
         ctx.lineDashOffset = props.lineDashOffset;
       }
-
       continue;
     }
 
@@ -416,7 +400,6 @@ module.exports = (...args) => {
       ctx.miterLimit = cache.miterLimit;
       ctx.setLineDash(cache.lineDash);
       ctx.lineDashOffset = cache.lineDashOffset;
-
       continue;
     }
 
@@ -439,7 +422,6 @@ module.exports = (...args) => {
       if (props.lineJoin !== null) {
         ctx.direction = props.direction;
       }
-
       continue;
     }
 
@@ -449,7 +431,6 @@ module.exports = (...args) => {
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
       ctx.direction = cache.direction;
-
       continue;
     }
 
@@ -472,7 +453,6 @@ module.exports = (...args) => {
       if (props.shadowOffsetY !== null) {
         ctx.shadowOffsetY = props.shadowOffsetY;
       }
-
       continue;
     }
 
@@ -482,7 +462,6 @@ module.exports = (...args) => {
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
       ctx.shadowOffsetY = cache.shadowOffsetY;
-
       continue;
     }
 
@@ -524,7 +503,6 @@ module.exports = (...args) => {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, props.counterclockwise);
       ctx.closePath();
       ctx.stroke();
-
       continue;
     }
 
@@ -533,31 +511,26 @@ module.exports = (...args) => {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, props.counterclockwise);
       ctx.closePath();
       ctx.fill();
-
       continue;
     }
 
     if (type === 'moveTo') {
       ctx.moveTo(props.x, props.y);
-
       continue;
     }
 
     if (type === 'lineTo') {
       ctx.lineTo(props.x, props.y);
-
       continue;
     }
 
     if (type === 'bezierCurveTo') {
       ctx.bezierCurveTo(props.cp1x, props.cp1y, props.cp2x, props.cp2y, props.x, props.y);
-
       continue;
     }
 
     if (type === 'quadraticCurveTo') {
       ctx.quadraticCurveTo(props.cpx, props.cpy, props.x, props.y);
-
       continue;
     }
 
@@ -568,87 +541,88 @@ module.exports = (...args) => {
 
     if (type === 'arcTo') {
       ctx.arcTo(props.x1, props.y1, props.x2, props.y2, props.r);
-
       continue;
     }
 
     if (type === 'ellipse') {
+      //if the method is provided by the browser
+      if (supportsEllipse) {
+        ctx.ellipse(
+          props.x,
+          props.y,
+          props.radiusX,
+          props.radiusY,
+          props.rotation,
+          props.startAngle,
+          props.endAngle,
+          props.anticlockwise
+        );
+        continue;
+      }
       ctx.save();
       ctx.translate(props.x, props.y);
       ctx.rotate(props.rotation);
       ctx.scale(props.radiusX, props.radiusY);
       ctx.arc(0, 0, 1, props.startAngle, props.endAngle, props.anticlockwise);
       ctx.restore();
-
       continue;
     }
 
- if (type === 'globalCompositeOperation') {
+    if (type === 'globalCompositeOperation') {
       globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
-
       continue;
     }
 
     if (type === 'endGlobalCompositeOperation') {
       ctx.globalCompositeOperation = globalCompositeOperationStack.pop();
-
       continue;
     }
 
     if (type === 'fill') {
       ctx.fill();
-
       continue;
     }
 
     if (type === 'stroke') {
       ctx.stroke();
-
       continue;
     }
 
     if (type === 'beginClip') {
       ctx.save();
       ctx.beginPath();
-
       continue;
     }
 
     if (type === 'clip') {
       ctx.clip();
-
       continue;
     }
 
     if (type === 'endClip') {
       ctx.restore();
-
       continue;
     }
 
     if (type === 'beginPath') {
       ctx.beginPath();
-
       continue;
     }
 
     if (type === 'closePath') {
       ctx.closePath();
-
       continue;
     }
 
     if (type === 'globalAlpha') {
       globalAlphaStack.push(ctx.globalAlpha);
       ctx.globalAlpha *= props.value;
-
       continue;
     }
 
     if (type === 'endGlobalAlpha') {
       ctx.globalAlpha = globalAlphaStack.pop();
-
       continue;
     }
 

@@ -1,8 +1,9 @@
 let Instruction = require('./Instruction'),
     hitRegion = require('./hitRegion');
 
-function hitRect (id, x, y, width, height) {
-  if (arguments.length <= 3) {
+let hitRect = (id, ...args) => {
+  let [x, y, width, height] = args;
+  if (args.length <= 3) {
     width = x;
     height = y;
     x = 0;
@@ -14,6 +15,6 @@ function hitRect (id, x, y, width, height) {
     [x + width, y + height],
     [x + width, y]
   ]);
-}
+};
 
 module.exports = hitRect;

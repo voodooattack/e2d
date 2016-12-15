@@ -71,7 +71,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 59);
+/******/ 	return __webpack_require__(__webpack_require__.s = 60);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -98,161 +98,6 @@ module.exports = Instruction;
 
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
-
-"use strict";
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-// Source: http://jsfiddle.net/vWx8V/
-// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
-
-/**
- * Conenience method returns corresponding value for given keyName or keyCode.
- *
- * @param {Mixed} keyCode {Number} or keyName {String}
- * @return {Mixed}
- * @api public
- */
-
-exports = module.exports = function (searchInput) {
-  // Keyboard Events
-  if (searchInput && 'object' === (typeof searchInput === 'undefined' ? 'undefined' : _typeof(searchInput))) {
-    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode;
-    if (hasKeyCode) searchInput = hasKeyCode;
-  }
-
-  // Numbers
-  if ('number' === typeof searchInput) return names[searchInput];
-
-  // Everything else (cast to string)
-  var search = String(searchInput);
-
-  // check codes
-  var foundNamedKey = codes[search.toLowerCase()];
-  if (foundNamedKey) return foundNamedKey;
-
-  // check aliases
-  var foundNamedKey = aliases[search.toLowerCase()];
-  if (foundNamedKey) return foundNamedKey;
-
-  // weird character?
-  if (search.length === 1) return search.charCodeAt(0);
-
-  return undefined;
-};
-
-/**
- * Get by name
- *
- *   exports.code['enter'] // => 13
- */
-
-var codes = exports.code = exports.codes = {
-  'backspace': 8,
-  'tab': 9,
-  'enter': 13,
-  'shift': 16,
-  'ctrl': 17,
-  'alt': 18,
-  'pause/break': 19,
-  'caps lock': 20,
-  'esc': 27,
-  'space': 32,
-  'page up': 33,
-  'page down': 34,
-  'end': 35,
-  'home': 36,
-  'left': 37,
-  'up': 38,
-  'right': 39,
-  'down': 40,
-  'insert': 45,
-  'delete': 46,
-  'command': 91,
-  'left command': 91,
-  'right command': 93,
-  'numpad *': 106,
-  'numpad +': 107,
-  'numpad -': 109,
-  'numpad .': 110,
-  'numpad /': 111,
-  'num lock': 144,
-  'scroll lock': 145,
-  'my computer': 182,
-  'my calculator': 183,
-  ';': 186,
-  '=': 187,
-  ',': 188,
-  '-': 189,
-  '.': 190,
-  '/': 191,
-  '`': 192,
-  '[': 219,
-  '\\': 220,
-  ']': 221,
-  "'": 222
-};
-
-// Helper aliases
-
-var aliases = exports.aliases = {
-  'windows': 91,
-  '⇧': 16,
-  '⌥': 18,
-  '⌃': 17,
-  '⌘': 91,
-  'ctl': 17,
-  'control': 17,
-  'option': 18,
-  'pause': 19,
-  'break': 19,
-  'caps': 20,
-  'return': 13,
-  'escape': 27,
-  'spc': 32,
-  'pgup': 33,
-  'pgdn': 34,
-  'ins': 45,
-  'del': 46,
-  'cmd': 91
-};
-
-/*!
- * Programatically add the following
- */
-
-// lower case chars
-for (i = 97; i < 123; i++) {
-  codes[String.fromCharCode(i)] = i - 32;
-} // numbers
-for (var i = 48; i < 58; i++) {
-  codes[i - 48] = i;
-} // function keys
-for (i = 1; i < 13; i++) {
-  codes['f' + i] = i + 111;
-} // numpad keys
-for (i = 0; i < 10; i++) {
-  codes['numpad ' + i] = i + 96;
-} /**
-   * Get by code
-   *
-   *   exports.name[13] // => 'Enter'
-   */
-
-var names = exports.names = exports.title = {}; // title for backward compat
-
-// Create reverse mapping
-for (i in codes) {
-  names[codes[i]] = i;
-} // Add aliases
-for (var alias in aliases) {
-  codes[alias] = aliases[alias];
-}
-
-/***/ },
-/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -269,7 +114,7 @@ var beginPath = function beginPath() {
 module.exports = beginPath;
 
 /***/ },
-/* 3 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -283,6 +128,28 @@ var closePath = function closePath() {
 };
 
 module.exports = closePath;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+"use strict";
+'use strict';
+
+var cycleMouseData = function cycleMouseData(ctx) {
+  var mouseData = ctx.canvas[Symbol.for('mouseData')];
+  if (mouseData) {
+    mouseData.dx = mouseData.x - mouseData.previousX;
+    mouseData.dy = mouseData.y - mouseData.previousY;
+
+    mouseData.previousX = mouseData.x;
+    mouseData.previousY = mouseData.y;
+
+    mouseData.clicked = 0;
+  }
+};
+
+module.exports = cycleMouseData;
 
 /***/ },
 /* 4 */
@@ -308,12 +175,9 @@ module.exports = hitRegion;
 
 var Instruction = __webpack_require__(0);
 
-function lineTo(x, y) {
-  if (arguments.length === 0) {
-    return new Instruction('lineTo', { x: 0, y: 0 });
-  }
+var lineTo = function lineTo(x, y) {
   return new Instruction('lineTo', { x: x, y: y });
-}
+};
 
 module.exports = lineTo;
 
@@ -326,12 +190,9 @@ module.exports = lineTo;
 
 var Instruction = __webpack_require__(0);
 
-function moveTo(x, y) {
-  if (arguments.length === 0) {
-    return new Instruction('moveTo', { x: 0, y: 0 });
-  }
+var moveTo = function moveTo(x, y) {
   return new Instruction('moveTo', { x: x, y: y });
-}
+};
 
 module.exports = moveTo;
 
@@ -602,7 +463,7 @@ var substr = 'ab'.substr(-1) === 'b' ? function (str, start, len) {
   if (start < 0) start = str.length + start;
   return str.substr(start, len);
 };
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ },
 /* 10 */
@@ -610,59 +471,60 @@ var substr = 'ab'.substr(-1) === 'b' ? function (str, start, len) {
 
 var map = {
 	"./Instruction.js": 0,
-	"./activeRegions.js": 13,
-	"./addColorStop.js": 14,
-	"./arc.js": 15,
-	"./arcTo.js": 16,
-	"./beginPath.js": 2,
-	"./bezierCurveTo.js": 17,
-	"./clearRect.js": 18,
-	"./clip.js": 19,
-	"./clipPath.js": 20,
-	"./closePath.js": 3,
-	"./createRegularPolygon.js": 21,
-	"./createWrapper.js": 22,
-	"./drawImage.js": 23,
-	"./ellipse.js": 24,
-	"./fill.js": 25,
-	"./fillArc.js": 26,
-	"./fillRect.js": 27,
-	"./fillStyle.js": 28,
-	"./fillText.js": 29,
-	"./globalAlpha.js": 30,
-	"./globalCompositeOperation.js": 31,
-	"./hitRect.js": 32,
+	"./activeRegions.js": 14,
+	"./addColorStop.js": 15,
+	"./arc.js": 16,
+	"./arcTo.js": 17,
+	"./beginPath.js": 1,
+	"./bezierCurveTo.js": 18,
+	"./clearRect.js": 19,
+	"./clip.js": 20,
+	"./clipPath.js": 21,
+	"./closePath.js": 2,
+	"./createRegularPolygon.js": 22,
+	"./createWrapper.js": 23,
+	"./cycleMouseData.js": 3,
+	"./drawImage.js": 24,
+	"./ellipse.js": 25,
+	"./fill.js": 26,
+	"./fillArc.js": 27,
+	"./fillRect.js": 28,
+	"./fillStyle.js": 29,
+	"./fillText.js": 30,
+	"./globalAlpha.js": 31,
+	"./globalCompositeOperation.js": 32,
+	"./hitRect.js": 33,
 	"./hitRegion.js": 4,
-	"./imageSmoothingEnabled.js": 33,
-	"./keyData.js": 34,
-	"./lineStyle.js": 35,
+	"./imageSmoothingEnabled.js": 34,
+	"./keyData.js": 35,
+	"./lineStyle.js": 36,
 	"./lineTo.js": 5,
-	"./mouseData.js": 36,
+	"./mouseData.js": 37,
 	"./moveTo.js": 6,
-	"./moveToLineTo.js": 37,
-	"./path.js": 38,
-	"./placeHolder.js": 39,
-	"./quadraticCurveTo.js": 40,
-	"./raf.js": 41,
-	"./rect.js": 42,
-	"./render.js": 43,
-	"./resetTransform.js": 44,
-	"./rotate.js": 45,
-	"./scale.js": 46,
+	"./moveToLineTo.js": 38,
+	"./path.js": 39,
+	"./placeHolder.js": 40,
+	"./quadraticCurveTo.js": 41,
+	"./raf.js": 42,
+	"./rect.js": 43,
+	"./render.js": 44,
+	"./resetTransform.js": 45,
+	"./rotate.js": 46,
+	"./scale.js": 47,
 	"./setTransform.js": 7,
-	"./shadowStyle.js": 47,
-	"./skewX.js": 48,
-	"./skewY.js": 49,
-	"./stroke.js": 50,
-	"./strokeArc.js": 51,
-	"./strokeRect.js": 52,
-	"./strokeStyle.js": 53,
-	"./strokeText.js": 54,
-	"./textStyle.js": 55,
-	"./transform.js": 56,
+	"./shadowStyle.js": 48,
+	"./skewX.js": 49,
+	"./skewY.js": 50,
+	"./stroke.js": 51,
+	"./strokeArc.js": 52,
+	"./strokeRect.js": 53,
+	"./strokeStyle.js": 54,
+	"./strokeText.js": 55,
+	"./textStyle.js": 56,
+	"./transform.js": 57,
 	"./transformPoints.js": 8,
-	"./translate.js": 57,
-	"./use.js": 58
+	"./translate.js": 58,
+	"./use.js": 59
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -683,6 +545,161 @@ webpackContext.id = 10;
 
 /***/ },
 /* 11 */
+/***/ function(module, exports) {
+
+"use strict";
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+// Source: http://jsfiddle.net/vWx8V/
+// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
+
+/**
+ * Conenience method returns corresponding value for given keyName or keyCode.
+ *
+ * @param {Mixed} keyCode {Number} or keyName {String}
+ * @return {Mixed}
+ * @api public
+ */
+
+exports = module.exports = function (searchInput) {
+  // Keyboard Events
+  if (searchInput && 'object' === (typeof searchInput === 'undefined' ? 'undefined' : _typeof(searchInput))) {
+    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode;
+    if (hasKeyCode) searchInput = hasKeyCode;
+  }
+
+  // Numbers
+  if ('number' === typeof searchInput) return names[searchInput];
+
+  // Everything else (cast to string)
+  var search = String(searchInput);
+
+  // check codes
+  var foundNamedKey = codes[search.toLowerCase()];
+  if (foundNamedKey) return foundNamedKey;
+
+  // check aliases
+  var foundNamedKey = aliases[search.toLowerCase()];
+  if (foundNamedKey) return foundNamedKey;
+
+  // weird character?
+  if (search.length === 1) return search.charCodeAt(0);
+
+  return undefined;
+};
+
+/**
+ * Get by name
+ *
+ *   exports.code['enter'] // => 13
+ */
+
+var codes = exports.code = exports.codes = {
+  'backspace': 8,
+  'tab': 9,
+  'enter': 13,
+  'shift': 16,
+  'ctrl': 17,
+  'alt': 18,
+  'pause/break': 19,
+  'caps lock': 20,
+  'esc': 27,
+  'space': 32,
+  'page up': 33,
+  'page down': 34,
+  'end': 35,
+  'home': 36,
+  'left': 37,
+  'up': 38,
+  'right': 39,
+  'down': 40,
+  'insert': 45,
+  'delete': 46,
+  'command': 91,
+  'left command': 91,
+  'right command': 93,
+  'numpad *': 106,
+  'numpad +': 107,
+  'numpad -': 109,
+  'numpad .': 110,
+  'numpad /': 111,
+  'num lock': 144,
+  'scroll lock': 145,
+  'my computer': 182,
+  'my calculator': 183,
+  ';': 186,
+  '=': 187,
+  ',': 188,
+  '-': 189,
+  '.': 190,
+  '/': 191,
+  '`': 192,
+  '[': 219,
+  '\\': 220,
+  ']': 221,
+  "'": 222
+};
+
+// Helper aliases
+
+var aliases = exports.aliases = {
+  'windows': 91,
+  '⇧': 16,
+  '⌥': 18,
+  '⌃': 17,
+  '⌘': 91,
+  'ctl': 17,
+  'control': 17,
+  'option': 18,
+  'pause': 19,
+  'break': 19,
+  'caps': 20,
+  'return': 13,
+  'escape': 27,
+  'spc': 32,
+  'pgup': 33,
+  'pgdn': 34,
+  'ins': 45,
+  'del': 46,
+  'cmd': 91
+};
+
+/*!
+ * Programatically add the following
+ */
+
+// lower case chars
+for (i = 97; i < 123; i++) {
+  codes[String.fromCharCode(i)] = i - 32;
+} // numbers
+for (var i = 48; i < 58; i++) {
+  codes[i - 48] = i;
+} // function keys
+for (i = 1; i < 13; i++) {
+  codes['f' + i] = i + 111;
+} // numpad keys
+for (i = 0; i < 10; i++) {
+  codes['numpad ' + i] = i + 96;
+} /**
+   * Get by code
+   *
+   *   exports.name[13] // => 'Enter'
+   */
+
+var names = exports.names = exports.title = {}; // title for backward compat
+
+// Create reverse mapping
+for (i in codes) {
+  names[codes[i]] = i;
+} // Add aliases
+for (var alias in aliases) {
+  codes[alias] = aliases[alias];
+}
+
+/***/ },
+/* 12 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -710,7 +727,7 @@ module.exports = function (point, vs) {
 };
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -897,13 +914,13 @@ process.umask = function () {
 };
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 'use strict';
 
-var pointInPolygon = __webpack_require__(11);
+var pointInPolygon = __webpack_require__(12);
 
 module.exports = function (ctx) {
   var regions = ctx.canvas[Symbol.for('regions')];
@@ -933,7 +950,7 @@ module.exports = function (ctx) {
 };
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -948,7 +965,7 @@ var addColorStop = function addColorStop(offset, color) {
 module.exports = addColorStop;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -957,28 +974,39 @@ module.exports = addColorStop;
 var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-function arc(x, y, r, startAngle, endAngle, counterclockwise) {
+var arc = function arc() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var x = args[0],
+      y = args[1],
+      r = args[2],
+      startAngle = args[3],
+      endAngle = args[4],
+      counterclockwise = args[5];
+
   var props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-  if (arguments.length > 3) {
+  if (args.length > 3) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1) {
+  if (args.length > 1) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
   return new Instruction("arc", props);
-}
+};
 
 module.exports = arc;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -993,7 +1021,7 @@ var arcTo = function arcTo(x1, y1, x2, y2, r) {
 module.exports = arcTo;
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1015,7 +1043,7 @@ var bezierCurveTo = function bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
 module.exports = bezierCurveTo;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1023,14 +1051,14 @@ module.exports = bezierCurveTo;
 
 var Instruction = __webpack_require__(0);
 
-function clearRect(x, y, width, height) {
-  return new Instruction('clearRect', arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
-}
+var clearRect = function clearRect() {
+  return new Instruction('clearRect', arguments.length > 2 ? { x: arguments.length <= 0 ? undefined : arguments[0], y: arguments.length <= 1 ? undefined : arguments[1], width: arguments.length <= 2 ? undefined : arguments[2], height: arguments.length <= 3 ? undefined : arguments[3] } : { x: 0, y: 0, width: arguments.length <= 0 ? undefined : arguments[0], height: arguments.length <= 1 ? undefined : arguments[1] });
+};
 
 module.exports = clearRect;
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1053,7 +1081,7 @@ var clip = function clip(path) {
 module.exports = clip;
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1069,7 +1097,7 @@ var clipPath = function clipPath() {
 module.exports = clipPath;
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -1090,7 +1118,7 @@ var createRegularPolygon = function createRegularPolygon(radius, position, sides
 module.exports = createRegularPolygon;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -1132,7 +1160,7 @@ var createWrapper = function createWrapper() {
 module.exports = concat;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1140,8 +1168,23 @@ module.exports = concat;
 
 var Instruction = __webpack_require__(0);
 
-function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
-  if (arguments.length === 9) {
+var drawImage = function drawImage() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var img = args[0],
+      sx = args[1],
+      sy = args[2],
+      sWidth = args[3],
+      sHeight = args[4],
+      dx = args[5],
+      dy = args[6],
+      dWidth = args[7],
+      dHeight = args[8];
+
+
+  if (args.length === 9) {
     return new Instruction('drawImageSource', {
       img: img,
       sx: sx,
@@ -1155,7 +1198,7 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     });
   }
 
-  if (arguments.length >= 5) {
+  if (args.length >= 5) {
     return new Instruction('drawImageSize', {
       img: img,
       dx: sx,
@@ -1165,7 +1208,7 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     });
   }
 
-  if (arguments.length >= 3) {
+  if (args.length >= 3) {
     return new Instruction('drawImage', {
       img: img,
       dx: sx,
@@ -1178,12 +1221,12 @@ function drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     dx: 0,
     dy: 0
   });
-}
+};
 
 module.exports = drawImage;
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1192,16 +1235,30 @@ module.exports = drawImage;
 var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
+var ellipse = function ellipse() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var x = args[0],
+      y = args[1],
+      radiusX = args[2],
+      radiusY = args[3],
+      rotation = args[4],
+      startAngle = args[5],
+      endAngle = args[6],
+      anticlockwise = args[7];
+
+
   var props = { x: 0, y: 0, radiusX: x, radiusY: y, startAngle: 0, endAngle: pi2, anticlockwise: false };
 
-  if (arguments.length > 4) {
+  if (args.length > 4) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.anticlockwise = !!anticlockwise;
   }
 
-  if (arguments.length > 2) {
+  if (args.length > 2) {
     props.x = x;
     props.y = y;
     props.radiusX = radiusX;
@@ -1209,12 +1266,12 @@ function ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlo
   }
 
   return new Instruction("ellipse", props);
-}
+};
 
 module.exports = ellipse;
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1230,7 +1287,7 @@ var fill = function fill() {
 module.exports = fill;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1239,28 +1296,39 @@ module.exports = fill;
 var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-function fillArc(x, y, r, startAngle, endAngle, counterclockwise) {
+var fillArc = function fillArc() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var x = args[0],
+      y = args[1],
+      r = args[2],
+      startAngle = args[3],
+      endAngle = args[4],
+      counterclockwise = args[5];
+
   var props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-  if (arguments.length > 3) {
+  if (args.length > 3) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length >= 2) {
+  if (args.length >= 2) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
   return new Instruction("fillArc", props);
-}
+};
 
 module.exports = fillArc;
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1268,14 +1336,14 @@ module.exports = fillArc;
 
 var Instruction = __webpack_require__(0);
 
-function fillRect(x, y, width, height) {
-  return new Instruction('fillRect', arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
-}
+var fillRect = function fillRect() {
+  return new Instruction('fillRect', arguments.length > 2 ? { x: arguments.length <= 0 ? undefined : arguments[0], y: arguments.length <= 1 ? undefined : arguments[1], width: arguments.length <= 2 ? undefined : arguments[2], height: arguments.length <= 3 ? undefined : arguments[3] } : { x: 0, y: 0, width: arguments.length <= 0 ? undefined : arguments[0], height: arguments.length <= 1 ? undefined : arguments[1] });
+};
 
 module.exports = fillRect;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1295,7 +1363,7 @@ var fillStyle = function fillStyle(value) {
 module.exports = fillStyle;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1303,21 +1371,30 @@ module.exports = fillStyle;
 
 var Instruction = __webpack_require__(0);
 
-function fillText(text, x, y, maxWidth) {
-  if (arguments.length < 4) {
+var fillText = function fillText() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var text = args[0],
+      x = args[1],
+      y = args[2],
+      maxWidth = args[3];
+
+  if (args.length < 4) {
     maxWidth = null;
   }
-  if (arguments.length < 3) {
+  if (args.length < 3) {
     x = 0;
     y = 0;
   }
   return new Instruction('fillText', { text: text, x: x, y: y, maxWidth: maxWidth });
-}
+};
 
 module.exports = fillText;
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1332,7 +1409,7 @@ var globalAlpha = function globalAlpha(value, children) {
 module.exports = globalAlpha;
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1353,7 +1430,7 @@ var globalCompositeOperation = function globalCompositeOperation(value) {
 module.exports = globalCompositeOperation;
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1362,20 +1439,29 @@ module.exports = globalCompositeOperation;
 var Instruction = __webpack_require__(0),
     hitRegion = __webpack_require__(4);
 
-function hitRect(id, x, y, width, height) {
-  if (arguments.length <= 3) {
+var hitRect = function hitRect(id) {
+  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  var x = args[0],
+      y = args[1],
+      width = args[2],
+      height = args[3];
+
+  if (args.length <= 3) {
     width = x;
     height = y;
     x = 0;
     y = 0;
   }
   return hitRegion(id, [[x, y], [x, y + height], [x + width, y + height], [x + width, y]]);
-}
+};
 
 module.exports = hitRect;
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1394,7 +1480,7 @@ var imageSmoothingEnabled = function imageSmoothingEnabled(value) {
 module.exports = imageSmoothingEnabled;
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -1405,7 +1491,7 @@ module.exports = function (ctx) {
 };
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1453,7 +1539,7 @@ var lineStyle = function lineStyle(value) {
 module.exports = lineStyle;
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -1464,7 +1550,7 @@ module.exports = function (ctx) {
 };
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1480,14 +1566,14 @@ var moveToLineTo = function moveToLineTo(point, index) {
 module.exports = moveToLineTo;
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 'use strict';
 
-var beginPath = __webpack_require__(2)(),
-    closePath = __webpack_require__(3)();
+var beginPath = __webpack_require__(1)(),
+    closePath = __webpack_require__(2)();
 
 var path = function path() {
   for (var _len = arguments.length, children = Array(_len), _key = 0; _key < _len; _key++) {
@@ -1500,7 +1586,7 @@ var path = function path() {
 module.exports = path;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1516,7 +1602,7 @@ var placeHolder = function placeHolder() {
 module.exports = placeHolder;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1536,7 +1622,7 @@ var quadraticCurveTo = function quadraticCurveTo(cpx, cpy, x, y) {
 module.exports = quadraticCurveTo;
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports) {
 
 "use strict";
@@ -1550,7 +1636,7 @@ var raf = function raf(func) {
 module.exports = raf;
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1558,18 +1644,20 @@ module.exports = raf;
 
 var Instruction = __webpack_require__(0);
 
-function rect(x, y, width, height) {
-  return new Instruction('rect', arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
-}
+var rect = function rect() {
+  return new Instruction('rect', arguments.length > 2 ? { x: arguments.length <= 0 ? undefined : arguments[0], y: arguments.length <= 1 ? undefined : arguments[1], width: arguments.length <= 2 ? undefined : arguments[2], height: arguments.length <= 3 ? undefined : arguments[3] } : { x: 0, y: 0, width: arguments.length <= 0 ? undefined : arguments[0], height: arguments.length <= 1 ? undefined : arguments[1] });
+};
 
 module.exports = rect;
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 'use strict';
+
+//initialize all the properties
 
 var identity = [1, 0, 0, 1, 0, 0],
     matrix = new Float64Array(identity),
@@ -1583,10 +1671,16 @@ var identity = [1, 0, 0, 1, 0, 0],
     imageSmoothingEnabledStack = [],
     transformStack = new Float64Array(501 * 6),
     transformStackIndex = 6,
-    concat = [].concat;
+    concat = [].concat,
+    supportsEllipse = false;
 
+if (typeof CanvasRenderingContext2D !== 'undefined') {
+  supportsEllipse = CanvasRenderingContext2D.prototype.hasOwnProperty('ellipse');
+}
+
+//transform points function
 var transformPoints = __webpack_require__(8);
-var keycode = __webpack_require__(1);
+var cycleMouseData = __webpack_require__(3);
 
 var increaseTransformStackSize = function increaseTransformStackSize() {
   var cache = transformStack;
@@ -1606,18 +1700,9 @@ module.exports = function () {
 
   var children = args.slice(0, -1);
   var ctx = args[args.length - 1];
-  var mouseData = ctx.canvas[Symbol.for('mouseData')];
   var regions = ctx.canvas[Symbol.for('regions')];
 
-  if (mouseData) {
-    mouseData.dx = mouseData.x - mouseData.previousX;
-    mouseData.dy = mouseData.y - mouseData.previousY;
-
-    mouseData.previousX = mouseData.x;
-    mouseData.previousY = mouseData.y;
-
-    mouseData.clicked = 0;
-  }
+  cycleMouseData(ctx);
 
   if (regions) {
     regions.splice(0, regions.length);
@@ -1687,7 +1772,6 @@ module.exports = function () {
 
       //modify the ctx
       ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
-
       continue;
     }
 
@@ -1754,7 +1838,6 @@ module.exports = function () {
       transformStack[transformStackIndex - 1] = matrix[5] + matrix[1] * props.x + matrix[3] * props.y; //f
 
       ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
-
       continue;
     }
 
@@ -1779,7 +1862,6 @@ module.exports = function () {
       transformStack[transformStackIndex - 1] = matrix[5]; //f
 
       ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
-
       continue;
     }
 
@@ -1810,7 +1892,6 @@ module.exports = function () {
       matrix[5];
 
       ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
-
       continue;
     }
 
@@ -1841,7 +1922,6 @@ module.exports = function () {
       matrix[5];
 
       ctx.setTransform(transformStack[transformStackIndex - 6], transformStack[transformStackIndex - 5], transformStack[transformStackIndex - 4], transformStack[transformStackIndex - 3], transformStack[transformStackIndex - 2], transformStack[transformStackIndex - 1]);
-
       continue;
     }
 
@@ -1855,45 +1935,38 @@ module.exports = function () {
       matrix[5] = transformStack[transformStackIndex - 1];
 
       ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-
       continue;
     }
 
     if (type === 'fillRect') {
       ctx.fillRect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'strokeRect') {
       ctx.strokeRect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'clearRect') {
       ctx.clearRect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'rect') {
       ctx.rect(props.x, props.y, props.width, props.height);
-
       continue;
     }
 
     if (type === 'fillStyle') {
       fillStyleStack.push(ctx.fillStyle);
       ctx.fillStyle = props.value;
-
       continue;
     }
 
     if (type === 'strokeStyle') {
       strokeStyleStack.push(ctx.strokeStyle);
       ctx.strokeStyle = props.value;
-
       continue;
     }
 
@@ -1905,7 +1978,6 @@ module.exports = function () {
 
     if (type === 'endStrokeStyle') {
       ctx.strokeStyle = strokeStyleStack.pop();
-
       continue;
     }
     if (type === 'lineStyle') {
@@ -1936,7 +2008,6 @@ module.exports = function () {
       if (props.lineDashOffset !== null) {
         ctx.lineDashOffset = props.lineDashOffset;
       }
-
       continue;
     }
 
@@ -1948,7 +2019,6 @@ module.exports = function () {
       ctx.miterLimit = cache.miterLimit;
       ctx.setLineDash(cache.lineDash);
       ctx.lineDashOffset = cache.lineDashOffset;
-
       continue;
     }
 
@@ -1971,7 +2041,6 @@ module.exports = function () {
       if (props.lineJoin !== null) {
         ctx.direction = props.direction;
       }
-
       continue;
     }
 
@@ -1981,7 +2050,6 @@ module.exports = function () {
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
       ctx.direction = cache.direction;
-
       continue;
     }
 
@@ -2004,7 +2072,6 @@ module.exports = function () {
       if (props.shadowOffsetY !== null) {
         ctx.shadowOffsetY = props.shadowOffsetY;
       }
-
       continue;
     }
 
@@ -2014,7 +2081,6 @@ module.exports = function () {
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
       ctx.shadowOffsetY = cache.shadowOffsetY;
-
       continue;
     }
 
@@ -2056,7 +2122,6 @@ module.exports = function () {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, props.counterclockwise);
       ctx.closePath();
       ctx.stroke();
-
       continue;
     }
 
@@ -2065,31 +2130,26 @@ module.exports = function () {
       ctx.arc(props.x, props.y, props.r, props.startAngle, props.endAngle, props.counterclockwise);
       ctx.closePath();
       ctx.fill();
-
       continue;
     }
 
     if (type === 'moveTo') {
       ctx.moveTo(props.x, props.y);
-
       continue;
     }
 
     if (type === 'lineTo') {
       ctx.lineTo(props.x, props.y);
-
       continue;
     }
 
     if (type === 'bezierCurveTo') {
       ctx.bezierCurveTo(props.cp1x, props.cp1y, props.cp2x, props.cp2y, props.x, props.y);
-
       continue;
     }
 
     if (type === 'quadraticCurveTo') {
       ctx.quadraticCurveTo(props.cpx, props.cpy, props.x, props.y);
-
       continue;
     }
 
@@ -2100,87 +2160,79 @@ module.exports = function () {
 
     if (type === 'arcTo') {
       ctx.arcTo(props.x1, props.y1, props.x2, props.y2, props.r);
-
       continue;
     }
 
     if (type === 'ellipse') {
+      //if the method is provided by the browser
+      if (supportsEllipse) {
+        ctx.ellipse(props.x, props.y, props.radiusX, props.radiusY, props.rotation, props.startAngle, props.endAngle, props.anticlockwise);
+        continue;
+      }
       ctx.save();
       ctx.translate(props.x, props.y);
       ctx.rotate(props.rotation);
       ctx.scale(props.radiusX, props.radiusY);
       ctx.arc(0, 0, 1, props.startAngle, props.endAngle, props.anticlockwise);
       ctx.restore();
-
       continue;
     }
 
     if (type === 'globalCompositeOperation') {
       globalCompositeOperationStack.push(ctx.globalCompositeOperation);
       ctx.globalCompositeOperation = props.value;
-
       continue;
     }
 
     if (type === 'endGlobalCompositeOperation') {
       ctx.globalCompositeOperation = globalCompositeOperationStack.pop();
-
       continue;
     }
 
     if (type === 'fill') {
       ctx.fill();
-
       continue;
     }
 
     if (type === 'stroke') {
       ctx.stroke();
-
       continue;
     }
 
     if (type === 'beginClip') {
       ctx.save();
       ctx.beginPath();
-
       continue;
     }
 
     if (type === 'clip') {
       ctx.clip();
-
       continue;
     }
 
     if (type === 'endClip') {
       ctx.restore();
-
       continue;
     }
 
     if (type === 'beginPath') {
       ctx.beginPath();
-
       continue;
     }
 
     if (type === 'closePath') {
       ctx.closePath();
-
       continue;
     }
 
     if (type === 'globalAlpha') {
       globalAlphaStack.push(ctx.globalAlpha);
       ctx.globalAlpha *= props.value;
-
       continue;
     }
 
     if (type === 'endGlobalAlpha') {
       ctx.globalAlpha = globalAlphaStack.pop();
-
       continue;
     }
 
@@ -2218,7 +2270,7 @@ module.exports = function () {
 };
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2237,7 +2289,7 @@ var resetTransform = function resetTransform() {
 module.exports = resetTransform;
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2257,7 +2309,7 @@ var rotate = function rotate(r) {
 module.exports = rotate;
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2271,7 +2323,6 @@ var scale = function scale(x, y) {
     children[_key - 2] = arguments[_key];
   }
 
-  var i = 2;
   if (typeof y !== 'number') {
     children = [y].concat(children);
     y = x;
@@ -2283,7 +2334,7 @@ var scale = function scale(x, y) {
 module.exports = scale;
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2324,7 +2375,7 @@ var shadowStyle = function shadowStyle(value) {
 module.exports = shadowStyle;
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2344,7 +2395,7 @@ var skewX = function skewX(x) {
 module.exports = skewX;
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2364,7 +2415,7 @@ var skewY = function skewY(x) {
 module.exports = skewY;
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2379,7 +2430,7 @@ var stroke = function stroke() {
 module.exports = stroke;
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2388,28 +2439,39 @@ module.exports = stroke;
 var Instruction = __webpack_require__(0),
     pi2 = Math.PI * 2;
 
-function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
+var strokeArc = function strokeArc() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var x = args[0],
+      y = args[1],
+      r = args[2],
+      startAngle = args[3],
+      endAngle = args[4],
+      counterclockwise = args[5];
+
   var props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-  if (arguments.length > 3) {
+  if (args.length > 3) {
     props.startAngle = startAngle;
     props.endAngle = endAngle;
     props.counterclockwise = !!counterclockwise;
   }
 
-  if (arguments.length > 1) {
+  if (args.length > 1) {
     props.x = x;
     props.y = y;
     props.r = r;
   }
 
   return new Instruction("strokeArc", props);
-}
+};
 
 module.exports = strokeArc;
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2417,14 +2479,14 @@ module.exports = strokeArc;
 
 var Instruction = __webpack_require__(0);
 
-function strokeRect(x, y, width, height) {
-  return new Instruction('strokeRect', arguments.length > 2 ? { x: x, y: y, width: width, height: height } : { x: 0, y: 0, width: x, height: y });
-}
+var strokeRect = function strokeRect() {
+  return new Instruction('strokeRect', arguments.length > 2 ? { x: arguments.length <= 0 ? undefined : arguments[0], y: arguments.length <= 1 ? undefined : arguments[1], width: arguments.length <= 2 ? undefined : arguments[2], height: arguments.length <= 3 ? undefined : arguments[3] } : { x: 0, y: 0, width: arguments.length <= 0 ? undefined : arguments[0], height: arguments.length <= 1 ? undefined : arguments[1] });
+};
 
 module.exports = strokeRect;
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2444,7 +2506,7 @@ var fillStyle = function fillStyle(value) {
 module.exports = fillStyle;
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2452,11 +2514,21 @@ module.exports = fillStyle;
 
 var Instruction = __webpack_require__(0);
 
-function strokeText(text, x, y, maxWidth) {
-  if (arguments.length < 4) {
+var strokeText = function strokeText() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var text = args[0],
+      x = args[1],
+      y = args[2],
+      maxWidth = args[3];
+
+
+  if (args.length < 4) {
     maxWidth = null;
   }
-  if (arguments.length < 3) {
+  if (args.length < 3) {
     x = 0;
     y = 0;
   }
@@ -2466,12 +2538,12 @@ function strokeText(text, x, y, maxWidth) {
     y: y,
     maxWidth: maxWidth
   });
-}
+};
 
 module.exports = strokeText;
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2508,7 +2580,7 @@ var textStyle = function textStyle(value, children) {
 module.exports = textStyle;
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2528,7 +2600,7 @@ var transform = function transform(values) {
 module.exports = transform;
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2548,13 +2620,13 @@ var translate = function translate(x, y) {
 module.exports = translate;
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 'use strict';
 
-var keycode = __webpack_require__(1);
+var keycode = __webpack_require__(11);
 
 module.exports = function (ctx) {
   var canvas = ctx.canvas;
@@ -2643,7 +2715,7 @@ module.exports = function (ctx) {
 };
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
