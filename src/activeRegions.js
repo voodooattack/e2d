@@ -7,11 +7,11 @@ module.exports = (ctx) => {
   let results = [];
   let found = false;
 
-  for (let i = 0; i < regions.length; i++) {
-    let region = regions[i];
+  //the mouse might have held still, add the current mouse position
+  regions.push([mouseData.x, mouseData.y]);
 
-    for(let j = 0; j < mousePoints.length; j++) {
-      let mousePoint = mousePoints[j];
+  for(let region of regions) {
+    for(let mousePoint of mousePoints) {
 
       if (pointInPolygon(mousePoint, region.points)) {
         region.hover = true;
@@ -19,6 +19,7 @@ module.exports = (ctx) => {
         results.push(region);
         found = true;
       }
+
       if (found) {
         break;
       }

@@ -15,7 +15,6 @@ module.exports = (ctx) => {
     clicked: 0
   };
 
-
   let keys = canvas[Symbol.for('keyData')] = {};
 
   for (let name in keycode.code) {
@@ -42,8 +41,15 @@ module.exports = (ctx) => {
     mouseData.x = point[0];
     mouseData.y = point[1];
 
-    //store the mouse position for hover detection
-    canvas[Symbol.for('mousePoints')].push(point);
+    let points = canvas[Symbol.for('mousePoints')];
+
+    points.push(point);
+
+    //store the last 100 stored positions for hover detection
+    if (points.length > 100) {
+      points.splice(0, points.length - 100);
+    }
+
     evt.preventDefault();
     return false;
   };

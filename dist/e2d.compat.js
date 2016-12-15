@@ -929,11 +929,37 @@ module.exports = function (ctx) {
   var results = [];
   var found = false;
 
-  for (var i = 0; i < regions.length; i++) {
-    var region = regions[i];
+  //the mouse might have held still, add the current mouse position
+  regions.push([mouseData.x, mouseData.y]);
 
-    for (var j = 0; j < mousePoints.length; j++) {
-      var mousePoint = mousePoints[j];
+  for (var _iterator = regions, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+    var _ref;
+
+    if (_isArray) {
+      if (_i >= _iterator.length) break;
+      _ref = _iterator[_i++];
+    } else {
+      _i = _iterator.next();
+      if (_i.done) break;
+      _ref = _i.value;
+    }
+
+    var region = _ref;
+
+    for (var _iterator2 = mousePoints, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+      var _ref2;
+
+      if (_isArray2) {
+        if (_i2 >= _iterator2.length) break;
+        _ref2 = _iterator2[_i2++];
+      } else {
+        _i2 = _iterator2.next();
+        if (_i2.done) break;
+        _ref2 = _i2.value;
+      }
+
+      var mousePoint = _ref2;
+
 
       if (pointInPolygon(mousePoint, region.points)) {
         region.hover = true;
@@ -941,6 +967,7 @@ module.exports = function (ctx) {
         results.push(region);
         found = true;
       }
+
       if (found) {
         break;
       }
@@ -1701,11 +1728,13 @@ module.exports = function () {
   var children = args.slice(0, -1);
   var ctx = args[args.length - 1];
   var regions = ctx.canvas[Symbol.for('regions')];
+  var mousePoints = ctx.canvas[Symbol.for('mousePoints')];
 
   cycleMouseData(ctx);
 
   if (regions) {
     regions.splice(0, regions.length);
+    mousePoints.splice(0, mousePoints.length);
   }
   //wrap children in case
   children = [children];
@@ -2674,8 +2703,15 @@ module.exports = function (ctx) {
     mouseData.x = point[0];
     mouseData.y = point[1];
 
-    //store the mouse position for hover detection
-    canvas[Symbol.for('mousePoints')].push(point);
+    var points = canvas[Symbol.for('mousePoints')];
+
+    points.push(point);
+
+    //store the last 100 stored positions for hover detection
+    if (points.length > 100) {
+      points.splice(0, points.length - 100);
+    }
+
     evt.preventDefault();
     return false;
   };

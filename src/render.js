@@ -39,11 +39,13 @@ module.exports = (...args) => {
   let children = args.slice(0, -1);
   let ctx = args[args.length - 1];
   let regions = ctx.canvas[Symbol.for('regions')];
+  let mousePoints = ctx.canvas[Symbol.for('mousePoints')];
 
   cycleMouseData(ctx);
 
   if (regions) {
     regions.splice(0, regions.length);
+    mousePoints.splice(0, mousePoints.length);
   }
   //wrap children in case
   children = [children];
