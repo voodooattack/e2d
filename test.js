@@ -1,15 +1,28 @@
 let benchmark = require('benchmark');
-let suite = new benchmark.Suite();
+let suite = new benchmark.Suite({ minSamples: 1000 });
 
 let data = new Float64Array(606);
 for(let i = 0; i < 600; i++) {
   data[i] = i;
 }
 
-let matrix = new Float64Array()
+let matrix = new Float64Array(6);
 let a = 0, b = 0, c = 0, d = 0, e = 0, f = 0;
 
-suite.add('Matrix#manual',
+suite
+.add('Matrix#individual-manual',
+  () => {
+    for (let i = 6; i <= 600; i+=6) {
+      a = data[i - 6];
+      b = data[i - 5];
+      c = data[i - 4];
+      d = data[i - 3];
+      e = data[i - 2];
+      f = data[i - 1];
+    }
+  }
+)
+.add('Matrix#manual',
   () => {
     for (let i = 6; i <= 600; i+=6) {
       matrix[0] = data[i - 6];
@@ -28,7 +41,7 @@ suite.add('Matrix#manual',
     }
   }
 )
-.add('Matrix#copyWithin', 
+.add('Matrix#copyWithin',
   () => {
     for (let i = 6; i <= 600; i+=6) {
       data.copyWithin(0, i, i+6);
