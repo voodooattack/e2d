@@ -1918,7 +1918,7 @@ module.exports = (...args) => {
     }
 
     if (type === 'endTextStyle') {
-      cache = textStyleStack.pop();
+      let cache = textStyleStack.pop();
       ctx.font = cache.font;
       ctx.textAlign = cache.textAlign;
       ctx.textBaseline = cache.textBaseline;
@@ -1949,7 +1949,7 @@ module.exports = (...args) => {
     }
 
     if (type === 'endShadowStyle') {
-      cache = shadowStyleStack.pop();
+      let cache = shadowStyleStack.pop();
       ctx.shadowBlur = cache.shadowBlur;
       ctx.shadowColor = cache.shadowColor;
       ctx.shadowOffsetX = cache.shadowOffsetX;
