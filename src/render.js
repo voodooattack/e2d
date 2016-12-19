@@ -395,7 +395,7 @@ module.exports = (...args) => {
     }
 
     if (type === 'endLineStyle') {
-      cache = lineStyleStack.pop();
+      const cache = lineStyleStack.pop();
       ctx.lineWidth = cache.lineWidth;
       ctx.lineCap = cache.lineCap;
       ctx.lineJoin = cache.lineJoin;
