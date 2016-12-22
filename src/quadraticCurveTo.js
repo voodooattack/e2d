@@ -1,14 +1,10 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-function quadraticCurveTo(cpx, cpy, x, y) {
-  return new Instruction('quadraticCurveTo', {
-    cpx: cpx,
-    cpy: cpy,
-    x: x,
-    y: y
-  });
-}
+let quadraticCurveTo = (cpx, cpy, x, y) => new Instruction('quadraticCurveTo', {
+  cpx,
+  cpy,
+  x,
+  y
+});
 
 module.exports = quadraticCurveTo;

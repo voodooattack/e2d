@@ -1,13 +1,9 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
-
-function strokeRect(x, y, width, height) {
-  if (arguments.length > 2) {
-    return new Instruction('strokeRect', { x: x, y: y, width: width, height: height });
-  } else {
-    return new Instruction('strokeRect', { x: 0, y: 0, width: x, height: y });
-  }
-}
+let strokeRect = (...args) => new Instruction('strokeRect',
+  args.length > 2 ?
+    { x: args[0], y: args[1], width: args[2], height: args[3] } :
+    { x: 0, y: 0, width: args[0], height: args[1] }
+);
 
 module.exports = strokeRect;

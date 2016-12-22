@@ -1,6 +1,5 @@
 {
   "node": true,
   "browser": true,
-  "worker": true,
   "esnext": true
 }

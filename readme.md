@@ -1,30 +1,88 @@
 # e2d.js
 
-An es5 declarative canvas renderer.
+[![Gitter](https://badges.gitter.im/e2d/e2d.svg)](https://gitter.im/e2d/e2d?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+An es2015/es5 declarative canvas renderer.
 
 # Introduction
 
-Most canvas libraries abstract away different aspect of canvas to make you faster.  When using this library, there isn't much abstraction. In fact, the API mirrors the canvas2d API in a way makes coding canvas actually fun!
+Most canvas libraries abstract away different aspect of canvas to make you faster.  When using this library, there isn't much abstraction. In fact, the API mirrors the canvas2d API in a way makes coding canvas fun!  Much like react uses a render function to make changes to the DOM in an abstract way, so does e2d to the canvas context.
 
-### Instruction trees
+## Getting Started
 
-`e2d` introduces "Instruction trees" that represent lower level canvas instructions.
-
-For example, all canvas instructions can be variables.  This speeds up execution time and reduces memory usage.
+With react.js, the developer calls React.render once to start up the application.  Since e2d does not work with the DOM, there are no bindings internally to have a meaningful event lifecycle.  This means that `e2d.render` must be called every frame. Take the following "Hello World" example:
 
 ```javascript
+let canvas = document.createElement('canvas');
+canvas.width = 800;
+canvas.height = 600;
+
+//get the canvas context
+let ctx = canvas.getContext('2d');
+
+//add the canvas to the dom
+document.body.appendChild(canvas);
+
+//for commonjs, browserify, webpack
+let e2d = require('e2d');
+
+//use this if the application requires user input on the canvas
+e2d.initialize(ctx);
+
+//requestAnimationFrame loop will call this function once per frame
+//it is not necessary to use this convenience function provided by e2d
+e2d.raf(() => {
+
+  //e2d.render accepts an unlimited number of arguments and the last one must be the canvas context
+  return e2d.render(
+    e2d.clearRect(canvas.width, canvas.height),
+    e2d.fillText("Hello World!", 100, 100),
+    ctx
+  );
+});
+```
+
+There is also a babel plugin for `e2dx` elements so that developing on canvas can be more like using SVG in javascript.  It's located [here](https://github.com/e2d/babel-plugin-e2dx) and looks like this:
+
+```javascript
+
+//always call this ONCE to obtain mouse, activeRegion, and keyboard support
+e2d.initialize(ctx);
+
+//raf will call the provided function every frame
+e2d.raf(() => {
+  //get the mouse position
+  let { x, y } = e2d.mouseData(ctx);
+
+  //use the translate element to move the point of origin
+  return <render ctx={ctx}>
+    <clearRect width={canvas.width} height={canvas.height} />
+    <translate x={x} y={y}>
+      <fillText text="Hello World!" />
+    </translate>
+  </render>;
+  );
+});
+```
+
+### Instruction variables
+
+`e2d` introduces "Instruction variables" that represent more complex canvas instructions.  They are similar to virtual dom elements in react.
+
+For example, all canvas instructions can be variables and stored for later use.  This speeds up execution time and reduces memory usage.
+
+```javascript
+//create a fill command that always fills red
 let fillRed = e2d.fillStyle('red', e2d.fill());
-//fillRed: [Instruction[fillStyle=red], Instruction[fill], Instruction[endFillStyle]];
 
 //create a 6 sided polygon with radius 10 at [0,0]
 let hexagonShape = e2d.createRegularPolygon(10, [0,0], 6);
-//hexagonShape: [[x0,y0], [x1,y1], ...[x5,y5]]
 
-let hexagonPath = e2d.path( //beginPath()
+//e2d.path will wrap the instructions passed to it with beginPath and closePath
+let hexagonPath = e2d.path(
     //convenience function to map coordinates to ctx.moveTo, and ctx.lineTo
     hexagonShape.map(e2d.moveToLineTo)
-); //closePath()
-//hexagonPath: [Instruction[beginPath], Array[Instruction], Instruction[closePath]]
+);
 
 //combine the path and fill instructions in an array
 let redHexagon = [ hexagonPath, fillRed ];
@@ -33,37 +91,36 @@ let redHexagon = [ hexagonPath, fillRed ];
 Mix and match different canvas commands to make code more expressive and easier to read.  For example, using the `redHexagon` variable in the above example to get started:
 
 ```javascript
-let width = 400, height = 400;
+//create a canvas first...
+e2d.raf(() => {
+  return e2d.render(
+    //clear the canvas every frame
+    e2d.clearRect(canvas.width, canvas.height), //e2d knows that x=0 and y=0 are default parameters
 
-//it appends to the document.body inside a wrapper div
-let renderer = e2d.Renderer.create(width, height);
+    //move the hexagon center point to the center of the canvas
+    e2d.translate(0.5 * canvas.width, 0.5 * canvas.height,
+      redHexagon
+    ),
 
-renderer.ready(); //fires requestAnimationFrame events
-renderer.on('frame', function() {
-  return renderer.render(
-    e2d.clearRect(width, height), //clear the screen every frame at the default position [0,0]
-    //move to the center
-    e2d.translate(0.5 * width, 0.5 * height,
-      redHexagon //redHexagon will be translated because it's a child of the translate function
-    )
+    //render it to the canvas context
+    ctx
   );
-});
+})
 
 ```
 
-
 ## Performance
 
-The goal of e2d is to be fast. It has gone under numerous refactors to increase the speed of each canvas property.  On top of engine performance, there is an additional benefit to using `canvas instructions`. As a byproduct of using `e2d` instructions, there will be less user-defined function calls.  With instruction storage, and less user defined functions, the majority of the application view layer will sit around in memory waiting to be parsed every frame.
+The goal of e2d is to be fast. It has gone under numerous refactors to increase the speed of each canvas property.  On top of engine performance, there is an additional benefit to using `instruction variables`. Using these will result in less user-defined function calls.  With instruction storage, and less user defined function calls, the majority of the application view layer will sit around in memory waiting to be parsed every frame.
 
-Finally, creating an entire render tree every frame has a relatively minimal performance impact. `e2d` truly shines when instructions are repeated and stored as variables.
+Most importantly, creating an entire render tree every frame has a relatively minimal performance impact.
 
 ## Drawing Collections
 
-Collections are harder to optimize, so try to make data flow into canvas instructions.  See the following example:
+Collections are harder to optimize, so try to make data flow into `instruction variables`.  See the following example:
 
 ```javascript
-import { translate, fillStyle, fillArc, scale } from 'e2d';
+import e2d from 'e2d';
 let particles = [];
 for(let i = 0; i < 100; i++) {
   particles.push({ //create some particles
@@ -74,604 +131,385 @@ for(let i = 0; i < 100; i++) {
 }
 
 //fillArc has default function parameters [x=0, y=0, beginRadians=0, endRadians=Math.PI*2]
-let particle = fillArc(1); //only the radius is provided
+let particleShape = e2dfillArc(1); //only the radius is provided
 
 //later
-r.on('frame', function() {
+e2d.raf(() => {
   let particleMap = [], particle;
+
+  //loop over each particle using a for loop
   for(let i = 0; i < particles.length; i++) {
     particle = particles[i];
+
+    //move them 1 pixel per frame
+    particle.y += 1;
+
+    //loop the particle
+    if (particle.y > config.height) {
+      particle.y = 0;
+    }
+
     particleMap.push(
-      translate(particle.x, particle.y, //move to the particle position
-        scale(particle.r, particle) //scale the particle
+      e2d.translate(particle.x, particle.y, //move to the particle position
+        e2d.scale(particle.r, particleShape) //scale the particle
       )
     );
   }
 
-
-  return r.render(
-    clearRect(config.width, config.height),
-    fillStyle('white', particleMap) // every particle is white
+  return e2d.render(
+    e2d.clearRect(config.width, config.height),
+    e2d.fillStyle('blue', particleMap), // every particle is blue in this case
+    ctx
   );
 });
 ```
 
 # Getting started
 
-I highly recommend using `webpack` or `browserify` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.min.js` file in the `/dist/` folder.
+I highly recommend using `webpack` or `browserify` in `node.js` to modularize your code, but the fastest way to get started is to use the `e2d.compat.min.js` file in the `/dist/` folder, or `e2d.min.js` for native `es2015` support.
 
 ### Import using script method
 
 ```html
-<script src="e2d.min.js" type="text/javascript"></script>
+<script src="e2d.compat.min.js" type="text/javascript"></script>
 ```
-
-That's it.
-
 
 ### webpack-dev-server
 
 Please see [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html) for all your web development server needs.
 
-### Browserify method
-
-`npm init`
-
-and then...
-
-`npm install --save-dev browserify-middleware express e2d`
-
-Inside a `server.js` file:
-
-```javascript
-var express = require('express'),
-    browserify = require('browserify-middleware'),
-    app = express();
-
-app.use(express.static('public'));
-app.get('/bundle.js', browserify('./app.js'));
-
-app.listen(8080);
-```
-
-In your `public/index.html` file:
-```html
-<script src="bundle.js" type="text/javascript"></script>
-```
-
-Finally, run `node server.js` and open your browser to `http://localhost:8080/`.
-
 # API
 
-## Renderer.js
-
-This object is the main renderer of the application.
-
-```javascript
-var r = new Renderer(width, height, parent); //parent is a document node
-
-```
-
-Use `r.ready()` to active the requestAnimationFrame loop.  All render commands are ignored until `.ready()` is called.
-
-### Events
-
-__frame__
-
-This fires once per frame after calling `r.ready()`.  Use this event to call `r.render(...)` to keep in sync with the animation loop.
-
-```javascript
-r.on('frame', function() {
-  //render stuff here
-});
-```
-
-__mouse__
-
-This fires once per mouse event. This includes `mousedown`, `mouseup`, and `mousemove`.
-
-```javascript
-r.on('mouse', function(mouseEventData) {
-  //mouseEventData looks like this
-  /*{
-    x: relativeMouseX,
-    y: relativeMouseY,
-    state: 'down' // or 'up'
-  }*/
-});
-
-```
-
-Listening to the event is optional, use `r.mouseData` to get the mouse position.
-
-__key__
-
-This fires once per key event. This includes `keydown` and `keyup`.
-
-```javascript
-r.on('key', function(keyEventData) {
-  //keyEventData looks like this
-  /*{
-    'a': 'down', // or 'up'
-    'b': 'down', // or 'up'
-    'c': 'down', // or 'up'
-    ...
-  }*/
-});
-```
-
-Listening to the event is optional, use `r.keyData[key]` to find out the current key state.
-
-### Prototype
-
-__Renderer.prototype.render__
+### __e2d.render__
 
 This is the command that actually draws to the canvas.  Create some drawing instructions and pass them to this function.
 
 ```javascript
-import { translate, fillText, clearRect, Renderer } from 'e2d';
+import e2d from 'e2d';
 
 //create a draw command
-let helloWorld = translate(200, 200,
-  fillText("Hello World!")
+let helloWorld = e2d.translate(200, 200,
+  e2d.fillText("Hello World!")
 );
 
-//create a renderer
-let r = Renderer.create(400, 400);
-r.ready();
-r.on('frame',
-  //draw something
-  () => r.render(
-    clearRect(400, 400),
-    helloWorld
+//create a canvas
+let canvas = doucment.createElement('canvas');
+canvas.width = 400;
+canvas.height = 400;
+document.body.appendChild(canvas);
+
+let ctx = canvas.getContext('2d');
+
+e2d.raf(
+  //draw something every frame
+  () => e2d.render(
+    e2d.clearRect(400, 400),
+    helloWorld,
+    ctx //ctx must be the last parameter
   )
 );
-```
-
-__Renderer.prototype.resize__
-
-To resize the renderer.
-
-```javascript
-r.resize(width, height);
-```
-
-__Renderer.prototype.ready__
-
-This function sets up the requestAnimationFrame loop and allows the developer to hook into the `frame` event.
-
-```javascript
-r.ready();
-```
-
-__Renderer.prototype.style__
-
-This function applies styles to the canvas directly.
-
-```javascript
-r.style({
-  margin: '0 auto',
-  cursor: 'pointer'
-});
-```
-
-Also supports:
-
-1. Unlimited arguments, it will apply every style manually to the canvas
-2. `null` values will remove style attributes `(value === null)`
-3. Arrays of style objects
-
-ex.
-
-```javascript
-  r.style({
-    //if there are any active mouse regions, change the cursor to pointer
-    cursor: r.mouseData.activeRegions.length > 0 ? 'pointer' : null
-  });
-```
-
-__Renderer.prototype.measureText__
-
-See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics) for information on what a `TextMetrics` object looks like.
-
-```javascript
-var textMetricsResult = r.measureText(font, text);
-//font is size + font
 ```
 
 # Render Commands
 
 The following render commands are provided to you in this library.
 
-__arc.js__
+### __arc.js__
 
-Arcs have 5 forms:
+Arcs have 5 forms, and correspond to the documentation here at [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc):
+
 ```javascript
-import { arc } from 'e2d';
+import e2d from 'e2d';
 
-let fastestArc = arc(); //radius 1 and x, y is 0, 0
-let justRadius = arc(radius); //radius is set, x, y is 0
-let radiusWithXY = arc(x, y, radius); //radius is set, x, y is [x], [y]
+let fastestArc = e2d.arc(); //radius 1 and x, y is 0, 0
+let justRadius = e2d.arc(radius); //radius is set, x, y is 0
+let radiusWithXY = e2d.arc(x, y, radius); //radius is set, x, y is [x], [y]
 
-//radius is set, x, y is [x], [y] and it will start and end at the specified angles
-let radiusWithXYandAngles = arc(x, y, radius, startAngle, endAngle);
+//to specify the start and end angle, use the startAngle and endAngle parameters
+let radiusWithXYandAngles = e2d.arc(x, y, radius, startAngle, endAngle);
 
-//see previous arc with anticlockwise direction
-let arcAntiClockwise = arc(x, y, radius, startAngle, endAngle, anticlockwise);
+//to specify anticlockwise motion, use the anticlockwise parameter like this
+let arcAntiClockwise = e2d.arc(x, y, radius, startAngle, endAngle, anticlockwise);
 ```
 
-__arcTo.js__
+### __arcTo.js__
 
-Every argument must be given for this function to work, unlike the `arc` function. This is for use in path descriptions.
+For information on how the `arcTo` function works, see [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arcTo).
 
 ```javascript
-var arcTo = e2d.arcTo;
+let arcToInstruction = e2d.arcTo(x1, y1, x2, y2, r);
 
-var arcToInstruction = arcTo(x1, y1, x2, y2, r); //see mdn for how to use arcTo
-
-var pathInstruction = path(
-  arcTo(....),
-  arcTo(....)
+//don't forget to wrap the arcTo function in the path function
+let pathInstruction = e2d.path(
+  e2d.arcTo(x1, y1, x2, y2, r)
 );
 ```
 
-__beginPath.js__
+### __beginPath.js__
 
-Sometimes you want to have direct control over your paths and don't want to close them.
+It's possible to control when a path begins manually by using the `beginPath` function.
 
 ```javascript
-var beginPath = e2d.beginPath;
-//this function takes NO arguments
-var beginPathOperation = beginPath();
+let beginPathOperation = e2d.beginPath();
 ```
 
-__bezierCurveTo.js__
+### __bezierCurveTo.js__
 
-This will make a bezier curve with the following parameters. See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/bezierCurveTo) for information on how to use Bezier curves.
+See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/bezierCurveTo) for information on how to use Bezier curves.
 
 ```javascript
-var bezierCurveTo = e2d.bezierCurveTo;
 //cp1 and cp2 are control points  and the curve ends at [x, y]
-var myCurve = bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+let myCurve = e2d.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
 ```
 
-__clearRect.js__
+### __clearRect.js__
 
-This will clear a rectangle of specified size and has two forms:
+To see how clearRect works, see [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clearRect).  The `clearRect` function has two forms.
 
 ```javascript
-var clearRect = e2d.clearRect;
 
-//first form accepts width and height
-var widthAndHeight = clearRect(width, height);
+//to specify a rectangle at [0,0] use the clearRect shorthand
+let widthAndHeight = e2d.clearRect(width, height);
 
-//second form takes 4 parameters. Starting at x, y it clears a rectangle of [width, height]
-var sizeAndPosition = clearRect(x, y, width, height);
+//otherwise, specify x and y
+let sizeAndPosition = e2d.clearRect(x, y, width, height);
 
 ```
 
-__clip.js__
+### __clip.js__
 
 This provides a clipping region for child instructions.
 
-The following example draws an image centered inside a hexagonal shape.
+In order to draw a clipped image, for instance, use the `clip` function with a path.  For more information on clipping, please visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip).
+
+_Please note that the path cannot be wrapped in the `e2d.path()` function because `clip` will automatically close the path provided._
 
 ```javascript
 
-var region = e2d.createRegularPolygon(200, [0, 0], 6).map(e2d.moveToLineTo);
+//create a hexigon with radius 200 and map it to a set of moveTo and lineTo instructions
+let region = e2d.createRegularPolygon(200, [0, 0], 6).map(e2d.moveToLineTo);
 
 //this results in a polygonal cliped drawImage command
-var result = e2d.clip(
+let clippedImage = e2d.clip(
   region, //must be the first argument
-  translate(-img.width * 0.5, -img.height * 0.5,
+
+  //center the image at [0,0] to see it
+  e2d.translate(-img.width * 0.5, -img.height * 0.5,
     e2d.drawImage(img)
   )
 );
 
 ```
 
+### __imageSmoothingEnabled.js__
 
-__Img.js__
+This function is wrapper function that sets imageSmoothingEnabled for it's children. _(default is true)_
 
-The custom `Img` object wraps some functionality that speeds up image drawing in Chrome/Webkit browsers.
-
-```javascript
-var texture = new e2d.Img(); //this signals the browser to cache the image
-texture.src = 'url'; //data urls are accepted
-texture.once('load', function() {
-  //the texture is loaded
-});
-```
-
-__imageSmoothingEnabled.js__
-
-This function set imageSmoothingEnabled. _(default is true)_
+For more information on how `imageSmoothingEnabled` works, please visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled).
 
 ```javascript
-r.render(
-  e2d.imageSmoothingEnabled(false,
-    ...children
-  )
+let noSmooth = e2d.imageSmoothingEnabled(false,
+  ...children
 );
 ```
 
-__drawImage.js__, __fillImage.js__
+### __drawImage.js__
 
-`drawImage(img)` or `fillImage(img)` have the same parameters, and can be useful in different situations. It has four forms.
+This function draws an image to the canvas when rendered.
 
-`drawImage` accepts standard browser `Image` objects and `Img` textures too.
+See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage) for more information on how to use drawImage.
 
-See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage) for more information on how to use drawImage
+Note to chrome developers, it's faster to use a image pattern and fill a rectangle using a `fillStyle` or `imagePattern`.
+
 ```javascript
-var drawImage = e2d.drawImage; //replace that with e2d.fillImage in chrome because of canvas performance issues
-
-var img = new e2d.Img();
-img.cache(); //cache all images unless you use them for a single render
-
-img.src = 'url';
-img.once('load', callback);
 
 //one paramenter means draw the image at 0, 0 with img.width and img.height as the width/height parameters
-var imgCommand = drawImage(img);
+let imgCommand = e2d.drawImage(img);
 
-var imgCommandPosition = drawImage(img, x, y); //draw image at x, y, img.width, img.height
+let imgCommandPosition = e2d.drawImage(img, x, y); //draw image at x, y, img.width, img.height
 
-var imgCommandSize = drawImage(img, x, y, width, height); //specify the size of the image
+let imgCommandSize = e2d.drawImage(img, x, y, width, height); //specify the size of the image
 
 //or draw the image from a source within the image (this is hard to optimize for the browser and may be slow)
-var imgSourceSize = drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
+let imgSourceSize = e2d.drawImage(img, sx, sy, sWidth, sHeight, x, y, width, height);
 ```
 
-`fillImage` uses a fill pattern and `ctx.fillStyle` to fill a rectangle and requires an `Img` texture. In chrome, it is more performant to fill a rectangle with a pattern when dealing with large images.  If `drawImage` is too slow in chrome, try `fillImage` as a drop in replacement to see if it speeds up the frame times as a quick optimization.
 
+### __ellipse.js__
 
-__fillImagePattern.js__
+This will add an ellipse to the current path.  This method is "pseudo-polyfilled" and supported for all browsers.  For more information on this method please visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/ellipse). There are three forms for the ellipse function.
 
-This function will fill the specified area with a repeated image pattern.
+Please see [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/ellipse) for more information on this experimental technology.
 
 ```javascript
-var fillImagePattern = e2d.fillImagePattern;
 
-var img = new e2d.Img();
+let example = e2d.ellipse(radiusX, radiusY); //from 0, 0
+let example2 = e2d.ellipse(x, y, radiusX, radiusY); // from x, y
+let example3 = e2d.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
+```
 
-img.src = 'url';
-img.once('load', callback);
+### __fillArc.js__
 
-var fillImagePatternCommand = fillImagePattern(img, width, height); //it accepts an image
-var fillImagePatternCommand2 = fillImagePattern(img, x, y, width, height);
+This method was added for convenience. It makes the API a bit more consistent and takes the same parameters as the `arc` function and works exactly like `fillRect`.
+
+```javascript
+import e2d from 'e2d';
+
+let fastestArc = e2d.fillArc(); //radius 1 and x, y is 0, 0
+let justRadius = e2d.fillArc(radius); //radius is set, x, y is 0
+let radiusWithXY = e2d.fillArc(x, y, radius); //radius is set, x, y is [x], [y]
+
+//to specify the start and end angle, use the startAngle and endAngle parameters
+let radiusWithXYandAngles = e2d.fillArc(x, y, radius, startAngle, endAngle);
+
+//to specify anticlockwise motion, use the anticlockwise parameter like this
+let arcAntiClockwise = e2d.fillArc(x, y, radius, startAngle, endAngle, anticlockwise);
+```
+
+### __fillRect.js__
+
+To see how fillRect works, see [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect).  The `fillRect` function has two forms.
+
+```javascript
+
+//to specify a rectangle at [0,0] use the fillRect shorthand
+let widthAndHeight = e2d.fillRect(width, height);
+
+//otherwise, specify x and y
+let sizeAndPosition = e2d.fillRect(x, y, width, height);
 
 ```
 
-__Canvas.js__
+### __fillStyle.js__
 
-This wraps the `Renderer.js` API and creates an off-screen canvas buffer for custom image storage.
-
-```javascript
-  var temp = Canvas.create(100, 100); //Canvas instances must be stored in the same way images are
-  var temp = new Canvas(100, 100);
-  temp.render(
-    //draw commands
-  );
-
-  //can be drawn with drawCanvas(temp);
-```
-
-This allows the developer to create images using a canvas as well.
+This function will "set" the `fillStyle` property using the first argument as the value for the property.  To see how `fillStyle` works visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle).
 
 ```javascript
-var img = temp.toImage(); //uses 'image/png'
-//it returns an Img object and assumes it isn't cached()
-//can be used to call drawImage(img)
-```
 
-__drawCanvas.js__
-
-`drawCanvas(canvasObject)` accepts both real canvas elements and `Canvas` objects.
-
-```javascript
-var temp = e2d.Canvas.create(100, 100);
-
-temp.render(
-  e2d.fillRect(100, 100)
+//fill a red circle
+let redCircle = e2d.fillStyle('red',
+  e2d.fillArc(200)
 );
-//one paramenter means draw the image at 0, 0 with canvas.width and canvas.height as the width/height parameters
-var drawCanvasCommand = e2d.drawCanvas(temp);
-
-var drawCanvasCommandPosition = e2d.drawCanvas(temp, x, y); //draw canvas at x, y
-
-var drawCanvasCommandSize = e2d.drawCanvas(temp, x, y, width, height); //specify the size of the canvas too
-
-//or draw the canvas from a source within the canvas (this is hard to optimize for the browser and may be slow)
-var drawCanvasCommandSize = e2d.drawCanvas(temp, sx, sy, sWidth, sHeight, x, y, width, height);
 ```
 
-The `drawCanvas` operation stored the canvas in memory, so creating the draw command is only required once.  Further changes to the canvas will still reference the current canvas.
-
-__ellipse.js__
-
-This will add an ellipse to the current path.
+Nested fill styles can occur (and stack as a result):
 
 ```javascript
-var ellipse = e2d.ellipse;
-
-var example = ellipse(radiusX, radiusY); //from 0, 0
-var example2 = ellipse(x, y, radiusX, radiusY); // from x, y
-//this function depends on argument length, so don't forget rotation!
-var example3 = ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
-```
-
-__fillArc.js__
-
-This was added to the API for convenience.  It works like `fillRect`, only for `arc`'s.
-
-```javascript
-var fillArc = e2d.fillArc;
-
-var example = fillArc(radius); //radius must always be specified
-var example2 = fillArc(x, y, radius); //at x, y
-var example3 = fillArc(x, y, radius, startAngle, endAngle); //with start and end angles
-var exampler = fillArc(x, y, radius, startAngle, endAngle, true); // counterclockwise
-```
-
-__fillRect.js__
-
-This is a direct wrapper to `ctx.fillRect` and will fill a rectangle.
-
-```javascript
-var fillRect = e2d.fillRect;
-
-var example = fillRect(width, height);
-var example2 = fillRect(x, y, width, height);
-```
-
-__fillStyle.js__
-
-This function is used when a change to the fillStyle is needed.
-
-```javascript
-var fillStyle = e2d.fillStyle;
-
-var example = fillStyle('color', //change fillStyle to 'color'
-  path(
-    arc(100)
-  ),
-  fill()
-); // draw a circle and revert the fillStyle
-```
-
-Make sure the fill command is nested as a child of the fillStyle command, because the fillStyle reverts back to the old style after the child commands are run.
-
-Nested fill styles can occur:
-
-```javascript
-var example = fillStyle('red',
+let example = e2d.fillStyle('red',
   //fillStyle is red here
-  fillStyle('blue',
+  e2d.fillStyle('blue',
     //fillStyle is blue here
   )
   //now it's red again
 );
 ```
 
-__strokeStyle.js__
+### __strokeStyle.js__
 
-This function is used when a change to the strokeStyle is needed.
+This function will "set" the `strokeStyle` property using the first argument as the value for the property.  To see how `strokeStyle` works visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle).
 
 ```javascript
-var strokeStyle = e2d.strokeStyle;
 
-var example = strokeStyle('color',  //change strokeStyle to 'color'
-  beginPath(),
-  arc(100),
-  closePath(),
-  stroke()
-); // draw a circle and revert the fillStyle
+//fill a red circle
+let redCircle = e2d.strokeStyle('red',
+  e2d.strokeArc(200)
+);
 ```
 
-Make sure the stroke command is nested as a child of the strokeStyle command, because the strokeStyle reverts back to the old style after the child commands are run.
-
-Nested stroke styles can occur:
+Nested stroke styles can occur (and stack as a result):
 
 ```javascript
-var example = strokeStyle('red',
+let example = e2d.strokeStyle('red',
   //strokeStyle is red here
-  strokeStyle('blue',
-    //fillStyle is blue here
+  e2d.strokeStyle('blue',
+    //strokeStyle is blue here
   )
   //now it's red again
 );
 ```
 
-__globalCompositeOperation.js__
+### __globalCompositeOperation.js__
 
 For change global composite operations, use `globalCompositeOperation()`.
 
 See [mdn: globalCompositeOperation](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation) to learn how to use them.
 
 ```javascript
-var globalCompositeOperation = e2d.globalCompositeOperation;
-
-var operation = globalCompositeOperation('multiply',
+let operation = e2d.globalCompositeOperation('multiply',
   //do some fill operations
 );
 ```
 
-__globalAlpha.js__
+### __globalAlpha.js__
 
-To control the global alpha, use the `globalAlpha(alpha, children)` function.
+The `globalAlpha` function will apply and set the `globalAlpha` relative to the parent `globalAlpha` value.
 
 ```javascript
-var globalAlpha = e2d.globalAlpha;
 
-globalAlpha(0.5,
+let alphaCommands = e2d.globalAlpha(0.5,
   //children are now drawn at 0.5 alpha
 
-  globalAlpha(0.5,
+  e2d.globalAlpha(0.5,
     //children are now drawn at 0.25 alpha because 0.5 * 0.5 is 0.25  (floating point math applies)
   )
 )
 
 ```
 
-__hitRegion.js__ and __hitRect.js__
+### __hitRegion.js__ and __hitRect.js__
 
-This function is used to name mouse regions with a polygon.
+The `hitRect` and `hitRegion` functions will apply a `hitRegion` to the canvas.
 
-```javascript
-var hitRegion = e2d.hitRegion,
-  hitRect = e2d.hitRect;
-```
-
-Example polygon format:
+Hit regions are complicated, because they are relative to the current state of the canvas context.
 
 ```javascript
-var polyPath = [
-  [0, 0], //x, y pairs
-  [0, 1],
-  [1, 1],
-  [1, 0]
-];
-```
+let hexagon = e2d.createRegularPolygon(100, [0, 0], 6);
 
-They can be scaled, translated, rotated, and transformed at render time.
-
-```javascript
-function lineMap(point, index) {
-  return index === 0 ? e2d.moveTo(point[0], point[1]) : e2d.lineTo(point[0], point[1]);
-}
-
-var polyDraw = translate(x, y,
-  scale(size,
-    polyPath.map(lineMap) //this makes the commands for you
-    stroke(),
-    hitRegion('poly-id', polyPath) //this path is translated and scaled for you!
-  )
+let hexagonPath = e2d.path(
+  hexagon.map(e2d.moveToLineTo)
 );
 
-r.render(
-  polyDraw
-);
-```
+e2d.initialize(ctx);
+e2d.raf(() => {
+  let regions = e2d.regions(ctx);
 
-To capture if the 'poly-id' region was hovered during the current frame, use the mouse event.
+  return e2d.render(
+    e2d.translate(100, 100,
 
-```javascript
-var mouseData;
-r.on('mouse', function(data) {
-  mouseData = data;
-  //if 'poly-id' is in the array, it was hovered for the prior frame it was declared.
-  var isHovering = data.activeRegions.indexOf('poly-id') > -1;
+      //if there is a hovered region, turn the fillStyle red
+      e2d.fillStyle(regions.length > 0 ? 'red' : 'black',
+
+        //fill a hexagon
+        hexagonPath, e2d.fill(),
+
+        //set the hexagon region on the canvas
+        e2d.hitRegion('hexagon-region', hexagon)
+      )
+    ),
+    ctx
+  );
 });
+
 ```
 
 To make a square use `hitRect(id, x, y, width, height)` or `hitRect(id, width, height)`.
 
-__lineStyle.js__
+### __invertMatrix.js__
+
+This function will return an inverse matrix relative to the canvas matrix provided by calculating a determinant and returning a new `Array`.
+
+This function is used internally to transform mouse points inversely to determine point in polygon detection relative to the provided shape.
+
+```javascript
+let [a, b, c, d, e, f] = e2d.invertMatrix([a, b, c, d, e, f]);
+```
+
+### __lineStyle.js__
 
 This is a composite property abstraction that contains `lineWidth` and other useful properties. See [mdn: lineCap](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap), [mdn: lineWidth](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineWidth), [mdn: lineJoin](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin), [mdn: miterLimit](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/miterLimit), and [mdn: setLineDash](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash)
 
 ```javascript
-var style = {
+let style = {
   lineWidth: 1,
   lineCap: 'round',
   lineJoin: 'bevel',
@@ -683,155 +521,128 @@ var style = {
 `lineDashOffset` and `lineDash` are abstracted to make them easier to animate.
 
 ```javascript
-var lineStyle = e2d.lineStyle;
-
-var example = lineStyle(style,
+let example = e2d.lineStyle(style,
   //do some line stroke() operations here
 );
 ```
 
-__path.js__, __lineTo.js__ and __moveTo.js__
+### __path.js__, __lineTo.js__ and __moveTo.js__
 
 The `path(pathInstructions)` call wraps `pathInstructions` in `beginPath()` and `endPath()` operations.
 
-```javascript
-var lineTo = e2d.lineTo,
-  moveTo = e2d.moveTo,
-  path = e2d.path;
-
-var example = path( //beginPath()
-  moveTo(0, 0),
-  lineTo(10, 10),
-  lineTo(10, 0)
-); //closePath()
-
-```
-
-__quadraticCurveTo.js__
-
-Use this to make a quadratic curve to another point.  All 4 parameters are required.
+To see how these functions work, visit mdn for [moveTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/moveTo), and [lineTo](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineTo).
 
 ```javascript
-var quadraticCurveTo = e2d.quadraticCurveTo;
-
-var curveCommand = quadraticCurveTo(cpx, cpy, x, y);
-```
-
-__Renderer.js__ and __Canvas.js__
-
-The `Renderer` class is used to display things attached to the DOM and `Canvas` is used for off screen rendering and takes 4 parameters.
-
-```javascript
-  //parent defaults to document.body when not provided
-
-  var r = new Renderer(width, height, parent);
-
-  //alternatively use node.js style create syntax
-  var r = Renderer.create(width, height, parent);
-```
-
-Using `Canvas` is similar.
-
-Examples:
-
-```javascript
-
-var r = e2d.Renderer.create(800, 600);
-
-//create an offscreen canvas and cache it for later use
-var cvs = new e2d.Canvas(100, 100);
-
-cvs.render(
-  e2d.fillRect(25, 25, 50, 50) //draw a square
+//wrap paths in e2d.path()
+let example = e2d.path(
+  e2d.moveTo(0, 0),
+  e2d.lineTo(10, 10),
+  e2d.lineTo(10, 0)
 );
 
-var img = cvs.toImage();
+```
 
-r.render(
-  e2d.drawImage(img)
-);
+### __quadraticCurveTo.js__
 
-//or use
+Use this to make a quadratic curve to another point.  All 4 parameters are required. To see how this function works, please visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/quadraticCurveTo). 
 
-r.render(
-  e2d.drawCanvas(cvs)
+```javascript
+
+let curveCommand = e2d.quadraticCurveTo(cpx, cpy, x, y);
+```
+
+### __rotate.js__, __translate.js__, and __scale.js__
+
+Use these functions to translate/rotate/and scale the provided context.
+
+These are the most important functions abstracted by the e2d render engine. Internally e2d uses `setTransform` on the canvas and keeps track of transforms manually.  This allows the developer to use `transforms` like `rotate` and `scale` without worrying about permanently displacing a canvas context.
+
+The `rotate` function uses radians like this.
+
+```javascript
+let rotatedSquare = e2d.rotate(Math.PI / 4, //90 degrees
+  e2d.path(e2d.rect), e2d.stroke()
 );
 ```
 
-__rotate.js__, __translate.js__, and __scale.js__
-
-Use these primitive functions to translate/rotate/and scale your contexts/paths.
+To translate a draw command, use the `translate` function with the `x` and `y` parameters.
 
 ```javascript
-var translate = e2d.translate,
-  scale = e2d.scale,
-  rotate = e2d.rotate,
-  drawImage = e2d.drawImage;
-//every transform operation accepts unlimited children
+//fill a circle at [x, y] with radius 100
+let movedCircle = e2d.translate(x, y, e2d.fillArc(100));
+```
+To scale a draw command, use the `scale function.  It has two forms.
 
-//scaling operations are like this:
-var scaleChildren = e2d.scale(size, children); //if sizeY is not provided, it will assume the scale is in both directions
-var scaleChildren = e2d.scale(sizeX, sizeY, children);
+```javascript
+//scale a rectangle to double it's size
+let doubleSized = e2d.scale(2, e2d.fillRect(10, 10));
 
-//translate like this:
-var translateChildren = e2d.translate(x, y, children);
+//scale the rectangle by [x, y]
+let doubleSizedXOnly = e2d.scale(x, y, e2d.fillRect(10, 10));
+```
 
-//rotate like this:
-var rotateChildren = e2d.rotate(radians, children);
+As a final example, a default drawSprite function is provided here.
 
-function drawSprite(img, x, y, rotation, scaleX, scaleY, centerX, centerY) {
-  return translate(x, y, //position
-    scale(scaleX, scaleY, //scaling operation
-      rotate(rotation, //rotate the sprite
-        translate(-centerX, -centerY, //centering operation
-          drawImage(img) //draw the image
-        )
+```javascript
+//standard sprite function
+let drawSprite = (sprite, { position, size, rotation, center }) => e2d.translate(position[0], position[1],
+  //rotate before scaling to prevent side effects
+  e2d.rotate(rotation,
+    e2d.scale(size,
+      //center the sprite
+      e2d.translate(-center[0], -center[1],
+        sprite
       )
-    )
-  );
-}
-
-//draw sprite from it's center and control it's width/height
-r.render(
-  drawSprite(img, x, y, rotation, scaleX, scaleY, centerX, centerY) //centerX and centerY are relative to img's size
-);
-```
-
-__transform.js__
-
-`transform([a,b,c,d,e,f], children...)` is a convenience function for advanced developers to add a transform to the current stack.
-
-```javascript
-var transformOperation = e2d.transform(
-  [A, B, C, D, E, F], //{ a: d11, b: d12, c: d21, d: d22, e: d31, f: d32 } for reference
-  children
-);
-```
-
-__resetTransform.js__ and __setTransform__
-
-These functions give direct access to the `transformStack` values.
-
-```javascript
-r.render(
-  clearRect(width, height),
-  translate(x, y,
-    resetTransform(
-      fillRect(100, 100, 100, 100),
-      text('I\'m at [0,0]!')
     )
   )
 );
+
+//this is how it's used
+e2d.render(
+  drawSprite(e2d.drawImage(img), {
+    position: [100, 100],
+    size: 1.1,
+    rotation: Math.PI / 4,
+    center: [img.width * 0.5, img.height * 0.5]
+  }),
+  ctx
+);
+
 ```
 
-__shadowStyle.js__
+### __transform.js__
+
+`transform([a,b,c,d,e,f], children...)` is a convenience function for advanced developers to add a transform to the current stack.  For more information on how the `transform` operation works, please visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform).
+
+```javascript
+let transformOperation = e2d.transform(
+  [A, B, C, D, E, F], //{ a: d11, b: d12, c: d21, d: d22, e: d31, f: d32 } for reference
+  ...children
+);
+```
+
+### __resetTransform.js__ and __setTransform__
+
+These functions give direct access to the `transformStack` values.  To see how these functions work, please see [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform).
+
+```javascript
+let changeCurrentTransform = e2d.setTransform(
+  [A, B, C, D, E, F], //{ a: d11, b: d12, c: d21, d: d22, e: d31, f: d32 } for reference
+  ...children
+);
+
+//this is a shortcut for setTransform([1, 0, 0, 1, 0, 0]);
+let returnToIdentity = e2d.resetTransform(...children);
+```
+
+### __shadowStyle.js__
 
 Much like __lineStyle.js__ this is a compound property that can be nested.
 
 See [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Shadows) for more details.
 
 ```javascript
-var shadowStyleDefinition = {
+let shadowStyleDefinition = {
   shadowBlur: 0,
   shadowColor: 'black',
   shadowOffsetX: 0,
@@ -839,115 +650,77 @@ var shadowStyleDefinition = {
 };
 ```
 
-See mdn for more information on how to use shadows.
-
 Example:
 
 ```javascript
-var shadowStyle = e2d.shadowStyle;
-
-var shadowCommand = shadowStyle(shadowStyleDefinition,
+let shadowCommand = e2d.shadowStyle(shadowStyleDefinition,
   //stuff with a shadow
 );
 ```
 
-__stokeArc.js__
+### __stokeArc.js__
 
-This function doesn't exist on the Canvas prototype, but was added for completeness.  It draws a circular arc around the center.
+This function doesn't exist on the Canvas prototype, but was added for completeness.  It draws a circular arc.
 
 This command has four forms.
 
 ```javascript
-var strokeArc = e2d.strokeArc;
 
-var strokeRadius = strokeArc(radius); //at 0, 0
-var strokePosition = strokeArc(x, y, radius); //full angle
-var strokePortion = strokeArc(x, y, radius, startAngle, endAngle); //strokes clockwise
-var strokeCounterClockwise = strokeArc(x, y, radius, startAngle, endAngle, true); //strokes counterclockwise
+let strokeRadius = e2d.strokeArc(radius); //at 0, 0
+let strokePosition = e2d.strokeArc(x, y, radius); //full angle
+let strokePortion = e2d.strokeArc(x, y, radius, startAngle, endAngle); //specify the angles
+let strokeCounterClockwise = e2d.strokeArc(x, y, radius, startAngle, endAngle, true); //counterclockwise
 ```
 
-__strokeRect.js__
+### __strokeRect.js__
 
-This will outline a rectangle.  It has two forms.
+This will outline a rectangle.  Please visit [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeRect) to see how strokeRect works. It has two forms.
 
 ```javascript
-var strokeRect = e2d.strokeRect;
-
-var rect = strokeRect(width, height); //at 0, 0
-var rect2 = strokeRect(x, y, width, height);
+let rect = e2d.strokeRect(width, height); //at 0, 0
+let rect2 = e2d.strokeRect(x, y, width, height);
 ```
 
-__textStyle.js__, __fillText.js__, and __strokeText__
+### __textStyle.js__, __fillText.js__, and __strokeText__
 
 These functions help you draw text to the screen using Canvas's really poorly implemented text API.  Please see mdn for more information about the font properties.
 
 Note: the `text` function is deprecated.
 
 ```javascript
-var textStyle = e2d.textStyle,
-  text = e2d.text,
-  style = {
+let style = {
     font: 'Comic Sans MS', //probably pick another font... please?
     textAlign: 'center', // text alignment
     textBaseline: 'top', // base alignment
     direction: 'ltr' // ltr: left to right, rtl: right to left, and inherit
   };
 
-var textCommand = textStyle(style,
-  fillText('hello world!'), //at 0, 0
-  strokeText('other text', x, y), //at x, y
+let textCommand = e2d.textStyle(style,
+  e2d.fillText('hello world!'), //at 0, 0
+  e2d.strokeText('other text', x, y), //at x, y
 
   //text, x, y, fill, stroke
-  fillText('some other text too', x, y, maxWidth),
+  e2d.fillText('some other text too', x, y, maxWidth),
 
   //and maxWidth
-  strokeText('the final example', x, y, maxWidth)
+  e2d.strokeText('the final example', x, y, maxWidth)
 );
 ```
 
-__text.js__
+### __transformPoints.js__
 
-This method is deprecated. It was poorly implemented was unclear.
-
-```javascript
-var textCommand = e2d.text('hello world', x, y, fill, stroke, maxWidth); //fill and stroke are booleans
-```
-
-__createLinearGradient.js__ and __createRadialGradient.js__
-
-This creates and returns a canvas gradient object.
+This utility function transforms a set of points relative to the specified transform matrix. It is used internally by `e2d` to calculate and apply mouse regions to the canvas.
 
 ```javascript
-var grd = createLinearGradient(x0, y0, x1, y1, [ //this must be an array!
-  e2d.addColorStop(0, 'color'),
-  e2d.addColorStop(1, 'color')
-]);
-```
-
-For example:
-
-```javascript
-r.render(
-  e2d.fillStyle(grd, children...)
-);
-```
-
-See [createLinearGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) and  [createRadialGradient](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient) on mdn for more information on how to use these functions.
-
-__transformPoints.js__
-
-This utility function transforms a set of points givent the specified transform matrix. It is used internally by `e2d` to calculate mouse regions.
-
-```javascript
-var matrix = new Float64Array([a, b, c, d, e, f]);
+let matrix = new Float64Array([a, b, c, d, e, f]);
 //or...
-var matrix = new Float64Array([d11, d12, d21, d22, d31, d32]);
+let matrix = new Float64Array([d11, d12, d21, d22, d31, d32]);
 //lookup map
 //[d11, d21, d31]  ---- [a, c, e]
 //[d12, d22, d32]  ---- [b, d, f]
 //[  0,   0,   1]  ---- [0, 0, 1]
 
-var points = [
+let points = [
   [x0, y0],
   [x1, y1],
   [x2, y2],
@@ -955,20 +728,20 @@ var points = [
   [xN, yN]
 ];
 
-var newPoints = transformPoints(points, matrix);
+let newPoints = transformPoints(points, matrix);
 ```
 
 It returns a new array of `[x, y]` points with the coordinates transformed.
 
-__createRegularPolygon.js__
+### __createRegularPolygon.js__
 
 Creates a regular polygon shape: an array of arrays.
 
 ```javascript
-var radius = 10;
-var position = [x, y];
-var sides = 6;
-var hexagon = e2d.createRegularPolygon(radius, position, sides);
+let radius = 10;
+let position = [x, y];
+let sides = 6;
+let hexagon = e2d.createRegularPolygon(radius, position, sides);
 
 console.log(hexagon);
 [
@@ -981,56 +754,44 @@ console.log(hexagon);
 ]
 ```
 
-__moveToLineTo.js__
+### __moveToLineTo.js__
 
-This is a convenience function used with `Array.prototype.map` that maps shapes to drawable polygons.
+This is a convenience function used with the `Array.prototype.map` function that maps shapes to drawable polygons.
 
 ```javascript
-var hexagonShape = e2d.createRegularPolygon(10, [0, 0], 6);
-var hexagonPath = e2d.path( //automatically close the path
+let hexagonShape = e2d.createRegularPolygon(10, [0, 0], 6);
+let hexagonPath = e2d.path( //always wrap drawn paths with e2d.path
   hexagonShape.map(e2d.moveToLineTo) //map each point to an instruction
 );
 
-r.render(
-  hexagonPath
+e2d.render(
+  hexagonPath,
+  e2d.stroke(),
+  ctx
 );
 
 ```
 
-# Examples
+# License
 
-```javascript
+The MIT License (MIT)
 
-var app = {
+Copyright (c) 2015 Joshua Tenner
 
-  r: e2d.Renderer.create(800, 600),
-  polygonShape: e2d.createRegularPolygon(30, [0, 0], 10),
-  polygonPath: null,
-  polygonHitRegion: null,
-  fillRed: e2d.fillStyle('red', e2d.fill()), //store the fillStyle
-  rectPath: e2d.path(e2d.rect(100, 100, 100, 100)), //storing the path
-  init: function() {
-    this.polygonPath = e2d.path(this.polygonShape.map(e2d.moveToLineTo));
-    this.polygonHitRegion = e2d.hitRegion('polygon-region', this.polygonShape);
-  },
-  tick: function() {
-    //if the cursor is over the polygon region, change the pointer
-    this.r.style({ cursor: this.r.mouseData.activeRegions.length > 0 ? 'pointer' : null });
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-    return this.r.render(
-      this.rectPath, this.fillRed, //red rectangle
-      e2d.translate(100, 100, //move to 100, 100,
-        this.polygonPath, this.fillRed, this.polygonHitRegion //draw a polygon and apply a mouse region to it
-      )
-    );
-  }
-};
-app.init();
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-app.r.ready();
-app.r.on('frame', function() {
-  app.tick();
-});
-```
-
-This project is released under the MIT license (c) Joshua Tenner 2015.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

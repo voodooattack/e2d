@@ -1,9 +1,5 @@
-'use strict';
+let Instruction = require('./Instruction');
+let cache = new Instruction('stroke');
 
-var Instruction = require('./Instruction');
-
-function stroke() {
-  return new Instruction('stroke');
-}
-
+let stroke = () => cache;
 module.exports = stroke;

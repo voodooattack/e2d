@@ -1,13 +1,10 @@
-'use strict';
+let Instruction = require('./Instruction');
 
-var Instruction = require('./Instruction');
+let clearRect = (...args) => new Instruction('clearRect',
+  args.length > 2 ?
+    { x: args[0], y: args[1], width: args[2], height: args[3] } :
+    { x: 0, y: 0, width: args[0], height: args[1] }
+);
 
-function clearRect(x, y, width, height) {
-  if (arguments.length > 2) {
-    return new Instruction('clearRect', { x: x, y: y, width: width, height: height });
-  } else {
-    return new Instruction('clearRect', { x: 0, y: 0, width: x, height: y });
-  }
-}
 
 module.exports = clearRect;

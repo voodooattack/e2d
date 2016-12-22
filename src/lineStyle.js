@@ -1,8 +1,7 @@
-'use strict';
+let Instruction = require('./Instruction');
+let end = new Instruction('endLineStyle');
 
-var Instruction = require('./Instruction');
-
-function lineStyle(value, children) {
+let lineStyle = (value, ...children) => {
 
   value = value || {};
   var result = {
@@ -10,7 +9,7 @@ function lineStyle(value, children) {
     lineCap: null,
     lineJoin: null,
     miterLimit: null,
-    lineDash: [],
+    lineDash: null,
     lineDashOffset: null
   };
 
@@ -27,17 +26,16 @@ function lineStyle(value, children) {
     result.miterLimit = value.miterLimit;
   }
   if (typeof value.lineDash !== 'undefined') {
-    result.lineDash = value.lineDash;
+    result.lineDash = value.lineDash || [];
   }
   if (typeof value.lineDashOffset !== 'undefined') {
     result.lineDashOffset = value.lineDashOffset;
   }
-  var tree = [new Instruction('lineStyle', result)];
-  for(var i = 1; i < arguments.length; i++) {
-    tree.push(arguments[i]);
-  }
-  tree.push(new Instruction('endLineStyle'));
-  return tree;
-}
+  return [
+    new Instruction('lineStyle', result),
+    children,
+    end
+  ];
+};
 
 module.exports = lineStyle;

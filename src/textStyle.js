@@ -1,8 +1,7 @@
-'use strict';
+let Instruction = require('./Instruction');
+let end = new Instruction('endTextStyle');
 
-var Instruction = require('./Instruction');
-
-function textStyle(value, children) {
+let textStyle = (value, ...children) => {
   value = value || {};
   var result = {
     font: null,
@@ -23,12 +22,12 @@ function textStyle(value, children) {
   if (typeof value.direction !== 'undefined') {
     result.direction = value.direction;
   }
-  var tree = [new Instruction('textStyle', value)];
-  for(var i = 1; i < arguments.length; i++) {
-    tree.push(arguments[i]);
-  }
-  tree.push(new Instruction('endTextStyle'));
-  return tree;
-}
+
+  return [
+    new Instruction('textStyle', result),
+    children,
+    end
+  ];
+};
 
 module.exports = textStyle;

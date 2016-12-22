@@ -5,6 +5,41 @@
   <title>e2d Test</title>
 </head>
 <body>
-  <script src="app.js"></script>
+  <script src="e2d.js"></script>
+  <script>
+    let canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
+    let ctx = canvas.getContext('2d');
+    e2d.initialize(ctx);
+    document.body.appendChild(canvas);
+
+    let frame = () => {
+      requestAnimationFrame(frame);
+      let { x, y } = e2d.mouseData(ctx);
+      let hovering = e2d.activeRegions(ctx);
+      let view = [];
+      for (let i = 0; i < 5; i++) {
+        for(let j = 0; j < 5; j++) {
+          let id = `${i}-${j}`;
+          view.push(
+            e2d.translate(i * 50, j * 50,
+              e2d.hitRect(id, 50, 50),
+              e2d.fillStyle(hovering[id] ? 'red' : 'black',
+                e2d.fillRect(50, 50)
+              )
+            )
+          );
+        }
+      }
+
+      return e2d.render(
+        e2d.clearRect(canvas.width, canvas.height),
+        view,
+        ctx
+      );
+    };
+    requestAnimationFrame(frame);
+  </script>
 </body>
 </html>

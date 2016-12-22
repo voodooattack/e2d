@@ -1,22 +1,24 @@
-'use strict';
+let Instruction = require('./Instruction'),
+    pi2 = Math.PI * 2;
 
-var Instruction = require('./Instruction');
+let arc = (...args) => {
+  let  [x, y, r, startAngle, endAngle, counterclockwise] = args;
+  let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
 
-function arc(x, y, r, startAngle, endAngle, anticlockwise) {
-  if (arguments.length > 5) {
-    return new Instruction(anticlockwise ? 'anticlockwise-arc' : 'arc', { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle });
-  }
-  if (arguments.length === 5) {
-    return new Instruction('arc', { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle });
-  }
-  if (arguments.length >= 3) {
-    return new Instruction('full-arc', { x: x, y: y, r: r});
-  }
-  if (arguments.length >= 1) {
-    return new Instruction('quick-arc', { r: x });
+
+  if (args.length > 3) {
+    props.startAngle = startAngle;
+    props.endAngle = endAngle;
+    props.counterclockwise = !!counterclockwise;
   }
 
-  return new Instruction('quick-arc', { r: 1 });
-}
+  if (args.length > 1){
+    props.x = x;
+    props.y = y;
+    props.r = r;
+  }
+
+  return new Instruction("arc",  props);
+};
 
 module.exports = arc;

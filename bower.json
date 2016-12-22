@@ -1,12 +1,12 @@
 {
   "name": "e2d",
-  "main": "dist/e2d.min.js",
+  "main": "dist/e2d.compat.min.js",
   "homepage": "https://github.com/jtenner/e2d",
-  "version": "3.4.1",
+  "version": "4.0.0",
   "authors": [
     "jtenner <tenner.joshua@gmail.com>"
   ],
-  "description": "A declarative canvas renderer.",
+  "description": "A declarative es2015 canvas renderer.",
   "moduleType": [
     "amd",
     "globals",

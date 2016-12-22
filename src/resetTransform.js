@@ -1,11 +1,5 @@
-'use strict';
+let setTransform = require('./setTransform');
 
-var setTransform = require('./setTransform');
+let resetTransform = (...children) => setTransform([1, 0, 0, 1, 0, 0], children);
 
-module.exports = function resetTransform() {
-  var args = [];
-  for(var i = 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
-  }
-  return setTransform([1, 0, 0, 1, 0, 0], args);
-};
+module.exports = resetTransform;

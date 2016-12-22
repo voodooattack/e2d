@@ -1,0 +1,1 @@
+module.exports = (ctx) => ctx.canvas[Symbol.for('mouseData')];

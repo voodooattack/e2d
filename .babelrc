@@ -1,0 +1,4 @@
+{
+  "plugins": ["closure-elimination"],
+  "presets": ["es2015-loose"]
+}

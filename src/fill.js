@@ -1,8 +1,6 @@
-'use strict';
-var Instruction = require('./Instruction');
+let Instruction = require('./Instruction');
+let cache = new Instruction('fill');
 
-function fill() {
-  return new Instruction('fill');
-}
+let fill = () => cache;
 
 module.exports = fill;

@@ -1,13 +1,10 @@
-'use strict';
-var Instruction = require('./Instruction');
+let Instruction = require('./Instruction');
+let end = new Instruction('endStrokeStyle');
 
-function fillStyle(value, children) {
-  var result = [new Instruction('strokeStyle', { value: value })];
-  for(var i = 1; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
-  result.push(new Instruction('endStrokeStyle'));
-  return result;
-}
+let strokeStyle = (value, ...children) => [
+  new Instruction('strokeStyle', { value }),
+  children,
+  end
+];
 
-module.exports = fillStyle;
+module.exports = strokeStyle;

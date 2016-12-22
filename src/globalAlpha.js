@@ -1,14 +1,11 @@
-'use strict';
 
-var Instruction = require('./Instruction');
 
-function globalAlpha(alpha, children) {
-  var result = [new Instruction('globalAlpha', { value: alpha })];
-  for(var i = 1; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
-  result.push(new Instruction('endGlobalAlpha'));
-  return result;
-}
+let Instruction = require('./Instruction');
+let end = new Instruction('endGlobalAlpha');
 
+let globalAlpha = (value, ...children) => [
+  new Instruction('globalAlpha', { value }),
+  children,
+  end
+];
 module.exports = globalAlpha;

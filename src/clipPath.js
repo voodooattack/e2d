@@ -1,8 +1,6 @@
-'use strict';
+let Instruction = require('./Instruction');
+let cache = new Instruction('clipPath');
 
-var Instruction = require('./Instruction');
+let clipPath = () => cache;
 
-function clipPath() {
-  return new Instruction('clipPath');
-}
 module.exports = clipPath;

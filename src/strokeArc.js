@@ -1,19 +1,24 @@
-'use strict';
-
-var Instruction = require('./Instruction'),
+let Instruction = require('./Instruction'),
     pi2 = Math.PI * 2;
 
-function strokeArc(x, y, r, startAngle, endAngle, counterclockwise) {
-  if (arguments.length >= 6 && counterclockwise) {
-    return new Instruction("strokeArc-counterclockwise", { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle });
+let strokeArc = (...args) => {
+  let [x, y, r, startAngle, endAngle, counterclockwise] = args;
+  let props = { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2, counterclockwise: false };
+
+
+  if (args.length > 3) {
+    props.startAngle = startAngle;
+    props.endAngle = endAngle;
+    props.counterclockwise = !!counterclockwise;
   }
-  if (arguments.length > 3) {
-    return new Instruction("strokeArc", { x: x, y: y, r: r, startAngle: startAngle, endAngle: endAngle });
+
+  if (args.length > 1){
+    props.x = x;
+    props.y = y;
+    props.r = r;
   }
-  if (arguments.length > 1){
-    return new Instruction("strokeArc", { x: x, y: y, r: r, startAngle: 0, endAngle: pi2 });
-  }
-  return new Instruction("strokeArc",  { x: 0, y: 0, r: x, startAngle: 0, endAngle: pi2 });
-}
+
+  return new Instruction("strokeArc",  props);
+};
 
 module.exports = strokeArc;

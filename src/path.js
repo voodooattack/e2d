@@ -1,15 +1,10 @@
-'use strict';
+let beginPath = require('./beginPath')(),
+    closePath = require('./closePath')();
 
-var beginPath = require('./beginPath'),
-    closePath = require('./closePath');
-
-function path(children) {
-  var result = [beginPath()];
-  for(var i = 0; i < arguments.length; i++) {
-    result.push(arguments[i]);
-  }
-  result.push(closePath());
-  return result;
-}
+let path = (...children) => [
+  beginPath,
+  children,
+  closePath
+];
 
 module.exports = path;
