@@ -45,7 +45,7 @@ module.exports = (...args) => {
     mousePoints = ctx.canvas[Symbol.for('mousePoints')],
     extensions = ctx.canvas[Symbol.for('extensions')];
 
-  let cache;
+  let isTransformDirty = false, cache;
 
   cycleMouseData(ctx);
 
@@ -108,16 +108,8 @@ module.exports = (...args) => {
         matrix[0] * props[4] + matrix[2] * props[5] + matrix[4];
       transformStack[transformStackIndex - 1] = //f
         matrix[1] * props[4] + matrix[3] * props[5] + matrix[5];
-
-      //modify the ctx
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      
+      isTransformDirty = true;
       continue;
     }
 
@@ -133,8 +125,8 @@ module.exports = (...args) => {
       transformStack[transformStackIndex - 3] = props[3];//d
       transformStack[transformStackIndex - 2] = props[4];//e
       transformStack[transformStackIndex - 1] = props[5];//f
-      ctx.setTransform(props[0], props[1], props[2], props[3], props[4], props[5]);
-
+      
+      isTransformDirty = true;
       continue;
     }
 
@@ -157,15 +149,8 @@ module.exports = (...args) => {
       transformStack[transformStackIndex - 3] = matrix[3] * props.y; //d
       transformStack[transformStackIndex - 2] = matrix[4]; //e
       transformStack[transformStackIndex - 1] = matrix[5]; //f
-
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      
+      isTransformDirty = true;
 
       continue;
     }
@@ -189,15 +174,8 @@ module.exports = (...args) => {
       transformStack[transformStackIndex - 3] = matrix[3]; //d
       transformStack[transformStackIndex - 2] = matrix[4] + matrix[0] * props.x + matrix[2] * props.y; //e
       transformStack[transformStackIndex - 1] = matrix[5] + matrix[1] * props.x + matrix[3] * props.y; //f
-
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      
+      isTransformDirty = true;
       continue;
     }
 
@@ -225,14 +203,7 @@ module.exports = (...args) => {
       transformStack[transformStackIndex - 2] = matrix[4]; //e
       transformStack[transformStackIndex - 1] = matrix[5];//f
 
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      isTransformDirty = true;
       continue;
     }
 
@@ -258,15 +229,7 @@ module.exports = (...args) => {
       transformStack[transformStackIndex - 2] = matrix[4]; //e
       transformStack[transformStackIndex - 1] = matrix[5]; //f
 
-
-      ctx.setTransform(
-        transformStack[transformStackIndex - 6],
-        transformStack[transformStackIndex - 5],
-        transformStack[transformStackIndex - 4],
-        transformStack[transformStackIndex - 3],
-        transformStack[transformStackIndex - 2],
-        transformStack[transformStackIndex - 1]
-      );
+      isTransformDirty = true;
       continue;
     }
 
@@ -292,7 +255,21 @@ module.exports = (...args) => {
 
       transformStack[transformStackIndex - 2] = matrix[4]; //e
       transformStack[transformStackIndex - 1] = matrix[5]; //f
+       
+      isTransformDirty = true;
+      continue;
+    }
 
+    if (type === 'restore') {
+      transformStackIndex -= 6;
+
+      continue;
+    }
+
+    //every type below here requires the context be set correctly
+    if (isTransformDirty) {
+      isTransformDirty = false;
+            //modify the ctx      
       ctx.setTransform(
         transformStack[transformStackIndex - 6],
         transformStack[transformStackIndex - 5],
@@ -301,22 +278,8 @@ module.exports = (...args) => {
         transformStack[transformStackIndex - 2],
         transformStack[transformStackIndex - 1]
       );
-      continue;
     }
-
-    if (type === 'restore') {
-      transformStackIndex -= 6;
-      matrix[0] = transformStack[transformStackIndex - 6];
-      matrix[1] = transformStack[transformStackIndex - 5];
-      matrix[2] = transformStack[transformStackIndex - 4];
-      matrix[3] = transformStack[transformStackIndex - 3];
-      matrix[4] = transformStack[transformStackIndex - 2];
-      matrix[5] = transformStack[transformStackIndex - 1];
-
-      ctx.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-      continue;
-    }
-
+    
     if (type === 'fillRect') {
       ctx.fillRect(props.x, props.y, props.width, props.height);
       continue;
