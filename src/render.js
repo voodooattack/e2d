@@ -262,7 +262,7 @@ module.exports = (...args) => {
 
     if (type === 'restore') {
       transformStackIndex -= 6;
-
+      isTransformDirty = true;
       continue;
     }
 
